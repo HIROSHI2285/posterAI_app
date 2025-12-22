@@ -28,8 +28,18 @@ export default function GeneratePage() {
                 });
             };
 
+            // detailedPromptとfreeTextを結合（フロントエンドで処理）
+            const combinedFreeText = [
+                formData.freeText,
+                formData.detailedPrompt
+            ].filter(Boolean).join('\n\n');
+
             // フォームデータを準備（ファイルをbase64に変換）
-            const requestData: any = { ...formData };
+            const requestData: any = {
+                ...formData,
+                freeText: combinedFreeText || formData.freeText,
+            };
+            delete requestData.detailedPrompt;
 
             // サンプル画像の処理
             if (formData.sampleImage) {
