@@ -1,0 +1,477 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    PURPOSES,
+    TASTES,
+    LAYOUTS,
+    OUTPUT_SIZES,
+    type PosterFormData
+} from "@/types/poster"
+import { Wand2, Upload, FileImage, X } from "lucide-react"
+
+interface PosterFormProps {
+    onGenerate?: (formData: Partial<PosterFormData>) => void
+    isGenerating?: boolean
+}
+
+const CHAR_LIMITS = {
+    mainTitle: 50,
+    freeText: 500,
+}
+
+export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps) {
+    const [formData, setFormData] = useState<Partial<PosterFormData>>({
+        purpose: "event-ad",
+        outputSize: "a4",
+        orientation: "portrait",
+        taste: "modern",
+        layout: "center",
+        mainColor: "#5d48a8",
+        customWidth: 1920,
+        customHeight: 1080,
+    })
+
+    const [errors, setErrors] = useState<{
+        mainTitle?: string
+        freeText?: string
+    }>({})
+
+    const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        const newErrors: typeof errors = {}
+
+        if (!formData.mainTitle) {
+            newErrors.mainTitle = "メインタイトルは必須です"
+        } else if (formData.mainTitle.length > CHAR_LIMITS.mainTitle) {
+            newErrors.mainTitle = `メインタイトルは${CHAR_LIMITS.mainTitle}文字以内で入力してください`
+        }
+
+        if (formData.freeText && formData.freeText.length > CHAR_LIMITS.freeText) {
+            newErrors.freeText = `追加テキストは${CHAR_LIMITS.freeText}文字以内で入力してください`
+        }
+
+        setErrors(newErrors)
+
+        if (Object.keys(newErrors).length > 0) {
+            return
+        }
+
+        if (onGenerate) {
+            onGenerate(formData)
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 基本設定 */}
+            <Card className="border border-gray-300 bg-white">
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">基本設定</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4 pb-4">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="purpose" className="text-sm font-medium">デザイン用途</Label>
+                        <Select
+                            id="purpose"
+                            value={formData.purpose}
+                            onChange={(e) => setFormData({ ...formData, purpose: e.target.value as any })}
+                            required
+                            className="w-full"
+                        >
+                            {PURPOSES.map(purpose => (
+                                <option key={purpose.value} value={purpose.value}>
+                                    {purpose.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label htmlFor="taste" className="text-sm font-medium">テイスト</Label>
+                        <Select
+                            id="taste"
+                            value={formData.taste}
+                            onChange={(e) => setFormData({ ...formData, taste: e.target.value as any })}
+                            required
+                            className="w-full"
+                        >
+                            {TASTES.map(taste => (
+                                <option key={taste.value} value={taste.value}>
+                                    {taste.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label htmlFor="layout" className="text-sm font-medium">レイアウト</Label>
+                        <Select
+                            id="layout"
+                            value={formData.layout}
+                            onChange={(e) => setFormData({ ...formData, layout: e.target.value as any })}
+                            required
+                            className="w-full"
+                        >
+                            {LAYOUTS.map(layout => (
+                                <option key={layout.value} value={layout.value}>
+                                    {layout.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* テキスト内容 */}
+            <Card className="border border-gray-300 bg-white">
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">テキスト内容</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4 pb-4">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="mainTitle" className="text-sm font-medium">
+                            メインタイトル <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="mainTitle"
+                            type="text"
+                            placeholder="例: 夏祭り2024"
+                            value={formData.mainTitle || ""}
+                            onChange={(e) => {
+                                setFormData({ ...formData, mainTitle: e.target.value })
+                                if (errors.mainTitle) {
+                                    setErrors({ ...errors, mainTitle: undefined })
+                                }
+                            }}
+                            className={errors.mainTitle ? 'border-red-500' : ''}
+                            required
+                        />
+                        <p className="text-xs text-muted-foreground text-right">
+                            {formData.mainTitle?.length || 0} / {CHAR_LIMITS.mainTitle}
+                        </p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label htmlFor="freeText" className="text-sm font-medium">追加テキスト</Label>
+                        <Textarea
+                            id="freeText"
+                            placeholder="例: 場所、日時、詳細情報など"
+                            value={formData.freeText || ""}
+                            onChange={(e) => {
+                                setFormData({ ...formData, freeText: e.target.value })
+                                if (errors.freeText) {
+                                    setErrors({ ...errors, freeText: undefined })
+                                }
+                            }}
+                            rows={6}
+                            className={errors.freeText ? 'border-red-500' : ''}
+                        />
+                        <p className="text-xs text-muted-foreground text-right">
+                            {formData.freeText?.length || 0} / {CHAR_LIMITS.freeText}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Label htmlFor="mainColor" className="text-sm font-medium">メインカラー</Label>
+            <div className="flex items-center gap-3">
+                <Input
+                    id="mainColor"
+                    type="color"
+                    value={formData.mainColor}
+                    onChange={(e) => setFormData({ ...formData, mainColor: e.target.value })}
+                    className="w-20 h-12 cursor-pointer rounded-lg border-2 border-gray-300 p-1"
+                    required
+                />
+                <Input
+                    type="text"
+                    value={formData.mainColor}
+                    onChange={(e) => setFormData({ ...formData, mainColor: e.target.value })}
+                    className="flex-1 font-mono text-sm border-gray-300"
+                    placeholder="#5d48a8"
+                />
+            </div>
+
+            {/* カラーパレット */}
+            <div className="space-y-1.5 mt-3">
+                <p className="text-xs text-muted-foreground">プリセットカラー</p>
+                <div className="grid grid-cols-6 gap-2">
+                    {[
+                        '#5d48a8', '#48a772', '#e74c3c', '#f39c12',
+                        '#3498db', '#9b59b6', '#1abc9c', '#e67e22',
+                        '#34495e', '#ff6b9d', '#00d4a0', '#c0392b'
+                    ].map((color) => (
+                        <button
+                            key={color}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, mainColor: color })}
+                            className={`w-full h-10 rounded-lg border-2 transition-all hover:scale-110 ${formData.mainColor === color
+                                ? 'border-gray-900 ring-2 ring-offset-2 ring-gray-900'
+                                : 'border-gray-300 hover:border-gray-400'
+                                }`}
+                            style={{ backgroundColor: color }}
+                            title={color}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+                </CardContent >
+            </Card >
+
+        {/* 出力サイズ */ }
+        < Card className = "border border-gray-300 bg-white" >
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">出力サイズ</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4 pb-4">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="outputSize" className="text-sm font-medium">サイズプリセット</Label>
+                        <Select
+                            id="outputSize"
+                            value={formData.outputSize}
+                            onChange={(e) => setFormData({ ...formData, outputSize: e.target.value as any })}
+                            required
+                            className="w-full"
+                        >
+                            {Object.entries(OUTPUT_SIZES).map(([key, size]) => (
+                                <option key={key} value={key}>
+                                    {size.label} ({size.description})
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">向き</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, orientation: "portrait" })}
+                                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${formData.orientation === "portrait"
+                                    ? 'border-primary bg-primary/5 shadow-sm'
+                                    : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="relative">
+                                    <div
+                                        className="w-14 h-20 rounded-lg shadow-sm transition-all"
+                                        style={{
+                                            background: formData.orientation === "portrait"
+                                                ? 'linear-gradient(135deg, #48a772 0%, #3d8a5f 100%)'
+                                                : 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
+                                        }}
+                                    ></div>
+                                </div>
+                                <span className={`text-xs font-medium ${formData.orientation === "portrait" ? 'text-primary' : 'text-muted-foreground'}`}>縦向き</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, orientation: "landscape" })}
+                                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${formData.orientation === "landscape"
+                                    ? 'border-primary bg-primary/5 shadow-sm'
+                                    : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="relative">
+                                    <div
+                                        className="w-20 h-14 rounded-lg shadow-sm transition-all"
+                                        style={{
+                                            background: formData.orientation === "landscape"
+                                                ? 'linear-gradient(135deg, #48a772 0%, #3d8a5f 100%)'
+                                                : 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
+                                        }}
+                                    ></div>
+                                </div>
+                                <span className={`text-xs font-medium ${formData.orientation === "landscape" ? 'text-primary' : 'text-muted-foreground'}`}>横向き</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {formData.outputSize === 'custom' && (
+                        <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-gray-300">
+                            <Label className="text-sm font-medium">カスタムサイズ（ピクセル）</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="customWidth" className="text-xs">幅</Label>
+                                    <Input
+                                        id="customWidth"
+                                        type="number"
+                                        min="100"
+                                        max="8192"
+                                        value={formData.customWidth || 1920}
+                                        onChange={(e) => setFormData({ ...formData, customWidth: parseInt(e.target.value) })}
+                                        className="text-center border-gray-300"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="customHeight" className="text-xs">高さ</Label>
+                                    <Input
+                                        id="customHeight"
+                                        type="number"
+                                        min="100"
+                                        max="8192"
+                                        value={formData.customHeight || 1080}
+                                        onChange={(e) => setFormData({ ...formData, customHeight: parseInt(e.target.value) })}
+                                        className="text-center border-gray-300"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card >
+
+        {/* ファイルアップロード */ }
+        < Card className = "border border-gray-300 bg-white" >
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">ファイルアップロード</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4 pb-4">
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">サンプル画像</Label>
+                        <p className="text-xs text-muted-foreground mb-2">参考にしたいデザインやレイアウトの画像をアップロード（自動解析します）</p>
+                        <div
+                            onClick={() => document.getElementById('sampleImageInput')?.click()}
+                            className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-gray-50/50 transition-all min-h-[100px]"
+                        >
+                            <input
+                                id="sampleImageInput"
+                                type="file"
+                                accept=".png,.jpg,.jpeg"
+                                onChange={async (e) => {
+                                    const files = e.target.files
+                                    if (files && files[0]) {
+                                        const file = files[0]
+                                        setFormData({ ...formData, sampleImage: file })
+
+                                        // 画像を自動解析
+                                        setIsAnalyzing(true)
+                                        try {
+                                            const reader = new FileReader()
+                                            reader.onload = async (event) => {
+                                                const imageData = event.target?.result as string
+
+                                                const response = await fetch('/api/analyze-image', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ imageData })
+                                                })
+
+                                                if (response.ok) {
+                                                    const data = await response.json()
+                                                    if (data.success && data.analysis) {
+                                                        // フォームを自動入力
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            mainColor: data.analysis.mainColor || prev.mainColor,
+                                                            taste: data.analysis.taste || prev.taste,
+                                                            layout: data.analysis.layout || prev.layout,
+                                                            mainTitle: data.analysis.mainTitle || prev.mainTitle,
+                                                            purpose: data.analysis.purpose || prev.purpose,
+                                                        }))
+                                                        alert('画像を解析して設定を自動入力しました！\n微調整してから生成してください。')
+                                                    }
+                                                } else {
+                                                    console.error('画像解析エラー')
+                                                }
+                                                setIsAnalyzing(false)
+                                            }
+                                            reader.readAsDataURL(file)
+                                        } catch (error) {
+                                            console.error('解析エラー:', error)
+                                            setIsAnalyzing(false)
+                                        }
+                                    }
+                                }}
+                                className="hidden"
+                            />
+                            {isAnalyzing ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-1"></div>
+                                    <p className="text-xs text-center text-primary font-medium">解析中...</p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-1">
+                                        <Upload className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <p className="text-xs text-center text-foreground font-medium">クリック</p>
+                                    <p className="text-xs text-center text-muted-foreground">PNG, JPG</p>
+                                </>
+                            )}
+                        </div>
+                        {formData.sampleImage && (
+                            <div className="flex items-center gap-2 p-2 bg-muted/30 rounded text-xs border border-gray-300">
+                                <FileImage className="h-4 w-4 text-primary flex-shrink-0" />
+                                <span className="truncate flex-1">{formData.sampleImage.name}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, sampleImage: null })}
+                                    className="text-muted-foreground hover:text-destructive"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* キャラクター/人物の説明 */}
+                    <div className="space-y-2">
+                        <Label htmlFor="characterDescription" className="text-sm font-medium">
+                            キャラクター/人物の説明
+                        </Label>
+                        <p className="text-xs text-muted-foreground mb-2">
+                            登場させたい人物やキャラクターの詳細な説明（外見、服装、ポーズなど）
+                        </p>
+                        <Textarea
+                            id="characterDescription"
+                            rows={4}
+                            value={formData.characterDescription || ""}
+                            onChange={(e) =>
+                                setFormData({ ...formData, characterDescription: e.target.value })
+                            }
+                            placeholder="例：笑顔の若い女性、カジュアルな服装、手を振っているポーズ"
+                            className="resize-none"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            キャラクターの外見や特徴を詳しく記述すると、より意図に近い画像が生成されます
+                        </p>
+                    </div>
+                </CardContent>
+            </Card >
+
+        {/* 生成ボタン */ }
+        < Button
+    type = "submit"
+    size = "lg"
+    className = "w-full text-lg py-8"
+    style = {{ backgroundColor: '#48a772', color: 'white' }
+}
+disabled = { isGenerating }
+    >
+{
+    isGenerating?(
+                    <>
+    <div className="animate-spin mr-2 h-6 w-6 border-3 border-white border-t-transparent rounded-full" />
+                        生成中...
+                    </>
+                ) : (
+    <>
+        <Wand2 className="mr-2 h-6 w-6" />
+        ポスター生成
+    </>
+)}
+            </Button >
+        </form >
+    )
+}
