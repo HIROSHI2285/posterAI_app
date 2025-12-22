@@ -1,76 +1,144 @@
-# PosterAI - AI Poster Generator
+# PosterAI App
 
-AIを活用してプロフェッショナルなポスターを数秒で生成するWebアプリケーション。
+AIを活用したポスター自動生成アプリケーション。Google Gemini APIを使用して、テキストプロンプトから高品質なポスターデザインを生成します。
 
-## ✨ 特徴
+## 主な機能
 
-- **AI画像生成**: Google Cloud Imagen 3を使用した高品質なポスター生成
-- **カスタマイズ可能**: 用途、スタイル、レイアウト、カラーなど多彩なオプション
-- **高速**: 数秒でプロ級のポスターを生成
-- **モダンUI**: Tailwind CSSとshadcn/uiを使用した美しいインターフェース
+- 📝 **テキストプロンプトからポスター生成** - タイトル、説明文から自動でデザイン生成
+- 🎨 **カスタマイズ可能なデザイン設定**
+  - デザイン用途（イベント告知、広告、SNS投稿など）
+  - テイスト選択（モダン、ミニマル、ポップ、エレガントなど）
+  - レイアウト選択（中央揃え、分割レイアウトなど）
+  - カラーパレット（原色12色のプリセット + カスタムカラー）
+- 🖼️ **画像解析機能** - サンプル画像をアップロードして自動でデザイン設定を抽出
+- 📐 **柔軟な出力サイズ** - A3, A4, B4, B5, カスタムサイズ対応
+- 💬 **詳細指示プロンプト** - 人物、背景、季節感などを詳細に指定可能
 
-## 🚀 セットアップ
+## 技術スタック
 
-### 1. 依存関係のインストール
+- **フレームワーク**: Next.js 15 (App Router)
+- **言語**: TypeScript
+- **スタイリング**: Tailwind CSS
+- **UI コンポーネント**: Radix UI
+- **AI API**: Google Gemini API
+  - `gemini-3-pro-image-preview` - 画像生成
+  - `gemini-1.5-flash` - 画像解析
+
+## セットアップ
+
+### 1. リポジトリをクローン
+
+```bash
+git clone https://github.com/HIROSHI2285/posterAI_app.git
+cd posterAI_app/posterai-app
+```
+
+### 2. 依存関係をインストール
 
 ```bash
 npm install
 ```
 
-### 2. Google Cloud Imagen 3の設定
+### 3. 環境変数を設定
 
-**詳しい手順**: [imagen-complete-setup.md](./docs/imagen-complete-setup.md)
-
-#### 必要なもの:
-- Google Cloudアカウント（$300無料トライアルあり）
-- Vertex AI APIの有効化
-- サービスアカウントキー（JSON）
-
-#### 環境変数の設定:
-
-`.env` ファイルを作成して以下を追加:
+`.env.example`をコピーして`.env`ファイルを作成：
 
 ```bash
-# Google Cloud プロジェクトID
-GOOGLE_CLOUD_PROJECT_ID=your-project-id
-
-# Google Cloud リージョン
-GOOGLE_CLOUD_LOCATION=us-central1
-
-# サービスアカウントキーへのパス
-GOOGLE_APPLICATION_CREDENTIALS=./service-account-key.json
+cp .env.example .env
 ```
 
-### 3. 開発サーバーの起動
+`.env`ファイルを編集してAPIキーを設定：
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+**APIキーの取得方法:**
+1. [Google AI Studio](https://aistudio.google.com/app/apikey) にアクセス
+2. 「Create API Key」をクリック
+3. 生成されたAPIキーをコピーして`.env`に貼り付け
+
+### 4. 開発サーバーを起動
 
 ```bash
 npm run dev
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
+ブラウザで [http://localhost:3000](http://localhost:3000) を開きます。
 
-## 📚 ドキュメント
+## 使い方
 
-- [Imagen 3 完全セットアップガイド](./docs/imagen-complete-setup.md) - サービスアカウント作成から設定まで
-- [Imagen 3 概要](./docs/imagen-setup-guide.md) - Imagen 3の機能と料金
+1. **デザイン設定**
+   - 用途、テイスト、レイアウトを選択
+   - メインカラーを選択（カラーパレットまたはカラーピッカー）
 
-## 🏗️ 技術スタック
+2. **テキスト入力**
+   - メインタイトル（必須）
+   - 追加テキスト（任意）
 
-- **フレームワーク**: Next.js 16 (App Router)
-- **スタイリング**: Tailwind CSS 4
-- **UI コンポーネント**: shadcn/ui
-- **AI モデル**: Google Cloud Imagen 3
-- **言語**: TypeScript
+3. **詳細指示（オプション）**
+   - 人物・キャラクターの詳細
+   - 背景、イメージ、季節感
+   - 装飾要素など
 
-## 💰 料金
+4. **サンプル画像（オプション）**
+   - 参考デザインをアップロードすると自動解析
+   - フォーム設定が自動入力されます
 
-- **無料トライアル**: $300 クレジット（約7,500枚の画像生成可能）
-- **1画像あたり**: 約 $0.04 (約5円)
+5. **生成**
+   - 「ポスター生成」ボタンをクリック
+   - 数秒でAIが画像を生成
 
-## 📝 ライセンス
+## プロジェクト構造
 
-MIT License
+```
+posterai-app/
+├── app/
+│   ├── api/
+│   │   ├── analyze-image/      # 画像解析API
+│   │   └── generate-poster/    # ポスター生成API
+│   ├── generate/                # メインページ
+│   └── page.tsx                 # ランディングページ
+├── components/
+│   └── ui/                      # UIコンポーネント
+├── features/
+│   └── poster-generator/
+│       └── components/          # ポスター生成フォーム
+├── types/
+│   └── poster.ts                # 型定義
+└── public/                      # 静的ファイル
+```
 
-## 🤝 貢献
+## ビルド
 
-プルリクエストを歓迎します！
+本番用ビルドを作成：
+
+```bash
+npm run build
+npm start
+```
+
+## 環境変数
+
+| 変数名 | 説明 | 必須 |
+|--------|------|------|
+| `GEMINI_API_KEY` | Google AI Studio APIキー | ✅ |
+
+## セキュリティ
+
+- `.env`ファイルは`.gitignore`に含まれており、Gitリポジトリにコミットされません
+- APIキーなどの機密情報は公開されません
+- `.env.example`には実際の値は含まれていません
+
+## ライセンス
+
+MIT
+
+## 作者
+
+HIROSHI2285
+
+## リンク
+
+- [GitHub Repository](https://github.com/HIROSHI2285/posterAI_app)
+- [Google AI Studio](https://aistudio.google.com/)
