@@ -1,8 +1,28 @@
 # PosterAI App
 
-AIを活用したポスター自動生成アプリケーション。Google Gemini APIを使用して、テキストプロンプトから高品質なポスターデザインを生成します。
+<div align="center">
+  <img src="docs/screenshots/logo.png" alt="PosterAI Logo" width="200"/>
+  
+  <p><strong>AIを活用したポスター自動生成アプリケーション</strong></p>
+  <p>Google Gemini APIを使用して、テキストプロンプトから高品質なポスターデザインを生成します</p>
+</div>
 
-## 主な機能
+---
+
+## ✨ デモ
+
+### 生成されたポスターの例
+
+<div align="center">
+  <img src="docs/screenshots/example-poster-1.jpg" alt="クリスマス抽選会ポスター" width="300"/>
+  <img src="docs/screenshots/example-poster-2.jpg" alt="フリーマーケットポスター" width="300"/>
+  
+  <p><em>わずか数秒でプロフェッショナルなポスターデザインを生成</em></p>
+</div>
+
+---
+
+## 🎯 主な機能
 
 - 📝 **テキストプロンプトからポスター生成** - タイトル、説明文から自動でデザイン生成
 - 🎨 **カスタマイズ可能なデザイン設定**
@@ -11,20 +31,24 @@ AIを活用したポスター自動生成アプリケーション。Google Gemin
   - レイアウト選択（中央揃え、分割レイアウトなど）
   - カラーパレット（原色12色のプリセット + カスタムカラー）
 - 🖼️ **画像解析機能** - サンプル画像をアップロードして自動でデザイン設定を抽出
-- 📐 **柔軟な出力サイズ** - A3, A4, B4, B5, カスタムサイズ対応
+- 📐 **柔軟な出力サイズ** - A3, A4, B4, B5, カスタムサイズ（px/mm切り替え対応）
 - 💬 **詳細指示プロンプト** - 人物、背景、季節感などを詳細に指定可能
+- 🔄 **リセット機能** - ワンクリックでフォームと生成画像をクリア
+- 🔐 **Google認証** - セキュアなログイン機能
 
-## 技術スタック
+## 🛠️ 技術スタック
 
 - **フレームワーク**: Next.js 15 (App Router)
 - **言語**: TypeScript
-- **スタイリング**: Tailwind CSS
-- **UI コンポーネント**: Radix UI
+- **スタイリング**: Tailwind CSS v4
+- **UI コンポーネント**: Radix UI, Lucide React
+- **認証**: NextAuth.js v4
 - **AI API**: Google Gemini API
-  - `gemini-3-pro-image-preview` - 画像生成
-  - `gemini-1.5-flash` - 画像解析
+  - `gemini-3-pro-image-preview` - 画像生成・画像解析
 
-## セットアップ
+---
+
+## 🚀 セットアップ
 
 ### 1. リポジトリをクローン
 
@@ -118,13 +142,20 @@ npm run build
 npm start
 ```
 
-## 環境変数
+## 🔐 環境変数
 
 | 変数名 | 説明 | 必須 |
 |--------|------|------|
 | `GEMINI_API_KEY` | Google AI Studio APIキー | ✅ |
+| `NEXTAUTH_URL` | NextAuthのベースURL（例: `http://localhost:3000`） | ✅ |
+| `NEXTAUTH_SECRET` | NextAuthのシークレットキー | ✅ |
+| `GOOGLE_CLIENT_ID` | Google OAuth クライアントID | ✅ |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth クライアントシークレット | ✅ |
+| `ALLOWED_EMAILS` | ログイン許可するメールアドレス（カンマ区切り） | ✅ |
 
-## セキュリティ
+---
+
+## 🔒 セキュリティ
 
 - `.env`ファイルは`.gitignore`に含まれており、Gitリポジトリにコミットされません
 - APIキーなどの機密情報は公開されません
