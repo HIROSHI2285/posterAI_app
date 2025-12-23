@@ -16,7 +16,7 @@
 
 ### ポスター生成ページ
 <div align="center">
-  <img src="docs/screenshots/generate-page.png" alt="ポスター生成ページ" width="800"/>
+  <img src="docs/screenshots/generate-page-updated.png" alt="ポスター生成ページ" width="800"/>
   <p><em>わずか数秒でプロフェッショナルなポスターデザインを生成</em></p>
 </div>
 
