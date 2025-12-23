@@ -11,12 +11,12 @@
 
 ### ホームページ
 <div align="center">
-  <img src="docs/screenshots/homepage.png" alt="PosterAI ホームページ" width="800"/>
+  <img src="docs/screenshots/homepage.png" alt="PosterAI ホームページ"/>
 </div>
 
 ### ポスター生成ページ
 <div align="center">
-  <img src="docs/screenshots/generate-page-updated.png" alt="ポスター生成ページ" width="800"/>
+  <img src="docs/screenshots/generate-page-updated.png" alt="ポスター生成ページ"/>
   <p><em>わずか数秒でプロフェッショナルなポスターデザインを生成</em></p>
 </div>
 
