@@ -1,13 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Wand2, ArrowLeft } from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
+import { Wand2, ArrowLeft, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PosterForm } from "@/features/poster-generator/components/PosterForm"
 import { PosterPreview } from "@/features/poster-generator/components/PosterPreview"
 import type { PosterFormData } from "@/types/poster"
 
 export default function GeneratePage() {
+    const { data: session } = useSession()
     const [generatedImage, setGeneratedImage] = useState<string>()
     const [isGenerating, setIsGenerating] = useState(false)
     const [currentFormData, setCurrentFormData] = useState<Partial<PosterFormData>>()
@@ -67,8 +69,11 @@ export default function GeneratePage() {
 
             const data = await response.json()
 
+            console.log("API Response:", data);
+
             if (!response.ok) {
-                throw new Error(data.error || "画像生成に失敗しました")
+                console.error("API Error Details:", data);
+                throw new Error(data.details || data.error || "画像生成に失敗しました")
             }
 
             if (data.imageData) {
@@ -96,27 +101,63 @@ export default function GeneratePage() {
         }
     }
 
+    const handleReset = () => {
+        setGeneratedImage(undefined)
+        setCurrentFormData(undefined)
+        // ページをリロードしてフォームを完全にリセット
+        window.location.reload()
+    }
+
     return (
         <div className="min-h-screen bg-green-50">
             {/* ヘッダー */}
             <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
-                <div className="container mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <Button variant="ghost" asChild>
-                            <a href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                                <ArrowLeft className="h-4 w-4" />
-                                トップに戻る
-                            </a>
-                        </Button>
-                        <div className="flex items-center">
-                            <img
-                                src="/posterai-logo.svg"
-                                alt="PosterAI"
-                                className="h-16"
-                                style={{ objectFit: 'contain' }}
-                            />
+                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                    {/* 左側: トップに戻る */}
+                    <Button
+                        variant="ghost"
+                        asChild
+                        className="text-gray-600 hover:text-green-700 hover:bg-green-50/80 font-medium"
+                    >
+                        <a href="/" className="flex items-center gap-2">
+                            <ArrowLeft className="h-4 w-4" />
+                            トップに戻る
+                        </a>
+                    </Button>
+
+                    {/* 中央: ロゴ */}
+                    <div className="flex items-center">
+                        <img
+                            src="/posterai-logo.svg"
+                            alt="PosterAI"
+                            className="h-12"
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </div>
+
+                    {/* 右側: ユーザー情報 + ログアウト */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            {session?.user?.image && (
+                                <img
+                                    src={session.user.image}
+                                    alt={session.user?.name || 'User'}
+                                    className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm"
+                                />
+                            )}
+                            {session?.user?.email && (
+                                <span className="text-gray-700 font-medium max-w-[150px] truncate">
+                                    {session.user.email.split('@')[0]}
+                                </span>
+                            )}
                         </div>
-                        <div className="w-24"></div>
+                        <Button
+                            onClick={() => signOut({ callbackUrl: '/' })}
+                            className="bg-green-500 hover:bg-green-600 text-white font-semibold shadow-md"
+                        >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            ログアウト
+                        </Button>
                     </div>
                 </div>
             </header>
@@ -130,7 +171,11 @@ export default function GeneratePage() {
                             <h2 className="text-xl font-bold text-foreground">画像を生成</h2>
                             <p className="text-sm text-muted-foreground">テンプレートを選んで、テキストを入力すると自動で画像が生成されます</p>
                         </div>
-                        <PosterForm onGenerate={handleGenerate} isGenerating={isGenerating} />
+                        <PosterForm
+                            onGenerate={handleGenerate}
+                            isGenerating={isGenerating}
+                            onReset={handleReset}
+                        />
                     </div>
 
                     {/* 右側：プレビューエリア */}

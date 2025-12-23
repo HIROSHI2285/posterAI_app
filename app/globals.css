@@ -1,109 +1,61 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
 @layer base {
-  :root {
-    --color-background: 0 0% 100%;
-    --color-foreground: 0 0% 9%;
-    --color-card: 0 0% 100%;
-    --color-card-foreground: 0 0% 9%;
-    --color-popover: 0 0% 100%;
-    --color-popover-foreground: 0 0% 9%;
-    /* #48a772 = HSL(149, 38%, 46%) */
-    --color-primary: 149 38% 46%;
-    --color-primary-foreground: 0 0% 100%;
-    --color-secondary: 149 20% 95%;
-    --color-secondary-foreground: 149 38% 20%;
-    --color-muted: 0 0% 96%;
-    --color-muted-foreground: 0 0% 45%;
-    --color-accent: 149 30% 90%;
-    --color-accent-foreground: 149 38% 30%;
-    --color-destructive: 0 84% 60%;
-    --color-destructive-foreground: 0 0% 98%;
-    --color-border: 0 0% 90%;
-    --color-input: 0 0% 90%;
-    --color-ring: 149 38% 46%;
-    --radius: 0.5rem;
-  }
+    :root {
+        --color-background: 0 0% 100%;
+        --color-foreground: 0 0% 9%;
+        --color-card: 0 0% 100%;
+        --color-card-foreground: 0 0% 9%;
+        --color-popover: 0 0% 100%;
+        --color-popover-foreground: 0 0% 9%;
+        --color-primary: 149 38% 46%;
+        --color-primary-foreground: 0 0% 100%;
+        --color-secondary: 149 20% 95%;
+        --color-secondary-foreground: 149 38% 20%;
+        --color-muted: 0 0% 96%;
+        --color-muted-foreground: 0 0% 45%;
+        --color-accent: 149 30% 90%;
+        --color-accent-foreground: 149 38% 30%;
+        --color-destructive: 0 84% 60%;
+        --color-destructive-foreground: 0 0% 98%;
+        --color-border: 0 0% 90%;
+        --color-input: 0 0% 90%;
+        --color-ring: 149 38% 46%;
+        --radius: 0.5rem;
+    }
 
-  .dark {
-    --color-background: 0 0% 9%;
-    --color-foreground: 0 0% 98%;
-    --color-card: 0 0% 12%;
-    --color-card-foreground: 0 0% 98%;
-    --color-popover: 0 0% 12%;
-    --color-popover-foreground: 0 0% 98%;
-    --color-primary: 149 38% 55%;
-    --color-primary-foreground: 0 0% 9%;
-    --color-secondary: 149 20% 20%;
-    --color-secondary-foreground: 0 0% 98%;
-    --color-muted: 0 0% 20%;
-    --color-muted-foreground: 0 0% 65%;
-    --color-accent: 149 30% 25%;
-    --color-accent-foreground: 0 0% 98%;
-    --color-destructive: 0 63% 31%;
-    --color-destructive-foreground: 0 0% 98%;
-    --color-border: 0 0% 20%;
-    --color-input: 0 0% 20%;
-    --color-ring: 149 38% 55%;
-  }
+    .dark {
+        --color-background: 0 0% 9%;
+        --color-foreground: 0 0% 98%;
+        --color-card: 0 0% 12%;
+        --color-card-foreground: 0 0% 98%;
+        --color-popover: 0 0% 12%;
+        --color-popover-foreground: 0 0% 98%;
+        --color-primary: 149 38% 55%;
+        --color-primary-foreground: 0 0% 9%;
+        --color-secondary: 149 20% 20%;
+        --color-secondary-foreground: 0 0% 98%;
+        --color-muted: 0 0% 20%;
+        --color-muted-foreground: 0 0% 65%;
+        --color-accent: 149 30% 25%;
+        --color-accent-foreground: 0 0% 98%;
+        --color-destructive: 0 63% 31%;
+        --color-destructive-foreground: 0 0% 98%;
+        --color-border: 0 0% 20%;
+        --color-input: 0 0% 20%;
+        --color-ring: 149 38% 55%;
+    }
 }
 
 @layer base {
-  body {
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
+    body {
+        font-feature-settings: "rlig" 1, "calt" 1;
+        font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
 }
 
-/* カスタムグラデーション */
-.gradient-primary {
-  background: linear-gradient(135deg, hsl(149 38% 46%) 0%, hsl(149 45% 55%) 100%);
-}
-
-.gradient-accent {
-  background: linear-gradient(135deg, hsl(149 30% 90%) 0%, hsl(149 40% 70%) 100%);
-}
-
-/* グラスモーフィズム効果 */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dark .glass {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* シマーローディング効果 */
-.shimmer {
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.2) 20%,
-      rgba(255, 255, 255, 0.5) 60%,
-      rgba(255, 255, 255, 0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-/* スクロールバーのスタイリング */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--color-muted));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--color-primary));
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(149 38% 40%);
+.hero-bg-pattern {
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
 }

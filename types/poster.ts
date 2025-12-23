@@ -29,6 +29,9 @@ export type LayoutOrientation = 'portrait' | 'landscape'
 // 出力サイズ
 export type OutputSize = 'b5' | 'a4' | 'b4' | 'a3' | 'custom'
 
+// カスタムサイズの単位
+export type CustomSizeUnit = 'px' | 'mm'
+
 // ポスターフォームデータ
 export interface PosterFormData {
     purpose: PosterPurpose
@@ -43,6 +46,7 @@ export interface PosterFormData {
     materials?: File[]
     customWidth?: number
     customHeight?: number
+    customUnit?: CustomSizeUnit
     characterDescription?: string
     detailedPrompt?: string
 }

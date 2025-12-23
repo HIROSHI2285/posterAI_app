@@ -19,6 +19,9 @@ export async function POST(request: NextRequest) {
       sampleImageName,
       materialsData,
       materialsNames,
+      customWidth,
+      customHeight,
+      customUnit,
     } = body;
 
     // バリデーション
@@ -51,13 +54,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const dimensions = sizeConfig[orientation as 'portrait' | 'landscape'];
+    let dimensions = sizeConfig[orientation as 'portrait' | 'landscape'];
+
+    // カスタムサイズの場合、mmをpxに変換（300 DPI: 1mm = 11.811px）
+    if (outputSize === 'custom' && customWidth && customHeight) {
+      const mmToPx = (mm: number) => Math.round(mm * 11.811);
+      dimensions = {
+        width: customUnit === 'mm' ? mmToPx(customWidth) : customWidth,
+        height: customUnit === 'mm' ? mmToPx(customHeight) : customHeight,
+      };
+    }
+
     if (!dimensions) {
       return NextResponse.json(
         { error: "無効な向きです" },
         { status: 400 }
       );
     }
+
+    // アスペクト比を計算
+    const aspectRatio = (dimensions.width / dimensions.height).toFixed(3);
 
     // プロンプトを構築
     const imagePrompt = buildImagePrompt({
@@ -69,6 +85,8 @@ export async function POST(request: NextRequest) {
       subTitle,
       freeText,
       orientation,
+      dimensions,
+      aspectRatio,
       hasSampleImage: !!sampleImageData,
       sampleImageName,
       hasMaterials: !!(materialsData && materialsData.length > 0),
@@ -81,7 +99,7 @@ export async function POST(request: NextRequest) {
       // Google AI SDK初期化
       const genAI = new GoogleGenerativeAI(apiKey);
 
-      // Gemini 3 Pro Image Previewモデルを使用
+      // Gemini 3 Pro Image Preview（画像生成対応）を使用
       const model = genAI.getGenerativeModel({
         model: "gemini-3-pro-image-preview"
       });
@@ -92,20 +110,55 @@ export async function POST(request: NextRequest) {
 
       console.log("API Response:", response);
 
+      // finishReasonをチェック
+      const candidate = response.candidates?.[0];
+      const finishReason = candidate?.finishReason;
+
+      console.log("Finish Reason:", finishReason);
+
+      // エラーチェック
+      if (finishReason === 'SAFETY' || finishReason === 'RECITATION') {
+        return NextResponse.json(
+          {
+            error: "コンテンツポリシー違反",
+            details: "生成されたコンテンツが安全性またはポリシーの基準を満たしていません。プロンプトを変更してください。",
+            finishReason
+          },
+          { status: 400 }
+        );
+      }
+
+      if (finishReason === 'OTHER' || !candidate?.content?.parts) {
+        console.error("画像生成失敗 - content.parts が存在しません");
+        console.error("Candidate content:", JSON.stringify(candidate?.content, null, 2));
+        return NextResponse.json(
+          {
+            error: "画像生成に失敗しました",
+            details: "APIが画像を生成できませんでした。プロンプトを変更するか、しばらく時間をおいて再試行してください。",
+            finishReason: finishReason || "UNKNOWN"
+          },
+          { status: 500 }
+        );
+      }
+
       // レスポンスから画像データを取得
       let imageData: string | null = null;
 
       if (response.candidates && response.candidates[0]) {
-        for (const part of response.candidates[0].content.parts) {
-          // @ts-ignore
-          if (part.inlineData) {
+        const parts = response.candidates[0].content.parts;
+
+        if (Array.isArray(parts)) {
+          for (const part of parts) {
             // @ts-ignore
-            const base64Image = part.inlineData.data;
-            // @ts-ignore
-            const mimeType = part.inlineData.mimeType || "image/png";
-            imageData = `data:${mimeType};base64,${base64Image}`;
-            console.log("画像生成成功:", mimeType);
-            break;
+            if (part.inlineData) {
+              // @ts-ignore
+              const base64Image = part.inlineData.data;
+              // @ts-ignore
+              const mimeType = part.inlineData.mimeType || "image/png";
+              imageData = `data:${mimeType};base64,${base64Image}`;
+              console.log("画像生成成功:", mimeType);
+              break;
+            }
           }
         }
       }
@@ -119,12 +172,14 @@ export async function POST(request: NextRequest) {
         success: true,
         imageData: imageData,
         formData: body,
-        message: "Gemini 3 Pro Image Previewで画像を生成しました",
+        message: "Gemini 3 Pro Image Preview で画像を生成しました",
       });
 
     } catch (apiError: any) {
       console.error("API エラー:", apiError);
       console.error("エラー詳細:", apiError.message);
+      console.error("エラータイプ:", typeof apiError);
+      console.error("エラー全体:", JSON.stringify(apiError, null, 2));
 
       if (apiError.stack) {
         console.error("スタック:", apiError.stack);
@@ -134,7 +189,8 @@ export async function POST(request: NextRequest) {
         {
           error: "画像生成に失敗しました",
           details: apiError.message || "不明なエラー",
-          hint: "Google AI StudioでAPIキーが有効か確認してください"
+          errorType: typeof apiError,
+          hint: "モデル名またはAPIキーを確認してください"
         },
         { status: 500 }
       );
@@ -164,6 +220,8 @@ function buildImagePrompt(params: {
   subTitle?: string;
   freeText?: string;
   orientation: string;
+  dimensions: { width: number; height: number };
+  aspectRatio: string;
   hasSampleImage?: boolean;
   sampleImageName?: string;
   hasMaterials?: boolean;
@@ -178,51 +236,50 @@ function buildImagePrompt(params: {
     subTitle,
     freeText,
     orientation,
+    dimensions,
+    aspectRatio,
     hasSampleImage,
     sampleImageName,
     hasMaterials,
     materialsCount,
   } = params;
 
-  const aspectRatio = orientation === 'landscape' ? 'horizontal (16:9)' : 'vertical (9:16)';
+  const dimensionsText = orientation === 'landscape'
+    ? 'landscape orientation (wider than tall)'
+    : 'portrait orientation (taller than wide)';
 
-  let prompt = `Create a professional ${taste} style poster design for ${purpose}.
+  let prompt = `プロフェッショナルなポスターデザインを作成してください。
 
-Design specifications:
-- Main title: "${mainTitle}"`;
+サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
+タイトル: 「${mainTitle}」`;
 
   if (subTitle) {
-    prompt += `\n- Subtitle: "${subTitle}"`;
+    prompt += `\nサブタイトル: 「${subTitle}」`;
   }
 
   if (freeText) {
-    prompt += `\n- Additional information: "${freeText}"`;
+    prompt += `\n追加テキスト: 「${freeText}」`;
   }
 
   prompt += `
-- Color scheme: Based on ${mainColor}, create a harmonious and eye-catching palette
-- Layout: ${layout} composition  
-- Style: ${taste}, professional, high quality, magazine-quality
-- Orientation: ${aspectRatio}`;
+配色: ${mainColor}
+スタイル: ${taste}
+レイアウト: ${layout}`;
 
-  // サンプル画像の参照情報を追加
+  // サンプル画像参照を追加（日本語版）
   if (hasSampleImage) {
-    prompt += `\n- Reference: User has provided a sample image (${sampleImageName || 'sample'}) as design inspiration. Consider incorporating similar visual elements, layout, or style while maintaining originality.`;
+    prompt += `\n\n【重要】デザイン参考画像について:
+アップロードされたサンプル画像が目指すべきビジュアルスタイルを示しています。以下の要素を注意深く分析し、忠実に再現してください:
+- 配色とカラーパレット（メインカラー、アクセントカラー、背景色）
+- 文字のスタイル（フォント、サイズ、配置、装飾要素）
+- レイアウト構成（セクション分け、余白、コンテンツブロック、整列）
+- ビジュアル要素（グラフィック、イラスト、アイコン、パターン、装飾）
+- 全体の雰囲気とムード（お祭り的、プロフェッショナル、ポップ、エレガントなど）
+
+これらのデザイン特性を忠実に再現しながら、指定されたタイトルとテキストを組み込んでください。`;
   }
 
-  // 素材画像の参照情報を追加
-  if (hasMaterials && materialsCount && materialsCount > 0) {
-    prompt += `\n- Materials: User has provided ${materialsCount} image material(s) to potentially incorporate into the design. Consider how these materials might enhance the final poster.`;
-  }
-
-  prompt += `
-- Include decorative graphics, patterns, or illustrations that complement the theme
-- Typography: Bold, clear, readable Japanese and English text
-- Overall aesthetic: Modern, polished, visually striking
-- Make the text prominent and easy to read
-- High resolution, print-ready quality
-
-Create a complete, finished poster design that is ready to use.`;
+  prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。余白なしでエッジまでデザインを広げてください。`;
 
   return prompt;
 }

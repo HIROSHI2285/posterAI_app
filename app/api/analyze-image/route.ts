@@ -30,14 +30,25 @@ export async function POST(request: NextRequest) {
             // Google AI SDK初期化
             const genAI = new GoogleGenerativeAI(apiKey);
 
-            // Gemini Pro Visionモデルを使用
+            // Gemini 3 Pro Image Preview（画像生成と同じモデル）を使用
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash"
+                model: "gemini-3-pro-image-preview"
             });
 
             // Base64データをパーツに変換
+            console.log("=== 画像データ解析開始 ===");
+            console.log("画像データ長:", imageData.length);
+            console.log("画像データプレフィックス:", imageData.substring(0, 50));
+
             const base64Data = imageData.split(',')[1];
             const mimeType = imageData.split(',')[0].split(':')[1].split(';')[0];
+
+            console.log("MIME Type:", mimeType);
+            console.log("Base64データ長:", base64Data?.length);
+
+            if (!base64Data) {
+                throw new Error("Base64データの抽出に失敗しました");
+            }
 
             const imageParts = [
                 {
@@ -98,11 +109,15 @@ export async function POST(request: NextRequest) {
             });
 
         } catch (apiError: any) {
-            console.error("API エラー:", apiError);
+            console.error("=== API エラー詳細 ===");
+            console.error("エラーメッセージ:", apiError.message);
+            console.error("エラースタック:", apiError.stack);
+            console.error("エラーオブジェクト全体:", JSON.stringify(apiError, null, 2));
             return NextResponse.json(
                 {
                     error: "画像解析に失敗しました",
-                    details: apiError.message || "不明なエラー"
+                    details: apiError.message || "不明なエラー",
+                    errorType: apiError.constructor.name
                 },
                 { status: 500 }
             );

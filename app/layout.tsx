@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,8 +16,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "PosterAI - AI Poster Generator",
-  description: "Create professional event posters, in-store displays, and social media thumbnails with AI in seconds.",
+  title: "PosterAI - AI搭載ポスター生成ツール",
+  description: "Google Gemini AIを使用してプロ品質のポスターを自動生成",
   keywords: ["AI", "poster", "generator", "design", "event", "social media"],
   authors: [{ name: "PosterAI" }],
   openGraph: {
@@ -37,7 +38,9 @@ export default function RootLayout({
         className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

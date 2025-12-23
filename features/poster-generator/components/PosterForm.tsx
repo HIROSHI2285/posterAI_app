@@ -19,6 +19,7 @@ import { Wand2, Upload, FileImage, X } from "lucide-react"
 interface PosterFormProps {
     onGenerate?: (formData: Partial<PosterFormData>) => void
     isGenerating?: boolean
+    onReset?: () => void
 }
 
 const CHAR_LIMITS = {
@@ -26,7 +27,7 @@ const CHAR_LIMITS = {
     freeText: 500,
 }
 
-export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps) {
+export function PosterForm({ onGenerate, isGenerating = false, onReset }: PosterFormProps) {
     const [formData, setFormData] = useState<Partial<PosterFormData>>({
         purpose: "event-ad",
         outputSize: "a4",
@@ -36,6 +37,7 @@ export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps
         mainColor: "#5d48a8",
         customWidth: 1920,
         customHeight: 1080,
+        customUnit: "px",
     })
 
     const [errors, setErrors] = useState<{
@@ -44,6 +46,10 @@ export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps
     }>({})
 
     const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+    // mm to px conversion at 300 DPI: 1mm = 11.811 pixels
+    const mmToPx = (mm: number): number => Math.round(mm * 11.811)
+    const pxToMm = (px: number): number => Math.round(px / 11.811)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -330,34 +336,95 @@ export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps
                     </div>
 
                     {formData.outputSize === 'custom' && (
-                        <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-gray-300">
-                            <Label className="text-sm font-medium">カスタムサイズ（ピクセル）</Label>
+                        <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-gray-300">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-sm font-medium">カスタムサイズ</Label>
+                                <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-300">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            // Convert current values to px if switching from mm
+                                            if (formData.customUnit === 'mm') {
+                                                setFormData({
+                                                    ...formData,
+                                                    customUnit: 'px',
+                                                    customWidth: mmToPx(formData.customWidth || 163),
+                                                    customHeight: mmToPx(formData.customHeight || 91)
+                                                })
+                                            } else {
+                                                setFormData({ ...formData, customUnit: 'px' })
+                                            }
+                                        }}
+                                        className={`px-3 py-1 text-xs font-medium rounded transition-all ${formData.customUnit === 'px' || !formData.customUnit
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                            }`}
+                                    >
+                                        ピクセル (px)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            // Convert current values to mm if switching from px
+                                            if (formData.customUnit === 'px' || !formData.customUnit) {
+                                                setFormData({
+                                                    ...formData,
+                                                    customUnit: 'mm',
+                                                    customWidth: pxToMm(formData.customWidth || 1920),
+                                                    customHeight: pxToMm(formData.customHeight || 1080)
+                                                })
+                                            } else {
+                                                setFormData({ ...formData, customUnit: 'mm' })
+                                            }
+                                        }}
+                                        className={`px-3 py-1 text-xs font-medium rounded transition-all ${formData.customUnit === 'mm'
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                            }`}
+                                    >
+                                        ミリメートル (mm)
+                                    </button>
+                                </div>
+                            </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                    <Label htmlFor="customWidth" className="text-xs">幅</Label>
+                                    <Label htmlFor="customWidth" className="text-xs">
+                                        幅 {formData.customUnit === 'mm' ? '(mm)' : '(px)'}
+                                    </Label>
                                     <Input
                                         id="customWidth"
                                         type="number"
-                                        min="100"
-                                        max="8192"
-                                        value={formData.customWidth || 1920}
+                                        min={formData.customUnit === 'mm' ? 10 : 100}
+                                        max={formData.customUnit === 'mm' ? 693 : 8192}
+                                        value={formData.customWidth || (formData.customUnit === 'mm' ? 163 : 1920)}
                                         onChange={(e) => setFormData({ ...formData, customWidth: parseInt(e.target.value) })}
                                         className="text-center border-gray-300"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label htmlFor="customHeight" className="text-xs">高さ</Label>
+                                    <Label htmlFor="customHeight" className="text-xs">
+                                        高さ {formData.customUnit === 'mm' ? '(mm)' : '(px)'}
+                                    </Label>
                                     <Input
                                         id="customHeight"
                                         type="number"
-                                        min="100"
-                                        max="8192"
-                                        value={formData.customHeight || 1080}
+                                        min={formData.customUnit === 'mm' ? 10 : 100}
+                                        max={formData.customUnit === 'mm' ? 693 : 8192}
+                                        value={formData.customHeight || (formData.customUnit === 'mm' ? 91 : 1080)}
                                         onChange={(e) => setFormData({ ...formData, customHeight: parseInt(e.target.value) })}
                                         className="text-center border-gray-300"
                                     />
                                 </div>
                             </div>
+                            {/* Reference conversion display */}
+                            {formData.customWidth && formData.customHeight && (
+                                <p className="text-xs text-muted-foreground text-center">
+                                    {formData.customUnit === 'mm'
+                                        ? `≈ ${mmToPx(formData.customWidth)} × ${mmToPx(formData.customHeight)} px (300 DPI)`
+                                        : `≈ ${pxToMm(formData.customWidth)} × ${pxToMm(formData.customHeight)} mm (300 DPI)`
+                                    }
+                                </p>
+                            )}
                         </div>
                     )}
                 </CardContent>
@@ -391,36 +458,54 @@ export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps
                                         try {
                                             const reader = new FileReader()
                                             reader.onload = async (event) => {
-                                                const imageData = event.target?.result as string
+                                                try {
+                                                    const imageData = event.target?.result as string
 
-                                                const response = await fetch('/api/analyze-image', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ imageData })
-                                                })
+                                                    const response = await fetch('/api/analyze-image', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ imageData })
+                                                    })
 
-                                                if (response.ok) {
-                                                    const data = await response.json()
-                                                    if (data.success && data.analysis) {
-                                                        // フォームを自動入力
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            mainColor: data.analysis.mainColor || prev.mainColor,
-                                                            taste: data.analysis.taste || prev.taste,
-                                                            layout: data.analysis.layout || prev.layout,
-                                                            mainTitle: data.analysis.mainTitle || prev.mainTitle,
-                                                            purpose: data.analysis.purpose || prev.purpose,
-                                                        }))
-                                                        alert('画像を解析して設定を自動入力しました！\n微調整してから生成してください。')
+                                                    if (response.ok) {
+                                                        const data = await response.json()
+                                                        if (data.success && data.analysis) {
+                                                            // フォームを自動入力
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                mainColor: data.analysis.mainColor || prev.mainColor,
+                                                                taste: data.analysis.taste || prev.taste,
+                                                                layout: data.analysis.layout || prev.layout,
+                                                                mainTitle: prev.mainTitle || data.analysis.mainTitle, // ユーザー入力を優先
+                                                                purpose: data.analysis.purpose || prev.purpose,
+                                                            }))
+                                                            alert('画像を解析して設定を自動入力しました！\n微調整してから生成してください。')
+                                                        } else {
+                                                            console.error('画像解析エラー: データ形式が不正です', data)
+                                                            alert('画像解析に失敗しました。\n画像は保持されますが、自動入力は行われませんでした。')
+                                                        }
+                                                    } else {
+                                                        // エラーレスポンスの詳細を取得
+                                                        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+                                                        console.error('画像解析エラー:', response.status, errorData)
+                                                        alert(`画像解析に失敗しました (${response.status})\n${errorData.error || errorData.details || '不明なエラー'}\n\n画像は保持されますが、自動入力は行われませんでした。`)
                                                     }
-                                                } else {
-                                                    console.error('画像解析エラー')
+                                                } catch (error) {
+                                                    console.error('画像解析処理エラー:', error)
+                                                    alert('画像解析中にエラーが発生しました。\n画像は保持されますが、自動入力は行われませんでした。')
+                                                } finally {
+                                                    setIsAnalyzing(false)
                                                 }
+                                            }
+                                            reader.onerror = () => {
+                                                console.error('ファイル読み込みエラー')
+                                                alert('画像ファイルの読み込みに失敗しました。')
                                                 setIsAnalyzing(false)
                                             }
                                             reader.readAsDataURL(file)
                                         } catch (error) {
                                             console.error('解析エラー:', error)
+                                            alert('画像解析の初期化に失敗しました。')
                                             setIsAnalyzing(false)
                                         }
                                     }
@@ -459,17 +544,16 @@ export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps
                 </CardContent>
             </Card>
 
-            {/* 生成ボタン */}
-            < Button
-                type="submit"
-                size="lg"
-                className="w-full text-lg py-8"
-                style={{ backgroundColor: '#48a772', color: 'white' }
-                }
-                disabled={isGenerating}
-            >
-                {
-                    isGenerating ? (
+            {/* ボタン */}
+            <div className="flex gap-3">
+                <Button
+                    type="submit"
+                    size="lg"
+                    className="flex-[2] text-lg py-8"
+                    style={{ backgroundColor: '#48a772', color: 'white' }}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? (
                         <>
                             <div className="animate-spin mr-2 h-6 w-6 border-3 border-white border-t-transparent rounded-full" />
                             生成中...
@@ -480,7 +564,19 @@ export function PosterForm({ onGenerate, isGenerating = false }: PosterFormProps
                             ポスター生成
                         </>
                     )}
-            </Button >
-        </form >
+                </Button>
+                <Button
+                    type="button"
+                    size="lg"
+                    variant="outline"
+                    className="flex-1 text-lg py-8 border-2"
+                    onClick={onReset}
+                    disabled={isGenerating}
+                >
+                    <X className="mr-2 h-6 w-6" />
+                    リセット
+                </Button>
+            </div>
+        </form>
     )
 }

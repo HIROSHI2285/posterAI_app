@@ -9,7 +9,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 export async function generateImage(prompt: string): Promise<string> {
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-3-pro-image-preview"
+            model: "imagen-3.0-generate-002"
         });
 
         const result = await model.generateContent([prompt]);
