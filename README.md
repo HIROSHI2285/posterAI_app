@@ -1,17 +1,28 @@
 # PosterAI App
 
 <div align="center">
-  <img src="docs/screenshots/logo.png" alt="PosterAI Logo" width="200"/>
-  
-  <p><strong>AIを活用したポスター自動生成アプリケーション</strong></p>
+  <h3>🎨 AIを活用したポスター自動生成アプリケーション</h3>
   <p>Google Gemini APIを使用して、テキストプロンプトから高品質なポスターデザインを生成します</p>
 </div>
 
 ---
 
-## ✨ デモ
+## 📸 スクリーンショット
 
-### 生成されたポスターの例
+### ホームページ
+<div align="center">
+  <img src="docs/screenshots/homepage.png" alt="PosterAI ホームページ" width="800"/>
+</div>
+
+### ポスター生成ページ
+<div align="center">
+  <img src="docs/screenshots/generate-page.png" alt="ポスター生成ページ" width="800"/>
+  <p><em>わずか数秒でプロフェッショナルなポスターデザインを生成</em></p>
+</div>
+
+---
+
+## ✨ 生成例
 
 <div align="center">
   <img src="docs/screenshots/example-poster-1.jpg" alt="クリスマス抽選会ポスター" width="300"/>
