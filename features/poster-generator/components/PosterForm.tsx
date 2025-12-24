@@ -470,13 +470,11 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                                     if (response.ok) {
                                                         const data = await response.json()
                                                         if (data.success && data.analysis) {
-                                                            // 基本情報をフォームに自動入力
+                                                            // mainColorのみフォームに自動入力（HEX形式）
+                                                            // taste, layout, purposeは自由テキストなのでdetailedPromptに含める
                                                             setFormData(prev => ({
                                                                 ...prev,
                                                                 mainColor: data.analysis.basicInfo?.mainColor || prev.mainColor,
-                                                                taste: data.analysis.basicInfo?.taste || prev.taste,
-                                                                layout: data.analysis.basicInfo?.layout || prev.layout,
-                                                                purpose: data.analysis.basicInfo?.purpose || prev.purpose,
                                                                 // メインタイトル: ユーザー入力がある場合はそれを優先
                                                                 mainTitle: prev.mainTitle || data.analysis.basicInfo?.mainTitle || prev.mainTitle,
                                                                 // 詳細説明を詳細指示フィールドに追加

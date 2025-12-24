@@ -27,6 +27,7 @@ export async function generatePosterAsync(
             mainTitle,
             subTitle,
             freeText,
+            detailedPrompt,
             sampleImageData,
             sampleImageName,
             materialsData,
@@ -35,6 +36,11 @@ export async function generatePosterAsync(
             customHeight,
             customUnit,
         } = formData
+
+        // detailedPromptとfreeTextを結合
+        const combinedFreeText = [freeText, detailedPrompt]
+            .filter(Boolean)
+            .join('\n\n') || freeText
 
         // APIキーの取得
         const apiKey = process.env.GEMINI_API_KEY
@@ -76,7 +82,7 @@ export async function generatePosterAsync(
             mainColor,
             mainTitle,
             subTitle,
-            freeText,
+            freeText: combinedFreeText,
             orientation,
             dimensions,
             aspectRatio,

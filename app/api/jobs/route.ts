@@ -49,6 +49,9 @@ export async function POST(request: Request) {
                 message: issue.message
             }))
 
+            console.error('❌ バリデーションエラー:', JSON.stringify(errorDetails, null, 2))
+            console.error('受信データ:', JSON.stringify(body, null, 2))
+
             return NextResponse.json(
                 {
                     error: '入力データが不正です',

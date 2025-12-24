@@ -60,18 +60,11 @@ export default function GeneratePage() {
                 });
             };
 
-            // detailedPromptとfreeTextを結合
-            const combinedFreeText = [
-                formData.freeText,
-                formData.detailedPrompt
-            ].filter(Boolean).join('\n\n');
-
             // リクエストデータを準備
             const requestData: any = {
                 ...formData,
-                freeText: combinedFreeText || formData.freeText,
             };
-            delete requestData.detailedPrompt;
+            // detailedPromptはそのまま送信（バックエンドで処理）
 
             // サンプル画像の処理
             if (formData.sampleImage) {
