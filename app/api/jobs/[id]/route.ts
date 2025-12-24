@@ -14,7 +14,7 @@ export async function GET(
     try {
         // 認証チェック
         const session = await getServerSession(authOptions)
-        if (!session) {
+        if (!session || !session.user?.id) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
@@ -30,6 +30,14 @@ export async function GET(
             return NextResponse.json(
                 { error: 'Job not found' },
                 { status: 404 }
+            )
+        }
+
+        // ユーザー所有権チェック
+        if (job.userId !== session.user.id) {
+            return NextResponse.json(
+                { error: 'Forbidden: You do not have access to this job' },
+                { status: 403 }
             )
         }
 

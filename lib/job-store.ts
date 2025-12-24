@@ -5,6 +5,7 @@
 
 export interface PosterJob {
     id: string
+    userId: string // ユーザーID（所有者）
     status: 'pending' | 'processing' | 'completed' | 'failed'
     progress: number // 0-100
     imageUrl?: string
@@ -19,9 +20,10 @@ class JobStore {
     /**
      * 新しいジョブを作成
      */
-    create(id: string): PosterJob {
+    create(id: string, userId: string): PosterJob {
         const job: PosterJob = {
             id,
+            userId,
             status: 'pending',
             progress: 0,
             createdAt: Date.now(),

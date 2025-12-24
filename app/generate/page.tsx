@@ -102,11 +102,22 @@ export default function GeneratePage() {
 
             if (!createResponse.ok) {
                 const errorData = await createResponse.json()
+
+                // レート制限エラーの特別処理
+                if (createResponse.status === 429) {
+                    throw new Error(errorData.message || errorData.error || "本日の生成回数上限に達しました")
+                }
+
                 throw new Error(errorData.error || "ジョブ作成に失敗しました")
             }
 
-            const { jobId } = await createResponse.json()
-            console.log("Job created:", jobId)
+            const { jobId, remaining, resetAt } = await createResponse.json()
+            console.log(`Job created: ${jobId} (${remaining} remaining today)`)
+
+            // 残り回数が少ない場合は警告表示
+            if (remaining !== undefined && remaining < 10) {
+                console.warn(`⚠️ 残り生成回数: ${remaining}回`)
+            }
 
             // 2. ポーリングで完了を待つ
             const imageUrl = await pollJobStatus(jobId)

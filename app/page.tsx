@@ -139,7 +139,7 @@ export default function HomePage() {
                 <div className="bg-white rounded-lg overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 border-4 border-white/50">
                   <img
                     src="/hero-poster-2.jpg"
-                    alt="フリーマーケットポスター"
+                    alt="熱くなれ日本！熱×祭キャンペーンポスター"
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
                 </div>
@@ -151,7 +151,7 @@ export default function HomePage() {
                 <div className="bg-white rounded-lg overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 border-4 border-white/50">
                   <img
                     src="/hero-poster-3.jpg"
-                    alt="熱くなれ日本！夏祭りポスター"
+                    alt="××××スクエア グランドオープンポスター"
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
                 </div>
@@ -160,7 +160,7 @@ export default function HomePage() {
                 <div className="bg-white rounded-lg overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300 border-4 border-white/50">
                   <img
                     src="/hero-poster-4.jpg"
-                    alt="スペシャルトークショーポスター"
+                    alt="マウンテンズレストランポスター"
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
                 </div>
