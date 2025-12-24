@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Wand2, ArrowLeft, LogOut } from "lucide-react"
+import { ArrowLeft, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PosterForm } from "@/features/poster-generator/components/PosterForm"
 import { PosterPreview } from "@/features/poster-generator/components/PosterPreview"
@@ -13,13 +13,43 @@ export default function GeneratePage() {
     const [generatedImage, setGeneratedImage] = useState<string>()
     const [isGenerating, setIsGenerating] = useState(false)
     const [currentFormData, setCurrentFormData] = useState<Partial<PosterFormData>>()
+    const [progress, setProgress] = useState(0)
+
+    /**
+     * ジョブのステータスをポーリング
+     */
+    const pollJobStatus = async (jobId: string): Promise<string> => {
+        while (true) {
+            const res = await fetch(`/api/jobs/${jobId}`)
+
+            if (!res.ok) {
+                throw new Error("ジョブステータスの取得に失敗しました")
+            }
+
+            const job = await res.json()
+
+            // プログレス更新
+            setProgress(job.progress)
+
+            if (job.status === 'completed') {
+                return job.imageUrl
+            }
+
+            if (job.status === 'failed') {
+                throw new Error(job.error || "生成に失敗しました")
+            }
+
+            // 2秒待機
+            await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+    }
 
     const handleGenerate = async (formData: Partial<PosterFormData>) => {
         setIsGenerating(true)
+        setProgress(0)
         setCurrentFormData(formData)
 
         try {
-
             // ファイルをbase64に変換する関数
             const fileToBase64 = (file: File): Promise<string> => {
                 return new Promise((resolve, reject) => {
@@ -30,13 +60,13 @@ export default function GeneratePage() {
                 });
             };
 
-            // detailedPromptとfreeTextを結合（フロントエンドで処理）
+            // detailedPromptとfreeTextを結合
             const combinedFreeText = [
                 formData.freeText,
                 formData.detailedPrompt
             ].filter(Boolean).join('\n\n');
 
-            // フォームデータを準備（ファイルをbase64に変換）
+            // リクエストデータを準備
             const requestData: any = {
                 ...formData,
                 freeText: combinedFreeText || formData.freeText,
@@ -47,7 +77,7 @@ export default function GeneratePage() {
             if (formData.sampleImage) {
                 requestData.sampleImageData = await fileToBase64(formData.sampleImage);
                 requestData.sampleImageName = formData.sampleImage.name;
-                delete requestData.sampleImage; // File オブジェクトを削除
+                delete requestData.sampleImage;
             }
 
             // 素材画像の処理
@@ -56,10 +86,13 @@ export default function GeneratePage() {
                     formData.materials.map(file => fileToBase64(file))
                 );
                 requestData.materialsNames = formData.materials.map(file => file.name);
-                delete requestData.materials; // File オブジェクトを削除
+                delete requestData.materials;
             }
 
-            const response = await fetch("/api/generate-poster", {
+            console.log("API Request:", requestData)
+
+            // 1. ジョブ作成
+            const createResponse = await fetch("/api/jobs", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -67,31 +100,28 @@ export default function GeneratePage() {
                 body: JSON.stringify(requestData),
             })
 
-            const data = await response.json()
-
-            console.log("API Response:", data);
-
-            if (!response.ok) {
-                console.error("API Error Details:", data);
-                throw new Error(data.details || data.error || "画像生成に失敗しました")
+            if (!createResponse.ok) {
+                const errorData = await createResponse.json()
+                throw new Error(errorData.error || "ジョブ作成に失敗しました")
             }
 
-            if (data.imageData) {
-                setGeneratedImage(data.imageData);
-                console.log("生成成功:", data.message);
-                if (data.textResponse) {
-                    console.log("AIの説明:", data.textResponse);
-                }
-            } else {
-                throw new Error("画像データが取得できませんでした");
-            }
+            const { jobId } = await createResponse.json()
+            console.log("Job created:", jobId)
+
+            // 2. ポーリングで完了を待つ
+            const imageUrl = await pollJobStatus(jobId)
+
+            // 3. 画像を表示
+            setGeneratedImage(imageUrl)
+            console.log("生成完了")
 
         } catch (error) {
             console.error("生成エラー:", error)
-            const errorMessage = error instanceof Error ? error.message : "エラーが発生しました";
-            alert(`画像生成エラー: ${errorMessage}\n\nGEMINI_API_KEYが.envファイルに設定されているか確認してください。`);
+            const errorMessage = error instanceof Error ? error.message : "エラーが発生しました"
+            alert(`画像生成エラー: ${errorMessage}\n\nGEMINI_API_KEYが.envファイルに設定されているか確認してください。`)
         } finally {
             setIsGenerating(false)
+            setProgress(100)
         }
     }
 
@@ -104,6 +134,7 @@ export default function GeneratePage() {
     const handleReset = () => {
         setGeneratedImage(undefined)
         setCurrentFormData(undefined)
+        setProgress(0)
         // ページをリロードしてフォームを完全にリセット
         window.location.reload()
     }
@@ -111,53 +142,57 @@ export default function GeneratePage() {
     return (
         <div className="min-h-screen bg-green-50">
             {/* ヘッダー */}
-            <header className="border-b bg-white sticky top-0 z-50 shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    {/* 左側: トップに戻る */}
-                    <Button
-                        variant="ghost"
-                        asChild
-                        className="text-gray-600 hover:text-green-700 hover:bg-green-50/80 font-medium"
-                    >
-                        <a href="/" className="flex items-center gap-2">
-                            <ArrowLeft className="h-4 w-4" />
-                            トップに戻る
-                        </a>
-                    </Button>
+            <header className="sticky top-0 z-50 bg-white border-b">
+                <div className="container mx-auto px-6 py-4">
+                    <div className="flex items-center justify-between">
+                        {/* 左側：ロゴとナビゲーション */}
+                        <div className="flex items-center gap-6">
+                            {/* TOPに戻るボタン */}
+                            <Button
+                                variant="ghost"
+                                onClick={() => window.location.href = '/'}
+                                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                トップに戻る
+                            </Button>
 
-                    {/* 中央: ロゴ */}
-                    <div className="flex items-center">
-                        <img
-                            src="/posterai-logo.svg"
-                            alt="PosterAI"
-                            className="h-12"
-                            style={{ objectFit: 'contain' }}
-                        />
-                    </div>
-
-                    {/* 右側: ユーザー情報 + ログアウト */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            {session?.user?.image && (
+                            {/* ロゴ */}
+                            <div className="flex items-center gap-2">
                                 <img
-                                    src={session.user.image}
-                                    alt={session.user?.name || 'User'}
-                                    className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm"
+                                    src="/posterai-logo.svg"
+                                    alt="PosterAI"
+                                    className="h-12"
+                                    style={{ objectFit: 'contain' }}
                                 />
-                            )}
-                            {session?.user?.email && (
-                                <span className="text-gray-700 font-medium max-w-[150px] truncate">
-                                    {session.user.email.split('@')[0]}
-                                </span>
-                            )}
+                            </div>
                         </div>
-                        <Button
-                            onClick={() => signOut({ callbackUrl: '/' })}
-                            className="bg-green-500 hover:bg-green-600 text-white font-semibold shadow-md"
-                        >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            ログアウト
-                        </Button>
+
+                        {/* 右側：ユーザー情報 */}
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                {session?.user?.image && (
+                                    <img
+                                        src={session.user.image}
+                                        alt={session.user?.name || 'User'}
+                                        className="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm"
+                                    />
+                                )}
+                                {session?.user?.email && (
+                                    <span className="text-foreground font-medium max-w-[150px] truncate">
+                                        {session.user.email.split('@')[0]}
+                                    </span>
+                                )}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                onClick={() => signOut({ callbackUrl: '/' })}
+                                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                ログアウト
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </header>

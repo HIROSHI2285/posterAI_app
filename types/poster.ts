@@ -41,9 +41,14 @@ export interface PosterFormData {
     layout: PosterLayout
     mainColor: string
     mainTitle: string
+    subTitle?: string
     freeText?: string
     sampleImage?: File | null
+    sampleImageData?: string
+    sampleImageName?: string
     materials?: File[]
+    materialsData?: string[]
+    materialsNames?: string[]
     customWidth?: number
     customHeight?: number
     customUnit?: CustomSizeUnit

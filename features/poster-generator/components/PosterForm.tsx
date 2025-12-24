@@ -470,16 +470,19 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                                     if (response.ok) {
                                                         const data = await response.json()
                                                         if (data.success && data.analysis) {
-                                                            // フォームを自動入力
+                                                            // 基本情報をフォームに自動入力
                                                             setFormData(prev => ({
                                                                 ...prev,
-                                                                mainColor: data.analysis.mainColor || prev.mainColor,
-                                                                taste: data.analysis.taste || prev.taste,
-                                                                layout: data.analysis.layout || prev.layout,
-                                                                mainTitle: prev.mainTitle || data.analysis.mainTitle, // ユーザー入力を優先
-                                                                purpose: data.analysis.purpose || prev.purpose,
+                                                                mainColor: data.analysis.basicInfo?.mainColor || prev.mainColor,
+                                                                taste: data.analysis.basicInfo?.taste || prev.taste,
+                                                                layout: data.analysis.basicInfo?.layout || prev.layout,
+                                                                purpose: data.analysis.basicInfo?.purpose || prev.purpose,
+                                                                // メインタイトル: ユーザー入力がある場合はそれを優先
+                                                                mainTitle: prev.mainTitle || data.analysis.basicInfo?.mainTitle || prev.mainTitle,
+                                                                // 詳細説明を詳細指示フィールドに追加
+                                                                detailedPrompt: data.analysis.detailedDescription || prev.detailedPrompt
                                                             }))
-                                                            alert('画像を解析して設定を自動入力しました！\n微調整してから生成してください。')
+                                                            alert('✨ デザイン要素を抽出しました！\n\n詳細指示フィールドに構成要素が記載されています。\n内容を確認して、必要に応じて編集してください。')
                                                         } else {
                                                             console.error('画像解析エラー: データ形式が不正です', data)
                                                             alert('画像解析に失敗しました。\n画像は保持されますが、自動入力は行われませんでした。')
