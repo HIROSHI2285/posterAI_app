@@ -15,6 +15,7 @@ import {
     type PosterFormData
 } from "@/types/poster"
 import { Wand2, Upload, FileImage, X } from "lucide-react"
+import { mapToTaste, mapToLayout, mapToPurpose } from "@/lib/mapAnalysisToEnum"
 
 interface PosterFormProps {
     onGenerate?: (formData: Partial<PosterFormData>) => void
@@ -470,16 +471,30 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                                     if (response.ok) {
                                                         const data = await response.json()
                                                         if (data.success && data.analysis) {
-                                                            // mainColorのみフォームに自動入力（HEX形式）
-                                                            // taste, layout, purposeは自由テキストなのでdetailedPromptに含める
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                mainColor: data.analysis.basicInfo?.mainColor || prev.mainColor,
-                                                                // メインタイトル: ユーザー入力がある場合はそれを優先
-                                                                mainTitle: prev.mainTitle || data.analysis.basicInfo?.mainTitle || prev.mainTitle,
-                                                                // 詳細説明を詳細指示フィールドに追加
-                                                                detailedPrompt: data.analysis.detailedDescription || prev.detailedPrompt
-                                                            }))
+                                                            setFormData(prev => {
+                                                                // 自動マッピング: フリーテキストをenum値に変換
+                                                                const mappedTaste = data.analysis.basicInfo?.taste
+                                                                    ? mapToTaste(data.analysis.basicInfo.taste)
+                                                                    : prev.taste
+                                                                const mappedLayout = data.analysis.basicInfo?.layout
+                                                                    ? mapToLayout(data.analysis.basicInfo.layout)
+                                                                    : prev.layout
+                                                                const mappedPurpose = data.analysis.basicInfo?.purpose
+                                                                    ? mapToPurpose(data.analysis.basicInfo.purpose)
+                                                                    : prev.purpose
+
+                                                                return {
+                                                                    ...prev,
+                                                                    mainColor: data.analysis.basicInfo?.mainColor || prev.mainColor,
+                                                                    taste: mappedTaste,
+                                                                    layout: mappedLayout,
+                                                                    purpose: mappedPurpose,
+                                                                    // メインタイトル: ユーザー入力がある場合はそれを優先
+                                                                    mainTitle: prev.mainTitle || data.analysis.basicInfo?.mainTitle || prev.mainTitle,
+                                                                    // 詳細説明を詳細指示フィールドに追加
+                                                                    detailedPrompt: data.analysis.detailedDescription || prev.detailedPrompt
+                                                                }
+                                                            })
                                                             alert('✨ デザイン要素を抽出しました！\n\n詳細指示フィールドに構成要素が記載されています。\n内容を確認して、必要に応じて編集してください。')
                                                         } else {
                                                             console.error('画像解析エラー: データ形式が不正です', data)
