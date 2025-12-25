@@ -138,6 +138,30 @@ export default function AdminUsersPage() {
         }
     }
 
+    // ユーザーの管理者権限切り替え
+    const handleToggleAdmin = async (user: AllowedUser) => {
+        try {
+            const response = await fetch("/api/admin/users", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: user.id,
+                    is_admin: !user.is_admin
+                })
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to update user admin status")
+            }
+
+            fetchUsers()
+            alert(`✅ ${user.email} の権限を${!user.is_admin ? '管理者' : '一般ユーザー'}に変更しました`)
+        } catch (error) {
+            console.error("Error toggling admin:", error)
+            alert("権限の変更に失敗しました")
+        }
+    }
+
     if (status === "loading" || loading) {
         return (
             <div className="min-h-screen bg-green-50 flex items-center justify-center">
@@ -263,6 +287,11 @@ export default function AdminUsersPage() {
                                                 ) : (
                                                     <XCircle className="h-4 w-4 text-gray-400" />
                                                 )}
+                                                {user.is_admin && (
+                                                    <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
+                                                        管理者
+                                                    </span>
+                                                )}
                                             </div>
                                             {user.name && (
                                                 <p className="text-sm text-gray-600">{user.name}</p>
@@ -272,6 +301,14 @@ export default function AdminUsersPage() {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            <Button
+                                                variant={user.is_admin ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => handleToggleAdmin(user)}
+                                                className={user.is_admin ? "bg-blue-600 hover:bg-blue-700" : ""}
+                                            >
+                                                {user.is_admin ? "👑 管理者" : "👤 一般"}
+                                            </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"

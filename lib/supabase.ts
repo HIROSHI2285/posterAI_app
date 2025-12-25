@@ -196,3 +196,24 @@ export async function toggleUserActive(id: string, isActive: boolean): Promise<{
         return { success: false, error: String(error) }
     }
 }
+/**
+ * 繝ｦ繝ｼ繧ｶ繝ｼ縺ｮ邂｡逅・・ｨｩ髯舌ｒ蛻・ｊ譖ｿ縺茨ｼ育ｮ｡逅・判髱｢逕ｨ・・
+ */
+export async function toggleUserAdmin(id: string, isAdmin: boolean): Promise<{ success: boolean; error?: string }> {
+    try {
+        const { error } = await supabaseAdmin
+            .from('allowed_users')
+            .update({ is_admin: isAdmin })
+            .eq('id', id)
+
+        if (error) {
+            console.error('Error toggling user admin status:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (error) {
+        console.error('Error toggling user admin status:', error)
+        return { success: false, error: String(error) }
+    }
+}

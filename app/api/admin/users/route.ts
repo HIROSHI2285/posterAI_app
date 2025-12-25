@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, checkUserAdmin } from '@/lib/supabase'
+import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin } from '@/lib/supabase'
 
 /**
  * GET: 全ての許可ユーザーを取得
@@ -182,6 +182,58 @@ export async function PATCH(request: Request) {
         console.error('Error updating user:', error)
         return NextResponse.json(
             { error: 'Failed to update user' },
+            { status: 500 }
+        )
+    }
+}
+
+/**
+ * PUT: ユーザーの管琁E��E��限を刁E��替ぁE
+ */
+export async function PUT(request: Request) {
+    try {
+        // 認証チェチE��
+        const session = await getSession()
+        if (!session?.user?.email) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            )
+        }
+
+        // 管琁E��E��限チェチE��
+        const isAdmin = await checkUserAdmin(session.user.email)
+        if (!isAdmin) {
+            return NextResponse.json(
+                { error: 'Forbidden: Admin access required' },
+                { status: 403 }
+            )
+        }
+
+        const body = await request.json()
+        const { id, is_admin } = body
+
+        if (!id || typeof is_admin !== 'boolean') {
+            return NextResponse.json(
+                { error: 'ID and is_admin are required' },
+                { status: 400 }
+            )
+        }
+
+        const result = await toggleUserAdmin(id, is_admin)
+
+        if (!result.success) {
+            return NextResponse.json(
+                { error: result.error || 'Failed to update user admin status' },
+                { status: 400 }
+            )
+        }
+
+        return NextResponse.json({ success: true })
+    } catch (error) {
+        console.error('Error updating user admin status:', error)
+        return NextResponse.json(
+            { error: 'Failed to update user admin status' },
             { status: 500 }
         )
     }
