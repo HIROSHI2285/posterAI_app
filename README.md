@@ -11,7 +11,7 @@
 
 ### ホームページ
 <div align="center">
-  <img src="docs/screenshots/homepage.png" alt="PosterAI ホームページ"/>
+  <img src="public/screenshot-home.png" alt="PosterAI ホームページ"/>
 </div>
 
 ### ポスター生成ページ
