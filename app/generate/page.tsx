@@ -185,7 +185,7 @@ export default function GeneratePage() {
                         {/* 右側：ユーザー情報とアクション */}
                         <div className="flex items-center gap-2 sm:gap-3">
                             {/* ユーザー情報 */}
-                            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg hidden sm:flex">
+                            <div className="flex items-center gap-2 hidden sm:flex">
                                 {session?.user?.image && (
                                     <img
                                         src={session.user.image}
