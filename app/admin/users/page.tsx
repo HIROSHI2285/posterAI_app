@@ -161,7 +161,36 @@ export default function AdminUsersPage() {
                                 <ArrowLeft className="h-4 w-4" />
                                 戻る
                             </Button>
-                            <h1 className="text-2xl font-bold">ユーザー管理</h1>
+
+                            {/* ロゴ */}
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src="/posterai-logo.svg"
+                                    alt="PosterAI"
+                                    className="h-10"
+                                    style={{ objectFit: 'contain' }}
+                                />
+                                <div className="border-l h-8 border-gray-300"></div>
+                                <h1 className="text-xl font-bold text-gray-800">ユーザー管理</h1>
+                            </div>
+                        </div>
+
+                        {/* 右側：ユーザー情報 */}
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg hidden sm:flex">
+                                {session?.user?.image && (
+                                    <img
+                                        src={session.user.image}
+                                        alt={session.user?.name || 'User'}
+                                        className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
+                                    />
+                                )}
+                                {session?.user?.email && (
+                                    <span className="text-foreground font-medium max-w-[150px] truncate text-sm">
+                                        {session.user.email.split('@')[0]}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

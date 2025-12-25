@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { ArrowLeft, LogOut } from "lucide-react"
+import { ArrowLeft, LogOut, Users, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PosterForm } from "@/features/poster-generator/components/PosterForm"
 import { PosterPreview } from "@/features/poster-generator/components/PosterPreview"
@@ -161,55 +161,65 @@ export default function GeneratePage() {
                         <div className="flex items-center gap-6">
                             {/* TOPに戻るボタン */}
                             <Button
-                                variant="ghost"
+                                variant="outline"
+                                size="sm"
                                 onClick={() => window.location.href = '/'}
-                                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                                className="flex items-center gap-2"
                             >
-                                <ArrowLeft className="h-4 w-4" />
-                                トップに戻る
+                                <Home className="h-4 w-4" />
+                                <span className="hidden sm:inline">ホーム</span>
                             </Button>
 
                             {/* ロゴ */}
                             <div className="flex items-center gap-2">
+                                <div className="border-l h-8 border-gray-300 hidden sm:block"></div>
                                 <img
                                     src="/posterai-logo.svg"
                                     alt="PosterAI"
-                                    className="h-12"
+                                    className="h-10 sm:h-12"
                                     style={{ objectFit: 'contain' }}
                                 />
                             </div>
                         </div>
 
-                        {/* 右側：ユーザー情報 */}
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
+                        {/* 右側：ユーザー情報とアクション */}
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            {/* ユーザー情報 */}
+                            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg hidden sm:flex">
                                 {session?.user?.image && (
                                     <img
                                         src={session.user.image}
                                         alt={session.user?.name || 'User'}
-                                        className="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm"
+                                        className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
                                     />
                                 )}
                                 {session?.user?.email && (
-                                    <span className="text-foreground font-medium max-w-[150px] truncate">
+                                    <span className="text-foreground font-medium max-w-[150px] truncate text-sm">
                                         {session.user.email.split('@')[0]}
                                     </span>
                                 )}
                             </div>
-                            <Button
-                                variant="outline"
-                                onClick={() => window.location.href = '/admin/users'}
-                                className="text-muted-foreground hover:text-foreground"
-                            >
-                                ユーザー管理
-                            </Button>
+
+                            {/* ユーザー管理ボタン */}
                             <Button
                                 variant="ghost"
+                                size="sm"
+                                onClick={() => window.location.href = '/admin/users'}
+                                className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                            >
+                                <Users className="h-4 w-4" />
+                                <span className="hidden sm:inline">ユーザー管理</span>
+                            </Button>
+
+                            {/* ログアウトボタン */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => signOut({ callbackUrl: '/' })}
-                                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                                className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
                             >
                                 <LogOut className="h-4 w-4" />
-                                ログアウト
+                                <span className="hidden sm:inline">ログアウト</span>
                             </Button>
                         </div>
                     </div>
