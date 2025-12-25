@@ -309,7 +309,10 @@ export default function AdminUsersPage() {
                                                         handleToggleAdmin(user)
                                                     }
                                                 }}
-                                                className="h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                className={`h-10 w-[140px] rounded-md border px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${user.is_admin
+                                                        ? 'bg-blue-100 border-blue-300 text-blue-900 focus-visible:ring-blue-500'
+                                                        : 'bg-gray-100 border-gray-300 text-gray-900 focus-visible:ring-gray-500'
+                                                    }`}
                                             >
                                                 <option value="admin">管理者</option>
                                                 <option value="user">一般ユーザー</option>
