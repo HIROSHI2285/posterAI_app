@@ -39,30 +39,33 @@ export interface AllowedUser {
  */
 export async function checkUserAccess(email: string): Promise<boolean> {
     try {
+        console.log('🔍 [Supabase] Checking access for email:', email)
+
         const { data, error } = await supabaseAdmin
             .from('allowed_users')
             .select('is_active')
-            .eq('email', email)
+            .ilike('email', email)
             .single()
 
         if (error) {
             if (error.code === 'PGRST116') {
                 // ユーザーが見つからない
-                console.warn(`User not in allow-list: ${email}`)
+                console.warn(`⚠️ [Supabase] User not in allow-list: ${email}`)
                 return false
             }
-            console.error('Error checking user access:', error)
+            console.error('❌ [Supabase] Error checking user access:', error)
             return false
         }
 
         if (!data) {
-            console.warn(`User not in allow-list: ${email}`)
+            console.warn(`⚠️ [Supabase] No data returned for: ${email}`)
             return false
         }
 
+        console.log(`✅ [Supabase] User found:`, { email, is_active: data.is_active })
         return data.is_active === true
     } catch (error) {
-        console.error('Error checking user access:', error)
+        console.error('❌ [Supabase] Exception:', error)
         return false
     }
 }

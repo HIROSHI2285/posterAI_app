@@ -18,16 +18,20 @@ export const authOptions: NextAuthOptions = {
         async signIn({ user }) {
             // Supabaseの allow-list をチェック
             if (!user.email) {
+                console.log('❌ No email provided')
                 return false
             }
 
+            console.log('🔍 Checking access for:', user.email)
             const hasAccess = await checkUserAccess(user.email)
+            console.log('✅ Access result:', hasAccess)
 
             if (!hasAccess) {
-                console.warn(`Access denied for user: ${user.email}`)
+                console.warn(`❌ Access denied for user: ${user.email}`)
                 return false
             }
 
+            console.log('✅ Access granted for:', user.email)
             return true
         },
         async session({ session, token }) {
