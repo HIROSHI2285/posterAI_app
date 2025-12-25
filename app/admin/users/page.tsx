@@ -301,14 +301,19 @@ export default function AdminUsersPage() {
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Button
-                                                variant={user.is_admin ? "default" : "outline"}
-                                                size="sm"
-                                                onClick={() => handleToggleAdmin(user)}
-                                                className={user.is_admin ? "bg-blue-600 hover:bg-blue-700" : ""}
+                                            <select
+                                                value={user.is_admin ? "admin" : "user"}
+                                                onChange={(e) => {
+                                                    const newAdminStatus = e.target.value === "admin"
+                                                    if (newAdminStatus !== user.is_admin) {
+                                                        handleToggleAdmin(user)
+                                                    }
+                                                }}
+                                                className="h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                             >
-                                                {user.is_admin ? "👑 管理者" : "👤 一般"}
-                                            </Button>
+                                                <option value="admin">管理者</option>
+                                                <option value="user">一般ユーザー</option>
+                                            </select>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
