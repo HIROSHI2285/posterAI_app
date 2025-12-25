@@ -156,7 +156,7 @@ export default function AdminUsersPage() {
                             <Button
                                 variant="ghost"
                                 onClick={() => router.push("/generate")}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 hover:bg-green-50 hover:text-green-700"
                             >
                                 <ArrowLeft className="h-4 w-4" />
                                 戻る
