@@ -1,0 +1,268 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, UserPlus, Trash2, CheckCircle, XCircle } from "lucide-react"
+import type { AllowedUser } from "@/lib/supabase"
+
+export default function AdminUsersPage() {
+    const { data: session, status } = useSession()
+    const router = useRouter()
+    const [users, setUsers] = useState<AllowedUser[]>([])
+    const [loading, setLoading] = useState(true)
+    const [newEmail, setNewEmail] = useState("")
+    const [newName, setNewName] = useState("")
+    const [adding, setAdding] = useState(false)
+
+    // 認証チェック
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            router.push("/")
+        }
+    }, [status, router])
+
+    // ユーザーリスト取得
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch("/api/admin/users")
+            if (!response.ok) {
+                throw new Error("Failed to fetch users")
+            }
+            const data = await response.json()
+            setUsers(data.users)
+        } catch (error) {
+            console.error("Error fetching users:", error)
+            alert("ユーザーリストの取得に失敗しました")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        if (session) {
+            fetchUsers()
+        }
+    }, [session])
+
+    // ユーザー追加
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!newEmail.trim()) {
+            alert("メールアドレスを入力してください")
+            return
+        }
+
+        setAdding(true)
+        try {
+            const response = await fetch("/api/admin/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: newEmail.trim(),
+                    name: newName.trim() || null
+                })
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || "Failed to add user")
+            }
+
+            setNewEmail("")
+            setNewName("")
+            fetchUsers()
+            alert("✅ ユーザーを追加しました")
+        } catch (error) {
+            console.error("Error adding user:", error)
+            alert(`ユーザーの追加に失敗しました: ${error instanceof Error ? error.message : String(error)}`)
+        } finally {
+            setAdding(false)
+        }
+    }
+
+    // ユーザー削除
+    const handleDeleteUser = async (user: AllowedUser) => {
+        if (!confirm(`${user.email} を削除しますか？`)) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/admin/users?id=${user.id}`, {
+                method: "DELETE"
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to delete user")
+            }
+
+            fetchUsers()
+            alert("✅ ユーザーを削除しました")
+        } catch (error) {
+            console.error("Error deleting user:", error)
+            alert("ユーザーの削除に失敗しました")
+        }
+    }
+
+    // ユーザーの有効/無効切り替え
+    const handleToggleActive = async (user: AllowedUser) => {
+        try {
+            const response = await fetch("/api/admin/users", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: user.id,
+                    is_active: !user.is_active
+                })
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to update user")
+            }
+
+            fetchUsers()
+        } catch (error) {
+            console.error("Error toggling user:", error)
+            alert("ユーザーの更新に失敗しました")
+        }
+    }
+
+    if (status === "loading" || loading) {
+        return (
+            <div className="min-h-screen bg-green-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">読み込み中...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (status === "unauthenticated") {
+        return null
+    }
+
+    return (
+        <div className="min-h-screen bg-green-50">
+            {/* ヘッダー */}
+            <header className="sticky top-0 z-50 bg-white border-b">
+                <div className="container mx-auto px-6 py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                            <Button
+                                variant="ghost"
+                                onClick={() => router.push("/generate")}
+                                className="flex items-center gap-2"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                戻る
+                            </Button>
+                            <h1 className="text-2xl font-bold">ユーザー管理</h1>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main className="container mx-auto px-6 py-8">
+                <div className="max-w-4xl mx-auto space-y-6">
+                    {/* ユーザー追加フォーム */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <UserPlus className="h-5 w-5" />
+                                新しいユーザーを追加
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={handleAddUser} className="space-y-4">
+                                <div>
+                                    <Label htmlFor="email">メールアドレス *</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={newEmail}
+                                        onChange={(e) => setNewEmail(e.target.value)}
+                                        placeholder="user@example.com"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="name">名前（任意）</Label>
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        value={newName}
+                                        onChange={(e) => setNewName(e.target.value)}
+                                        placeholder="山田 太郎"
+                                    />
+                                </div>
+                                <Button type="submit" disabled={adding}>
+                                    {adding ? "追加中..." : "ユーザーを追加"}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+
+                    {/* ユーザーリスト */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>登録ユーザー ({users.length})</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {users.map((user) => (
+                                    <div
+                                        key={user.id}
+                                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                                    >
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-medium">{user.email}</p>
+                                                {user.is_active ? (
+                                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                                ) : (
+                                                    <XCircle className="h-4 w-4 text-gray-400" />
+                                                )}
+                                            </div>
+                                            {user.name && (
+                                                <p className="text-sm text-gray-600">{user.name}</p>
+                                            )}
+                                            <p className="text-xs text-gray-500">
+                                                登録日: {new Date(user.created_at).toLocaleDateString('ja-JP')}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleToggleActive(user)}
+                                            >
+                                                {user.is_active ? "無効化" : "有効化"}
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => handleDeleteUser(user)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {users.length === 0 && (
+                                    <p className="text-center text-gray-500 py-8">
+                                        登録ユーザーがいません
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
+        </div>
+    )
+}

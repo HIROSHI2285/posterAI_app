@@ -197,6 +197,13 @@ export default function GeneratePage() {
                                 )}
                             </div>
                             <Button
+                                variant="outline"
+                                onClick={() => window.location.href = '/admin/users'}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                ユーザー管理
+                            </Button>
+                            <Button
                                 variant="ghost"
                                 onClick={() => signOut({ callbackUrl: '/' })}
                                 className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
