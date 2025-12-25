@@ -27,6 +27,7 @@ export interface AllowedUser {
     email: string
     name: string | null
     is_active: boolean
+    is_admin: boolean
     created_at: string
     updated_at: string
 }
@@ -62,6 +63,40 @@ export async function checkUserAccess(email: string): Promise<boolean> {
         return data.is_active === true
     } catch (error) {
         console.error('Error checking user access:', error)
+        return false
+    }
+}
+
+/**
+ * ユーザーが管理者権限を持っているかチェック
+ * @param email ユーザーのメールアドレス
+ * @returns 管理者権限がある場合true
+ */
+export async function checkUserAdmin(email: string): Promise<boolean> {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('allowed_users')
+            .select('is_admin, is_active')
+            .eq('email', email)
+            .single()
+
+        if (error) {
+            if (error.code === 'PGRST116') {
+                console.warn(`User not found: ${email}`)
+                return false
+            }
+            console.error('Error checking admin status:', error)
+            return false
+        }
+
+        if (!data) {
+            return false
+        }
+
+        // アクティブかつ管理者である必要がある
+        return data.is_active === true && data.is_admin === true
+    } catch (error) {
+        console.error('Error checking admin status:', error)
         return false
     }
 }

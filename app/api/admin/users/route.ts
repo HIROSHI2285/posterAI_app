@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive } from '@/lib/supabase'
+import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, checkUserAdmin } from '@/lib/supabase'
 
 /**
  * GET: 全ての許可ユーザーを取得
@@ -42,6 +42,15 @@ export async function POST(request: Request) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
+            )
+        }
+
+        // 管理者権限チェック
+        const isAdmin = await checkUserAdmin(session.user.email)
+        if (!isAdmin) {
+            return NextResponse.json(
+                { error: 'Forbidden: Admin access required' },
+                { status: 403 }
             )
         }
 
@@ -88,6 +97,15 @@ export async function DELETE(request: Request) {
             )
         }
 
+        // 管理者権限チェック
+        const isAdmin = await checkUserAdmin(session.user.email)
+        if (!isAdmin) {
+            return NextResponse.json(
+                { error: 'Forbidden: Admin access required' },
+                { status: 403 }
+            )
+        }
+
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
 
@@ -128,6 +146,15 @@ export async function PATCH(request: Request) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
+            )
+        }
+
+        // 管理者権限チェック
+        const isAdmin = await checkUserAdmin(session.user.email)
+        if (!isAdmin) {
+            return NextResponse.json(
+                { error: 'Forbidden: Admin access required' },
+                { status: 403 }
             )
         }
 

@@ -30,6 +30,12 @@ export default function AdminUsersPage() {
     const fetchUsers = async () => {
         try {
             const response = await fetch("/api/admin/users")
+            if (response.status === 403) {
+                // 管理者権限がない場合
+                alert("管理者権限が必要です")
+                router.push("/generate")
+                return
+            }
             if (!response.ok) {
                 throw new Error("Failed to fetch users")
             }
@@ -38,6 +44,7 @@ export default function AdminUsersPage() {
         } catch (error) {
             console.error("Error fetching users:", error)
             alert("ユーザーリストの取得に失敗しました")
+            router.push("/generate")
         } finally {
             setLoading(false)
         }

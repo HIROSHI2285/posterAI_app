@@ -15,6 +15,25 @@ export default function GeneratePage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [currentFormData, setCurrentFormData] = useState<Partial<PosterFormData>>()
     const [progress, setProgress] = useState(0)
+    const [isAdmin, setIsAdmin] = useState(false)
+
+    // 管理者権限チェック
+    useEffect(() => {
+        const checkAdmin = async () => {
+            try {
+                const response = await fetch('/api/admin/check')
+                const data = await response.json()
+                setIsAdmin(data.isAdmin)
+            } catch (error) {
+                console.error('Error checking admin status:', error)
+                setIsAdmin(false)
+            }
+        }
+
+        if (session) {
+            checkAdmin()
+        }
+    }, [session])
 
     // ページロード時に通知許可をリクエスト
     useEffect(() => {
@@ -200,16 +219,18 @@ export default function GeneratePage() {
                                 )}
                             </div>
 
-                            {/* ユーザー管理ボタン */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => window.location.href = '/admin/users'}
-                                className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                            >
-                                <Users className="h-4 w-4" />
-                                <span className="hidden sm:inline">ユーザー管理</span>
-                            </Button>
+                            {/* ユーザー管理ボタン（管理者のみ表示） */}
+                            {isAdmin && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => window.location.href = '/admin/users'}
+                                    className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                                >
+                                    <Users className="h-4 w-4" />
+                                    <span className="hidden sm:inline">ユーザー管理</span>
+                                </Button>
+                            )}
 
                             {/* ログアウトボタン */}
                             <Button
