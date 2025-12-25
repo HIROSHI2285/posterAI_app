@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { ArrowLeft, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PosterForm } from "@/features/poster-generator/components/PosterForm"
 import { PosterPreview } from "@/features/poster-generator/components/PosterPreview"
 import type { PosterFormData } from "@/types/poster"
+import { notifyPosterComplete, requestNotificationPermission } from "@/lib/notifications"
 
 export default function GeneratePage() {
     const { data: session } = useSession()
@@ -14,6 +15,11 @@ export default function GeneratePage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [currentFormData, setCurrentFormData] = useState<Partial<PosterFormData>>()
     const [progress, setProgress] = useState(0)
+
+    // ページロード時に通知許可をリクエスト
+    useEffect(() => {
+        requestNotificationPermission()
+    }, [])
 
     /**
      * ジョブのステータスをポーリング
@@ -32,6 +38,8 @@ export default function GeneratePage() {
             setProgress(job.progress)
 
             if (job.status === 'completed') {
+                // ポスター生成完了通知
+                notifyPosterComplete()
                 return job.imageUrl
             }
 

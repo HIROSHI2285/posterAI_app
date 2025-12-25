@@ -16,6 +16,7 @@ import {
 } from "@/types/poster"
 import { Wand2, Upload, FileImage, X } from "lucide-react"
 import { mapToTaste, mapToLayout, mapToPurpose } from "@/lib/mapAnalysisToEnum"
+import { notifyFileUploaded, notifyAnalysisComplete } from "@/lib/notifications"
 
 interface PosterFormProps {
     onGenerate?: (formData: Partial<PosterFormData>) => void
@@ -495,6 +496,8 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                                                     detailedPrompt: data.analysis.detailedDescription || prev.detailedPrompt
                                                                 }
                                                             })
+                                                            // ブラウザ通知
+                                                            notifyAnalysisComplete()
                                                             alert('✨ デザイン要素を抽出しました！\n\n詳細指示フィールドに構成要素が記載されています。\n内容を確認して、必要に応じて編集してください。')
                                                         } else {
                                                             console.error('画像解析エラー: データ形式が不正です', data)
