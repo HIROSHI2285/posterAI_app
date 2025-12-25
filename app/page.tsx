@@ -57,7 +57,7 @@ export default function HomePage() {
               </Button>
               <Button
                 onClick={() => signOut()}
-                className="bg-white/20 hover:bg-white/30 text-white border border-white/30 font-medium"
+                className="bg-white/20 hover:bg-white/30 text-white font-medium"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 ログアウト
