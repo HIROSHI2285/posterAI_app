@@ -30,9 +30,11 @@ export async function POST(request: NextRequest) {
             // Google AI SDK初期化
             const genAI = new GoogleGenerativeAI(apiKey);
 
-            // Gemini 3 Pro Image Preview（画像生成と同じモデル）を使用
+            // 画像解析モデル
+            // 旧モデル（問題があれば戻す）: "gemini-3-pro-image-preview"
+            // 新モデル（推奨・無料）: "gemini-2.0-flash-exp"
             const model = genAI.getGenerativeModel({
-                model: "gemini-3-pro-image-preview"
+                model: "gemini-2.0-flash-exp"
             });
 
             // Base64データをパーツに変換
