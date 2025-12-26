@@ -31,10 +31,14 @@ export async function POST(request: NextRequest) {
             const genAI = new GoogleGenerativeAI(apiKey);
 
             // 画像解析モデル
-            // 旧モデル（問題があれば戻す）: "gemini-3-pro-image-preview"
-            // 新モデル（推奨・無料）: "gemini-2.0-flash-exp"
+            // 現在: "gemini-3-flash" (最新3.0世代、Pro級性能+Flash速度、$0.0015/回)
+            // 元のモデル（問題があれば戻す）: "gemini-3-pro-image-preview"
+            // 
+            // その他の選択肢:
+            // - "gemini-1.5-pro" - 最高性能（$0.0028/回、やや遅い）
+            // - "gemini-1.5-flash" - バランス型（$0.0001/回、旧世代）
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.0-flash-exp"
+                model: "gemini-3-flash"
             });
 
             // Base64データをパーツに変換
