@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import { checkUserAccess } from "./supabase"
+import { logAuditEvent } from "./audit-log"
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -19,6 +20,12 @@ export const authOptions: NextAuthOptions = {
             // Supabaseの allow-list をチェック
             if (!user.email) {
                 console.log('❌ No email provided')
+                await logAuditEvent({
+                    actor_email: 'unknown',
+                    action: 'auth.signin.failed',
+                    success: false,
+                    details: { reason: 'no_email' }
+                })
                 return false
             }
 
@@ -28,10 +35,21 @@ export const authOptions: NextAuthOptions = {
 
             if (!hasAccess) {
                 console.warn(`❌ Access denied for user: ${user.email}`)
+                await logAuditEvent({
+                    actor_email: user.email,
+                    action: 'auth.signin.denied',
+                    success: false,
+                    details: { reason: 'not_in_allowlist' }
+                })
                 return false
             }
 
             console.log('✅ Access granted for:', user.email)
+            await logAuditEvent({
+                actor_email: user.email,
+                action: 'auth.signin.success',
+                success: true
+            })
             return true
         },
         async session({ session, token }) {

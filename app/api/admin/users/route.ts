@@ -1,12 +1,32 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin } from '@/lib/supabase'
+import { adminLimiter } from '@/lib/rate-limit'
+import { logAuditEvent, extractRequestInfo } from '@/lib/audit-log'
 
 /**
  * GET: 全ての許可ユーザーを取得
  */
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        // レート制限チェック（100リクエスト/分）
+        const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+        const { success, remaining } = adminLimiter.check(100, ip)
+
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Too many requests. Please try again later.' },
+                {
+                    status: 429,
+                    headers: {
+                        'X-RateLimit-Limit': '100',
+                        'X-RateLimit-Remaining': '0',
+                        'Retry-After': '60',
+                    }
+                }
+            )
+        }
+
         // 認証チェック
         const session = await getSession()
         if (!session?.user?.email) {
@@ -27,7 +47,15 @@ export async function GET() {
 
         const users = await getAllowedUsers()
 
-        return NextResponse.json({ users })
+        return NextResponse.json(
+            { users },
+            {
+                headers: {
+                    'X-RateLimit-Limit': '100',
+                    'X-RateLimit-Remaining': String(remaining),
+                }
+            }
+        )
     } catch (error) {
         console.error('Error fetching users:', error)
         return NextResponse.json(
@@ -79,6 +107,17 @@ export async function POST(request: Request) {
             )
         }
 
+        // 監査ログ記録
+        const requestInfo = extractRequestInfo(request)
+        await logAuditEvent({
+            actor_email: session.user.email,
+            action: 'user.created',
+            resource_type: 'user',
+            resource_id: email,
+            details: { name },
+            ...requestInfo
+        })
+
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error('Error adding user:', error)
@@ -114,15 +153,16 @@ export async function DELETE(request: Request) {
 
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
+        const targetEmail = searchParams.get('email')
 
-        if (!id) {
+        if (!id || !targetEmail) {
             return NextResponse.json(
-                { error: 'ID is required' },
+                { error: 'ID and email are required' },
                 { status: 400 }
             )
         }
 
-        const result = await removeAllowedUser(id)
+        const result = await removeAllowedUser(id, targetEmail, session.user.email)
 
         if (!result.success) {
             return NextResponse.json(
@@ -130,6 +170,17 @@ export async function DELETE(request: Request) {
                 { status: 400 }
             )
         }
+
+        // 監査ログ記録
+        const requestInfo = extractRequestInfo(request)
+        await logAuditEvent({
+            actor_email: session.user.email,
+            action: 'user.deleted',
+            resource_type: 'user',
+            resource_id: id,
+            details: { targetEmail },
+            ...requestInfo
+        })
 
         return NextResponse.json({ success: true })
     } catch (error) {
@@ -183,6 +234,17 @@ export async function PATCH(request: Request) {
             )
         }
 
+        // 監査ログ記録
+        const requestInfo = extractRequestInfo(request)
+        await logAuditEvent({
+            actor_email: session.user.email,
+            action: 'user.status.changed',
+            resource_type: 'user',
+            resource_id: id,
+            details: { newStatus: is_active ? 'active' : 'inactive' },
+            ...requestInfo
+        })
+
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error('Error updating user:', error)
@@ -217,16 +279,16 @@ export async function PUT(request: Request) {
         }
 
         const body = await request.json()
-        const { id, is_admin } = body
+        const { id, target_email, is_admin } = body
 
-        if (!id || typeof is_admin !== 'boolean') {
+        if (!id || !target_email || typeof is_admin !== 'boolean') {
             return NextResponse.json(
-                { error: 'ID and is_admin are required' },
+                { error: 'ID, target_email, and is_admin are required' },
                 { status: 400 }
             )
         }
 
-        const result = await toggleUserAdmin(id, is_admin)
+        const result = await toggleUserAdmin(id, target_email, session.user.email, is_admin)
 
         if (!result.success) {
             return NextResponse.json(
@@ -234,6 +296,20 @@ export async function PUT(request: Request) {
                 { status: 400 }
             )
         }
+
+        // 監査ログ記録
+        const requestInfo = extractRequestInfo(request)
+        await logAuditEvent({
+            actor_email: session.user.email,
+            action: 'user.role.changed',
+            resource_type: 'user',
+            resource_id: id,
+            details: {
+                targetEmail: target_email,
+                newRole: is_admin ? 'admin' : 'user'
+            },
+            ...requestInfo
+        })
 
         return NextResponse.json({ success: true })
     } catch (error) {

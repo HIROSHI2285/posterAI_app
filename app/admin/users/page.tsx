@@ -99,12 +99,16 @@ export default function AdminUsersPage() {
         }
 
         try {
-            const response = await fetch(`/api/admin/users?id=${user.id}`, {
-                method: "DELETE"
-            })
+            const response = await fetch(
+                `/api/admin/users?id=${user.id}&email=${encodeURIComponent(user.email)}`,
+                { method: "DELETE" }
+            )
+
+            const data = await response.json()
 
             if (!response.ok) {
-                throw new Error("Failed to delete user")
+                alert(`❌ ${data.error || 'Failed to delete user'}`)
+                return
             }
 
             fetchUsers()
@@ -146,12 +150,16 @@ export default function AdminUsersPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: user.id,
+                    target_email: user.email,
                     is_admin: !user.is_admin
                 })
             })
 
+            const data = await response.json()
+
             if (!response.ok) {
-                throw new Error("Failed to update user admin status")
+                alert(`❌ ${data.error || 'Failed to update user admin status'}`)
+                return
             }
 
             fetchUsers()
@@ -310,8 +318,8 @@ export default function AdminUsersPage() {
                                                     }
                                                 }}
                                                 className={`h-10 w-[140px] rounded-md border px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${user.is_admin
-                                                        ? 'bg-blue-100 border-blue-300 text-blue-900 focus-visible:ring-blue-500'
-                                                        : 'bg-gray-100 border-gray-300 text-gray-900 focus-visible:ring-gray-500'
+                                                    ? 'bg-blue-100 border-blue-300 text-blue-900 focus-visible:ring-blue-500'
+                                                    : 'bg-gray-100 border-gray-300 text-gray-900 focus-visible:ring-gray-500'
                                                     }`}
                                             >
                                                 <option value="admin">管理者</option>
