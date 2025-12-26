@@ -191,7 +191,6 @@ export default function GeneratePage() {
 
                             {/* ロゴ */}
                             <div className="flex items-center gap-2">
-                                <div className="border-l h-8 border-gray-300 hidden sm:block"></div>
                                 <img
                                     src="/posterai-logo.svg"
                                     alt="PosterAI"
