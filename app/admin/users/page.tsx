@@ -295,9 +295,13 @@ export default function AdminUsersPage() {
                                                 ) : (
                                                     <XCircle className="h-4 w-4 text-gray-400" />
                                                 )}
-                                                {user.is_admin && (
+                                                {user.is_admin ? (
                                                     <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
                                                         管理者
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded">
+                                                        一般ユーザー
                                                     </span>
                                                 )}
                                             </div>
