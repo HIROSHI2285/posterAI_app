@@ -4,12 +4,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 /**
- * Nano Banana 3.0 Pro (Gemini 3 Pro Image Preview)を使用して画像を生成
+ * Imagen 4.0を使用して画像を生成
  */
 export async function generateImage(prompt: string): Promise<string> {
     try {
         const model = genAI.getGenerativeModel({
-            model: "imagen-3.0-generate-002"
+            model: "imagen-4.0-generate-001"
         });
 
         const result = await model.generateContent([prompt]);
