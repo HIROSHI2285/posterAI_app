@@ -55,7 +55,8 @@
 - **UI コンポーネント**: Radix UI, Lucide React
 - **認証**: NextAuth.js v4
 - **AI API**: Google Gemini API
-  - `gemini-3-pro-image-preview` - 画像生成・画像解析
+  - `imagen-4.0-generate-001` - 画像生成（Imagen 4.0 Standard）
+  - `gemini-2.0-flash-exp` - 画像解析
 
 ---
 
