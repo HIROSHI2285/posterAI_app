@@ -45,7 +45,6 @@ export function buildPosterPrompt(params: {
     mainTitle: string;
     subTitle?: string;
     freeText?: string;
-    detailedPrompt?: string;
     outputSize: { width: number; height: number };
 }): string {
     const {
@@ -56,7 +55,6 @@ export function buildPosterPrompt(params: {
         mainTitle,
         subTitle,
         freeText,
-        detailedPrompt,
         outputSize,
     } = params;
 
@@ -68,10 +66,7 @@ Main Title: "${mainTitle}"
 ${subTitle ? `Subtitle: "${subTitle}"` : ""}
 ${freeText ? `Additional Text: "${freeText}"` : ""}
 
-${detailedPrompt ? `Custom Design Instructions:
-${detailedPrompt}
-
-` : ""}Output size: ${outputSize.width}×${outputSize.height}px
+Output size: ${outputSize.width}×${outputSize.height}px
 
 Design Requirements:
 - Modern and visually appealing

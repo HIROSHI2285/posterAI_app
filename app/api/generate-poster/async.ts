@@ -37,7 +37,10 @@ export async function generatePosterAsync(
             customUnit,
         } = formData
 
-        // detailedPromptは別途プロンプトに追加するため、ここでは結合しない
+        // detailedPromptとfreeTextを結合
+        const combinedFreeText = [freeText, detailedPrompt]
+            .filter(Boolean)
+            .join('\n\n') || freeText
 
         // APIキーの取得
         const apiKey = process.env.GEMINI_API_KEY
@@ -79,8 +82,7 @@ export async function generatePosterAsync(
             mainColor,
             mainTitle,
             subTitle,
-            freeText,
-            detailedPrompt,
+            freeText: combinedFreeText,
             orientation,
             dimensions,
             aspectRatio,
@@ -188,7 +190,6 @@ function buildImagePrompt(params: {
     mainTitle: string
     subTitle?: string
     freeText?: string
-    detailedPrompt?: string
     orientation: string
     dimensions: { width: number; height: number }
     aspectRatio: string
@@ -205,7 +206,6 @@ function buildImagePrompt(params: {
         mainTitle,
         subTitle,
         freeText,
-        detailedPrompt,
         orientation,
         dimensions,
         aspectRatio,
@@ -248,12 +248,6 @@ function buildImagePrompt(params: {
 - 全体の雰囲気とムード（お祭り的、プロフェッショナル、ポップ、エレガントなど）
 
 これらのデザイン特性を忠実に再現しながら、指定されたタイトルとテキストを組み込んでください。`
-    }
-
-    // カスタムデザイン指示を追加
-    if (detailedPrompt) {
-        prompt += `\n\n【カスタムデザイン指示】
-${detailedPrompt}`
     }
 
     prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。余白なしでエッジまでデザインを広げてください。`
