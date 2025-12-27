@@ -26,7 +26,7 @@ interface PosterFormProps {
 
 const CHAR_LIMITS = {
     mainTitle: 50,
-    freeText: 500,
+    freeText: 2000,  // イベント詳細、ルール、注意事項などを含められるように拡張
 }
 
 export function PosterForm({ onGenerate, isGenerating = false, onReset }: PosterFormProps) {
