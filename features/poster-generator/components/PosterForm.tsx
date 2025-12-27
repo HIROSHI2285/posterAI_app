@@ -141,15 +141,9 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
             </Card>
 
             {/* テキスト内容 */}
-            <Card className="border-2 border-blue-300 bg-blue-50/30">
-                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#3b82f6', color: 'white' }}>
-                    <CardTitle className="text-base font-semibold flex items-center gap-2">
-                        <span>📝</span>
-                        <span>ポスターに表示するテキスト</span>
-                    </CardTitle>
-                    <p className="text-xs mt-1 opacity-90">
-                        ここに入力したテキストは、実際にポスター画像に表示されます
-                    </p>
+            <Card className="border border-gray-300 bg-white">
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">テキスト内容</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-4 pb-4">
                     <div className="space-y-1.5">
@@ -177,9 +171,6 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
 
                     <div className="space-y-1.5">
                         <Label htmlFor="freeText" className="text-sm font-medium">追加テキスト</Label>
-                        <p className="text-xs text-blue-600 mb-1">
-                            💡 イベント詳細、日時、場所、注意事項など、ポスターに含めたいテキストを入力
-                        </p>
                         <Textarea
                             id="freeText"
                             placeholder="例: 場所、日時、詳細情報など"
@@ -201,15 +192,9 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
             </Card>
 
             {/* 詳細指示（プロンプト） */}
-            <Card className="border-2 border-purple-300 bg-purple-50/30">
-                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#9333ea', color: 'white' }}>
-                    <CardTitle className="text-base font-semibold flex items-center gap-2">
-                        <span>🎨</span>
-                        <span>デザイン・スタイル指示</span>
-                    </CardTitle>
-                    <p className="text-xs mt-1 opacity-90">
-                        テキストの見た目（フォント、色、配置）や雰囲気を指定します
-                    </p>
+            <Card className="border border-gray-300 bg-white">
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">詳細指示（プロンプト）</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-4 pb-4">
                     {/* カスタム指示テキスト */}
@@ -217,9 +202,8 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                         <Label htmlFor="detailedPrompt" className="text-sm font-medium">
                             カスタム指示
                         </Label>
-                        <p className="text-xs text-purple-600 mb-2">
-                            💡 テキストスタイル（太字、色、サイズ、配置）、人物、背景、雰囲気などを指定<br />
-                            例: 「メインタイトルは太字、赤色（#FF0000）で画面上部中央に大きく配置」
+                        <p className="text-xs text-muted-foreground mb-2">
+                            入れたい人物・キャラクター、素材、背景、イメージ、季節感などを自由に指定
                         </p>
                         <Textarea
                             id="detailedPrompt"
@@ -228,14 +212,13 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                             onChange={(e) =>
                                 setFormData({ ...formData, detailedPrompt: e.target.value })
                             }
-                            placeholder="例：&#10;・メインタイトル: 太字の明朝体、赤色（#FF0000）、画面上部中央に大きく配置&#10;・サブタイトル: 細めのゴシック体、黒色（#000000）、メインの下に配置&#10;・人物：笑顔の若い女性、カジュアルな服装、手を振っているポーズ&#10;・背景：桜の花びらが舞う背景、春らしい明るい雰囲気&#10;・装飾：和風の装飾要素、グラデーション効果&#10;・その他：温かみのある色調、柔らかい光"
+                            placeholder="例：&#10;・人物：笑顔の若い女性、カジュアルな服装、手を振っているポーズ&#10;・背景：桜の花びらが舞う背景、春らしい明るい雰囲気&#10;・装飾：和風の装飾要素、グラデーション効果&#10;・その他：温かみのある色調、柔らかい光"
                             className="resize-none"
                         />
                         <p className="text-xs text-muted-foreground">
-                            テキストスタイル、人物・キャラクター、季節感、素材、背景イメージ、装飾要素、雰囲気など、具体的に記述してください
+                            人物・キャラクター、季節感、素材、背景イメージ、装飾要素、雰囲気など、具体的に記述してください
                         </p>
                     </div>
-
 
                     {/* メインカラー */}
                     <div className="space-y-2">
