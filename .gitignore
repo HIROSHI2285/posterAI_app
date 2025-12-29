@@ -37,6 +37,21 @@ yarn-error.log*
 # Google Cloud service account keys
 service-account-key.json
 *-service-account-key.json
+vertex-key.json
+*-key.json
+*.key.json
+google-credentials.json
+
+# API Keys and Secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Temporary security files
+*secret*
+*credential*
+*password*
 
 # vercel
 .vercel

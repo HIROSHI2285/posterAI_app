@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+﻿import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!
@@ -28,6 +28,7 @@ export interface AllowedUser {
     name: string | null
     is_active: boolean
     is_admin: boolean
+    daily_limit: number
     created_at: string
     updated_at: string
 }
@@ -304,6 +305,63 @@ export async function toggleUserAdmin(
         return { success: true }
     } catch (error) {
         console.error('Error toggling user admin status:', error)
+        return { success: false, error: String(error) }
+    }
+}
+
+
+/**
+ * ユーザーのdaily_limitを取得
+ * @param email ユーザーのメールアドレス
+ * @returns daily_limit (デフォルト: 100)
+ */
+export async function getUserDailyLimit(email: string): Promise<number> {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('allowed_users')
+            .select('daily_limit')
+            .eq('email', email)
+            .single()
+
+        if (error || !data) {
+            console.warn(`Daily limit not found for ${email}, using default: 100`)
+            return 100
+        }
+
+        return data.daily_limit || 100
+    } catch (error) {
+        console.error('Error getting daily limit:', error)
+        return 100
+    }
+}
+
+/**
+ * ユーザーのdaily_limitを更新
+ * @param id ユーザーID
+ * @param newLimit 新しい上限値 (1-9999)
+ */
+export async function updateUserDailyLimit(
+    id: string,
+    newLimit: number
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (newLimit < 1 || newLimit > 9999) {
+            return { success: false, error: 'Limit must be between 1 and 9999' }
+        }
+
+        const { error } = await supabaseAdmin
+            .from('allowed_users')
+            .update({ daily_limit: newLimit })
+            .eq('id', id)
+
+        if (error) {
+            console.error('Error updating daily limit:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (error) {
+        console.error('Error updating daily limit:', error)
         return { success: false, error: String(error) }
     }
 }

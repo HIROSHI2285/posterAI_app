@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { jobStore } from '@/lib/job-store'
 import { rateLimiter } from '@/lib/rate-limiter'
+import { getUserDailyLimit } from '@/lib/supabase'
 import { validatePosterGeneration } from '@/lib/validations/poster'
 import { generatePosterAsync } from '../generate-poster/async'
 import type { PosterFormData } from '@/types/poster'
@@ -22,8 +23,9 @@ export async function POST(request: Request) {
             )
         }
 
-        // レート制限チェック（1日100回）
-        const { allowed, remaining, resetAt } = rateLimiter.check(session.user.email, 100)
+        // レート制限チェック（ユーザーのdaily_limitを取得）
+        const userLimit = await getUserDailyLimit(session.user.email)
+        const { allowed, remaining, resetAt } = rateLimiter.check(session.user.email, userLimit)
 
         if (!allowed) {
             const resetDate = new Date(resetAt)

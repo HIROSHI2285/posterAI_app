@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin } from '@/lib/supabase'
+import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin, updateUserDailyLimit } from '@/lib/supabase'
 import { adminLimiter } from '@/lib/rate-limit'
 import { logAuditEvent, extractRequestInfo } from '@/lib/audit-log'
 
@@ -193,7 +193,8 @@ export async function DELETE(request: Request) {
 }
 
 /**
- * PATCH: ユーザーの有効/無効を切り替え
+ * PATCH /api/admin/users
+ * ユーザー情報の更新（is_active または daily_limit）
  */
 export async function PATCH(request: Request) {
     try {
@@ -216,42 +217,46 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json()
-        const { id, is_active } = body
 
-        if (!id || typeof is_active !== 'boolean') {
-            return NextResponse.json(
-                { error: 'ID and is_active are required' },
-                { status: 400 }
-            )
+        // daily_limitの更新
+        if (body.id && body.daily_limit !== undefined) {
+            const result = await updateUserDailyLimit(body.id, body.daily_limit)
+            if (!result.success) {
+                return NextResponse.json({ error: result.error }, { status: 400 })
+            }
+            return NextResponse.json({ success: true })
         }
 
-        const result = await toggleUserActive(id, is_active)
+        // is_activeの更新
+        if (body.id && body.is_active !== undefined) {
+            const { id, is_active } = body
+            const result = await toggleUserActive(id, is_active)
 
-        if (!result.success) {
-            return NextResponse.json(
-                { error: result.error || 'Failed to update user' },
-                { status: 400 }
-            )
+            if (!result.success) {
+                return NextResponse.json(
+                    { error: result.error || 'Failed to update user' },
+                    { status: 400 }
+                )
+            }
+
+            // 監査ログ記録
+            const requestInfo = extractRequestInfo(request)
+            await logAuditEvent({
+                actor_email: session.user.email,
+                action: 'user.status.changed',
+                resource_type: 'user',
+                resource_id: id,
+                details: { newStatus: is_active ? 'active' : 'inactive' },
+                ...requestInfo
+            })
+
+            return NextResponse.json({ success: true })
         }
 
-        // 監査ログ記録
-        const requestInfo = extractRequestInfo(request)
-        await logAuditEvent({
-            actor_email: session.user.email,
-            action: 'user.status.changed',
-            resource_type: 'user',
-            resource_id: id,
-            details: { newStatus: is_active ? 'active' : 'inactive' },
-            ...requestInfo
-        })
-
-        return NextResponse.json({ success: true })
+        return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     } catch (error) {
-        console.error('Error updating user:', error)
-        return NextResponse.json(
-            { error: 'Failed to update user' },
-            { status: 500 }
-        )
+        console.error('PATCH /api/admin/users error:', error)
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 

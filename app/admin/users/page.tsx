@@ -18,6 +18,8 @@ export default function AdminUsersPage() {
     const [newEmail, setNewEmail] = useState("")
     const [newName, setNewName] = useState("")
     const [adding, setAdding] = useState(false)
+    const [updating, setUpdating] = useState<string | null>(null)
+    const [customLimits, setCustomLimits] = useState<Record<string, string>>({})
 
     // 認証チェック
     useEffect(() => {
@@ -116,6 +118,31 @@ export default function AdminUsersPage() {
         } catch (error) {
             console.error("Error deleting user:", error)
             alert("ユーザーの削除に失敗しました")
+        }
+    }
+
+    // 1日の上限を更新
+    const handleUpdateLimit = async (id: string, newLimit: number) => {
+        setUpdating(id)
+        try {
+            const response = await fetch('/api/admin/users', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, daily_limit: newLimit })
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Failed to update limit')
+            }
+
+            await fetchUsers()
+            alert(`✅ 上限を ${newLimit} 回/日に更新しました`)
+        } catch (error) {
+            console.error('Error updating limit:', error)
+            alert(`❌ 上限の更新に失敗しました`)
+        } finally {
+            setUpdating(null)
         }
     }
 
@@ -241,41 +268,44 @@ export default function AdminUsersPage() {
 
             <main className="container mx-auto px-6 py-8">
                 <div className="max-w-4xl mx-auto space-y-6">
-                    {/* ユーザー追加フォーム */}
+                    {/* 新しいユーザー追加 - コンパクト版 */}
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <UserPlus className="h-5 w-5" />
-                                新しいユーザーを追加
-                            </CardTitle>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-lg">新しいユーザーを追加</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <form onSubmit={handleAddUser} className="space-y-4">
-                                <div>
-                                    <Label htmlFor="email">メールアドレス *</Label>
+                            <div className="flex items-end gap-3">
+                                <div className="flex-1">
+                                    <Label htmlFor="email" className="text-sm">メールアドレス</Label>
                                     <Input
                                         id="email"
                                         type="email"
+                                        placeholder="user@example.com"
                                         value={newEmail}
                                         onChange={(e) => setNewEmail(e.target.value)}
-                                        placeholder="user@example.com"
-                                        required
+                                        className="h-10 mt-1"
                                     />
                                 </div>
-                                <div>
-                                    <Label htmlFor="name">名前（任意）</Label>
+                                <div className="flex-1">
+                                    <Label htmlFor="name" className="text-sm">名前（任意）</Label>
                                     <Input
                                         id="name"
                                         type="text"
+                                        placeholder="山田太郎"
                                         value={newName}
                                         onChange={(e) => setNewName(e.target.value)}
-                                        placeholder="山田 太郎"
+                                        className="h-10 mt-1"
                                     />
                                 </div>
-                                <Button type="submit" disabled={adding}>
-                                    {adding ? "追加中..." : "ユーザーを追加"}
+                                <Button
+                                    onClick={handleAddUser}
+                                    disabled={adding || !newEmail}
+                                    className="h-10 px-6"
+                                >
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    {adding ? "追加中..." : "追加"}
                                 </Button>
-                            </form>
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -289,34 +319,111 @@ export default function AdminUsersPage() {
                                 {users.map((user) => (
                                     <div
                                         key={user.id}
-                                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                                        className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm"
                                     >
+                                        {/* 左側：ユーザー情報と上限設定 */}
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-medium">{user.email}</p>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="font-medium text-gray-900">{user.email}</div>
                                                 {user.is_active ? (
                                                     <CheckCircle className="h-4 w-4 text-green-600" />
                                                 ) : (
                                                     <XCircle className="h-4 w-4 text-gray-400" />
                                                 )}
-                                                {user.is_admin ? (
-                                                    <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
+                                                {user.is_admin && (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                                                         管理者
-                                                    </span>
-                                                ) : (
-                                                    <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded">
-                                                        一般ユーザー
                                                     </span>
                                                 )}
                                             </div>
                                             {user.name && (
-                                                <p className="text-sm text-gray-600">{user.name}</p>
+                                                <p className="text-sm text-gray-600 mb-1">{user.name}</p>
                                             )}
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-xs text-gray-500 mb-4">
                                                 登録日: {new Date(user.created_at).toLocaleDateString('ja-JP')}
                                             </p>
+
+                                            {/* 1日の上限 */}
+                                            <div className="pt-4 border-t border-gray-200">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <span className="text-sm font-medium text-gray-700">1日の上限</span>
+                                                    <div className="flex items-baseline gap-1.5">
+                                                        <span className="text-2xl font-bold text-gray-900">{user.daily_limit || 100}</span>
+                                                        <span className="text-sm text-gray-600">回/日</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleUpdateLimit(user.id, 10)}
+                                                        disabled={updating === user.id}
+                                                        className={`h-10 w-16 text-lg font-semibold rounded-md transition-colors ${user.daily_limit === 10
+                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    >
+                                                        10
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateLimit(user.id, 50)}
+                                                        disabled={updating === user.id}
+                                                        className={`h-10 w-16 text-lg font-semibold rounded-md transition-colors ${user.daily_limit === 50
+                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    >
+                                                        50
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateLimit(user.id, 100)}
+                                                        disabled={updating === user.id}
+                                                        className={`h-10 w-16 text-lg font-semibold rounded-md transition-colors ${user.daily_limit === 100
+                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    >
+                                                        100
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateLimit(user.id, 999)}
+                                                        disabled={updating === user.id}
+                                                        className={`h-10 w-16 text-2xl font-bold rounded-md transition-colors ${user.daily_limit === 999
+                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    >
+                                                        ∞
+                                                    </button>
+                                                    <Input
+                                                        type="number"
+                                                        min="1"
+                                                        max="9999"
+                                                        placeholder="指定"
+                                                        value={customLimits[user.id] || ''}
+                                                        onChange={(e) => setCustomLimits({ ...customLimits, [user.id]: e.target.value })}
+                                                        className="h-10 w-28 text-sm text-center font-medium"
+                                                        disabled={updating === user.id}
+                                                    />
+                                                    <button
+                                                        onClick={() => {
+                                                            const value = parseInt(customLimits[user.id])
+                                                            if (value && value >= 1 && value <= 9999) {
+                                                                handleUpdateLimit(user.id, value)
+                                                                setCustomLimits({ ...customLimits, [user.id]: '' })
+                                                            } else {
+                                                                alert('1〜9999の範囲で入力してください')
+                                                            }
+                                                        }}
+                                                        disabled={updating === user.id || !customLimits[user.id]}
+                                                        className="h-10 px-4 text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {updating === user.id ? "..." : "OK"}
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+
+                                        {/* 右側：アクションボタン - 横並び */}
+                                        <div className="flex items-start gap-2">
                                             <select
                                                 value={user.is_admin ? "admin" : "user"}
                                                 onChange={(e) => {
@@ -325,28 +432,26 @@ export default function AdminUsersPage() {
                                                         handleToggleAdmin(user)
                                                     }
                                                 }}
-                                                className={`h-10 w-[140px] rounded-md border px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${user.is_admin
-                                                    ? 'bg-blue-100 border-blue-300 text-blue-900 focus-visible:ring-blue-500'
-                                                    : 'bg-gray-100 border-gray-300 text-gray-900 focus-visible:ring-gray-500'
+                                                className={`h-10 w-24 rounded-md border px-2 py-1 text-sm font-medium transition-colors ${user.is_admin
+                                                    ? 'bg-blue-50 border-blue-300 text-blue-900'
+                                                    : 'bg-gray-50 border-gray-300 text-gray-900'
                                                     }`}
                                             >
                                                 <option value="admin">管理者</option>
-                                                <option value="user">一般ユーザー</option>
+                                                <option value="user">一般</option>
                                             </select>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
+                                            <button
                                                 onClick={() => handleToggleActive(user)}
+                                                className="h-10 w-24 text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors"
                                             >
                                                 {user.is_active ? "無効化" : "有効化"}
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
+                                            </button>
+                                            <button
                                                 onClick={() => handleDeleteUser(user)}
+                                                className="h-10 w-10 p-0 bg-red-100 text-red-600 hover:bg-red-200 rounded-md transition-colors flex items-center justify-center"
                                             >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
