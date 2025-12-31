@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin, updateUserDailyLimit } from '@/lib/supabase'
-import { adminLimiter } from '@/lib/rate-limit'
+import { rateLimiter } from '@/lib/rate-limiter'
 import { logAuditEvent, extractRequestInfo } from '@/lib/audit-log'
 
 /**
@@ -11,9 +11,9 @@ export async function GET(request: Request) {
     try {
         // レート制限チェック（100リクエスト/分）
         const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-        const { success, remaining } = adminLimiter.check(100, ip)
+        const { allowed, remaining } = rateLimiter.check(ip, 100)
 
-        if (!success) {
+        if (!allowed) {
             return NextResponse.json(
                 { error: 'Too many requests. Please try again later.' },
                 {
