@@ -83,22 +83,12 @@ export async function POST(request: NextRequest) {
             // Google AI SDK初期化
             const genAI = new GoogleGenerativeAI(apiKey);
 
-            // 画像解析モデル
-            // 現在使用中: "gemini-3-pro-image-preview" ← プレビュー版、高精度 ✅
-            // 
-            // 理由:
-            // - ポスター生成と同じモデルファミリーで統一
-            // - 画像理解に特化した高精度
-            // - GA版リリース時に一括移行
-            // 
-            // 将来の移行予定:
-            // - "gemini-3-pro-image" (GA版) がリリースされたら移行
-            // 
-            // 他の選択肢:
-            // - "gemini-1.5-pro" - GA版だがコスト高（$0.0028/回）
-            // - "gemini-1.5-flash" - 安価で高速（$0.0001/回）
+            // モデル名を環境変数から取得（正式版リリース時に変更可能）
+            // デフォルト: gemini-3-pro-image-preview (プレビュー版)
+            // 正式版リリース後: 環境変数 GEMINI_IMAGE_MODEL を変更するだけで移行可能
+            const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
             const model = genAI.getGenerativeModel({
-                model: "gemini-3-pro-image-preview"
+                model: modelName
             });
 
             // Base64データをパーツに変換

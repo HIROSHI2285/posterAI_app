@@ -107,9 +107,11 @@ export async function POST(request: NextRequest) {
       // - 安定性: 100%
       // - コスト: ¥20/枚（A4、2K解像度）
       // - 信頼性が最優先
+      // モデル名を環境変数から取得（正式版リリース時に変更可能）
+      const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
-        model: "gemini-3-pro-image-preview"
+        model: modelName
       });
 
       // 画像を生成

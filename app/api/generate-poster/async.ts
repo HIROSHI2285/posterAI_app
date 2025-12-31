@@ -103,11 +103,11 @@ export async function generatePosterAsync(
 
         jobStore.update(jobId, { progress: 30 })
 
-        // Gemini 3 Pro Image Preview を使用（安定版）
-        // Imagen 4.0は将来的に再検討（現時点ではDSQ問題により不採用）
+        // モデル名を環境変数から取得（正式版リリース時に変更可能）
+        const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
-            model: "gemini-3-pro-image-preview"
+            model: modelName
         })
         jobStore.update(jobId, { progress: 50 })
 
