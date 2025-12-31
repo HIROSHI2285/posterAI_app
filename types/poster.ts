@@ -54,33 +54,35 @@ export interface PosterFormData {
     customUnit?: CustomSizeUnit
     characterDescription?: string
     detailedPrompt?: string
+    generationMode?: 'text-only' | 'image-reference'
+    imageReferenceStrength?: 'strong' | 'normal' | 'weak'
 }
 
-// 出力サイズの定義（向き対応）
+// 出力サイズの定義（向き対応）- 175dpi設定
 export const OUTPUT_SIZES = {
     b5: {
-        portrait: { width: 2150, height: 3035 },
-        landscape: { width: 3035, height: 2150 },
+        portrait: { width: 1255, height: 1771 },
+        landscape: { width: 1771, height: 1255 },
         label: 'B5サイズ',
-        description: '182×257mm @300dpi'
+        description: '182×257mm'
     },
     a4: {
-        portrait: { width: 2480, height: 3508 },
-        landscape: { width: 3508, height: 2480 },
+        portrait: { width: 1448, height: 2047 },
+        landscape: { width: 2047, height: 1448 },
         label: 'A4サイズ',
-        description: '210×297mm @300dpi'
+        description: '210×297mm'
     },
     b4: {
-        portrait: { width: 3035, height: 4299 },
-        landscape: { width: 4299, height: 3035 },
+        portrait: { width: 1771, height: 2508 },
+        landscape: { width: 2508, height: 1771 },
         label: 'B4サイズ',
-        description: '257×364mm @300dpi'
+        description: '257×364mm'
     },
     a3: {
-        portrait: { width: 3508, height: 4961 },
-        landscape: { width: 4961, height: 3508 },
+        portrait: { width: 2047, height: 2894 },
+        landscape: { width: 2894, height: 2047 },
         label: 'A3サイズ',
-        description: '297×420mm @300dpi'
+        description: '297×420mm'
     },
     custom: {
         portrait: { width: 1920, height: 1080 },

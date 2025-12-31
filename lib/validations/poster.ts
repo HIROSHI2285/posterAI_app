@@ -103,6 +103,12 @@ export const PosterGenerationSchema = z.object({
         .max(10000, '高さは10000以下にしてください')
         .optional(),
     customUnit: CustomSizeUnitSchema.optional(),
+
+    // 生成モード
+    generationMode: z.enum(['text-only', 'image-reference']).optional(),
+
+    // 画像参照の強度
+    imageReferenceStrength: z.enum(['strong', 'normal', 'weak']).optional(),
 }).refine(
     (data) => {
         // カスタムサイズの場合、幅と高さが必須

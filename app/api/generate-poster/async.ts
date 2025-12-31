@@ -62,7 +62,7 @@ export async function generatePosterAsync(
 
         // カスタムサイズの場合、mmをpxに変換
         if (outputSize === 'custom' && customWidth && customHeight) {
-            const mmToPx = (mm: number) => Math.round(mm * 11.811)
+            const mmToPx = (mm: number) => Math.round(mm * 6.89)
             dimensions = {
                 width: (customUnit === 'mm' ? mmToPx(customWidth) : customWidth) as number,
                 height: (customUnit === 'mm' ? mmToPx(customHeight) : customHeight) as number,
@@ -95,6 +95,8 @@ export async function generatePosterAsync(
             sampleImageName,
             hasMaterials: !!(materialsData && materialsData.length > 0),
             materialsCount: materialsData?.length || 0,
+            generationMode: formData.generationMode || (sampleImageData ? 'image-reference' : 'text-only'),
+            imageReferenceStrength: formData.imageReferenceStrength || 'normal'
         })
 
         console.log(`[Job ${jobId}] 画像生成開始`)
@@ -112,10 +114,18 @@ export async function generatePosterAsync(
         // 画像を生成（この部分が時間がかかる）
         jobStore.update(jobId, { progress: 60 })
 
-        // サンプル画像がある場合は、画像とプロンプトの両方を渡す
+        // 生成モードに応じて入力を準備
+        // サンプル画像がある場合はデフォルトでimage-referenceを使用（以前の動作に合わせる）
+        const generationMode = formData.generationMode || (sampleImageData ? 'image-reference' : 'text-only')
         let generationInput: any
-        if (sampleImageData) {
-            // マルチモーダル入力: サンプル画像 + テキストプロンプト
+
+        console.log(`[Job ${jobId}] ===== 生成モード確認 =====`)
+        console.log(`[Job ${jobId}] formData.generationMode: ${formData.generationMode}`)
+        console.log(`[Job ${jobId}] 最終generationMode: ${generationMode}`)
+        console.log(`[Job ${jobId}] sampleImageData存在: ${!!sampleImageData}`)
+
+        if (generationMode === 'image-reference' && sampleImageData) {
+            // 画像参照モード: サンプル画像 + テキストプロンプト（高再現性）
             generationInput = [
                 {
                     inlineData: {
@@ -126,11 +136,16 @@ export async function generatePosterAsync(
                 imagePrompt
             ]
             const imageDataSize = sampleImageData.split(',')[1].length
-            console.log(`[Job ${jobId}] サンプル画像を含めて生成開始 (画像サイズ: ${Math.round(imageDataSize / 1024)}KB)`)
+            console.log(`[Job ${jobId}] ✅ 画像参照モード: サンプル画像を含めて生成`)
+            console.log(`[Job ${jobId}] 画像データサイズ: ${Math.round(imageDataSize / 1024)}KB`)
+            console.log(`[Job ${jobId}] 入力: [画像データ, テキストプロンプト]`)
         } else {
-            // テキストのみ
+            // テキストのみモード: プロンプトのみ（画像は使用しない）
             generationInput = imagePrompt
+            console.log(`[Job ${jobId}] ✅ テキストのみモード: プロンプトから新規生成`)
+            console.log(`[Job ${jobId}] 入力: テキストプロンプトのみ（画像なし）`)
         }
+        console.log(`[Job ${jobId}] ========================`)
 
         const result = await model.generateContent(generationInput)
         jobStore.update(jobId, { progress: 70 })
@@ -216,13 +231,15 @@ function buildImagePrompt(params: {
     subTitle?: string
     freeText?: string
     detailedPrompt?: string
-    orientation: string
+    orientation: 'portrait' | 'landscape'
     dimensions: { width: number; height: number }
     aspectRatio: string
-    hasSampleImage?: boolean
+    hasSampleImage: boolean
     sampleImageName?: string
-    hasMaterials?: boolean
-    materialsCount?: number
+    hasMaterials: boolean
+    materialsCount: number
+    generationMode?: 'text-only' | 'image-reference'  // 追加
+    imageReferenceStrength?: 'strong' | 'normal' | 'weak'  // 追加
 }): string {
     const {
         purpose,
@@ -240,12 +257,69 @@ function buildImagePrompt(params: {
         sampleImageName,
         hasMaterials,
         materialsCount,
+        generationMode = 'text-only',  // デフォルト
+        imageReferenceStrength = 'normal'  // デフォルト
     } = params
 
     const dimensionsText = orientation === 'landscape'
         ? 'landscape orientation (wider than tall)'
         : 'portrait orientation (taller than wide)'
 
+    // 画像参照モード: 強度に応じたプロンプト
+    if (generationMode === 'image-reference' && hasSampleImage) {
+        // 強度に応じた比率設定
+        const ratios = {
+            strong: { image: 80, detail: 20 },
+            normal: { image: 75, detail: 25 },
+            weak: { image: 70, detail: 30 }
+        }
+        const ratio = ratios[imageReferenceStrength]
+
+        let prompt = `この画像のデザインを${imageReferenceStrength === 'strong' ? '主な' : ''}参考として、以下の内容でポスターを生成してください。
+
+サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
+タイトル: 「${mainTitle}」`
+
+        if (subTitle) {
+            prompt += `\nサブタイトル: 「${subTitle}」`
+        }
+
+        if (freeText) {
+            prompt += `\n追加テキスト: 「${freeText}」`
+        }
+
+        prompt += `\n\n【デザイン方針】
+画像のビジュアルを${imageReferenceStrength === 'strong' ? '主要な' : ''}参考（約${ratio.image}%の重要度）として、以下を${imageReferenceStrength === 'strong' ? '忠実に' : ''}再現：
+- 全体のレイアウトと構成
+- 配色システムとカラーパレット
+- フォントスタイルと文字装飾
+- グラフィック要素とビジュアル表現
+- アートスタイルと質感`
+
+        // 詳細プロンプトは強度に応じた重要度で追加
+        if (detailedPrompt) {
+            const detailDescriptions = {
+                strong: '画像の視覚的要素を主としつつ、この情報も適度に考慮してください',
+                normal: '画像の視覚的要素を主としつつ、この情報も考慮してください',
+                weak: '画像とこの情報をバランスよく組み合わせてください'
+            }
+
+            prompt += `\n\n【詳細な仕様情報】
+以下は画像から抽出された詳細情報です（約${ratio.detail}%の重要度）。
+${detailDescriptions[imageReferenceStrength]}：
+
+${detailedPrompt}
+
+※画像とこの詳細情報を組み合わせて、最適なデザインを作成してください。`
+        }
+
+        prompt += `\n\n上記のタイトルとテキストを組み込みながら、バランスの取れた高品質なポスターを作成してください。
+キャンバス全体を埋める完成度の高いデザインにしてください。`
+
+        return prompt
+    }
+
+    // テキストのみモード: 超詳細プロンプト
     let prompt = `プロフェッショナルなポスターデザインを作成してください。
 
 サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
@@ -264,25 +338,24 @@ function buildImagePrompt(params: {
 スタイル: ${taste}
 レイアウト: ${layout}`
 
-    // サンプル画像の詳細情報を追加（画像解析結果）
+    // サンプル画像の詳細情報を追加（テキストのみモードでも解析結果は使用）
     if (hasSampleImage && detailedPrompt) {
-        prompt += `\n\n【重要】サンプル画像の詳細分析結果:
-以下の情報は、アップロードされたサンプル画像から抽出された具体的なデザイン指示です。
-これらの要素を可能な限り忠実に再現してください：
+        prompt += `\n\n【デザイン仕様】
+以下の詳細な仕様に従って、正確にデザインを作成してください：
 
 ${detailedPrompt}
 
-上記の詳細情報に基づいて、レイアウト、フォントスタイル、配色、配置を正確に再現してください。`
+上記の詳細情報に基づいて、レイアウト、フォントスタイル、配色、配置、ビジュアル要素を正確に再現してください。`
     } else if (hasSampleImage) {
-        prompt += `\n\n【重要】デザイン参考画像について:
-アップロードされたサンプル画像が目指すべきビジュアルスタイルを示しています。以下の要素を注意深く分析し、忠実に再現してください:
+        prompt += `\n\n【デザイン参考情報】
+アップロードされたサンプル画像から抽出された要素を参考にしてください：
 - 配色とカラーパレット（メインカラー、アクセントカラー、背景色）
 - 文字のスタイル（フォント、サイズ、配置、装飾要素）
 - レイアウト構成（セクション分け、余白、コンテンツブロック、整列）
 - ビジュアル要素（グラフィック、イラスト、アイコン、パターン、装飾）
-- 全体の雰囲気とムード（お祭り的、プロフェッショナル、ポップ、エレガントなど）
+- 全体の雰囲気とムード
 
-これらのデザイン特性を忠実に再現しながら、指定されたタイトルとテキストを組み込んでください。`
+これらのデザイン特性を参考にしながら、指定されたタイトルとテキストを組み込んでください。`
     }
 
     prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。余白なしでエッジまでデザインを広げてください。`

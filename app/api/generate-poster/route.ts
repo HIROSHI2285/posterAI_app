@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
 
     let dimensions = sizeConfig[orientation as 'portrait' | 'landscape'];
 
-    // カスタムサイズの場合、mmをpxに変換（300 DPI: 1mm = 11.811px）
+    // カスタムサイズの場合、mmをpxに変換（175 DPI: 1mm = 6.89px）
     if (outputSize === 'custom' && customWidth && customHeight) {
-      const mmToPx = (mm: number) => Math.round(mm * 11.811);
+      const mmToPx = (mm: number) => Math.round(mm * 6.89);
       dimensions = {
         width: customUnit === 'mm' ? mmToPx(customWidth) : customWidth,
         height: customUnit === 'mm' ? mmToPx(customHeight) : customHeight,

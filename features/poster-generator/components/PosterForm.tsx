@@ -48,10 +48,12 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
     }>({})
 
     const [isAnalyzing, setIsAnalyzing] = useState(false)
+    const [generationMode, setGenerationMode] = useState<'text-only' | 'image-reference'>('text-only')
+    const [imageReferenceStrength, setImageReferenceStrength] = useState<'strong' | 'normal' | 'weak'>('normal')
 
-    // mm to px conversion at 300 DPI: 1mm = 11.811 pixels
-    const mmToPx = (mm: number): number => Math.round(mm * 11.811)
-    const pxToMm = (px: number): number => Math.round(px / 11.811)
+    // mm to px conversion at 175 DPI: 1mm = 6.89 pixels
+    const mmToPx = (mm: number): number => Math.round(mm * 6.89)
+    const pxToMm = (px: number): number => Math.round(px / 6.89)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -75,7 +77,11 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
         }
 
         if (onGenerate) {
-            onGenerate(formData)
+            onGenerate({
+                ...formData,
+                generationMode,
+                imageReferenceStrength
+            })
         }
     }
 
@@ -418,12 +424,11 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                     />
                                 </div>
                             </div>
-                            {/* Reference conversion display */}
                             {formData.customWidth && formData.customHeight && (
                                 <p className="text-xs text-muted-foreground text-center">
                                     {formData.customUnit === 'mm'
-                                        ? `≈ ${mmToPx(formData.customWidth)} × ${mmToPx(formData.customHeight)} px (300 DPI)`
-                                        : `≈ ${pxToMm(formData.customWidth)} × ${pxToMm(formData.customHeight)} mm (300 DPI)`
+                                        ? `≈ ${mmToPx(formData.customWidth)} × ${mmToPx(formData.customHeight)} px`
+                                        : `≈ ${pxToMm(formData.customWidth)} × ${pxToMm(formData.customHeight)} mm`
                                     }
                                 </p>
                             )}
@@ -562,6 +567,112 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                     </div>
                 </CardContent>
             </Card>
+
+            {/* 生成モード */}
+            {formData.sampleImage && (
+                <Card className="border border-gray-300 bg-white">
+                    <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                        <CardTitle className="text-base font-semibold">生成モード</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pt-4 pb-4">
+                        <div className="space-y-2">
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="generationMode"
+                                        value="text-only"
+                                        checked={generationMode === 'text-only'}
+                                        onChange={() => setGenerationMode('text-only')}
+                                        className="w-4 h-4"
+                                    />
+                                    <div>
+                                        <span className="font-medium">テキストのみ</span>
+                                        <span className="text-xs text-muted-foreground ml-2">オリジナリティ</span>
+                                    </div>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="generationMode"
+                                        value="image-reference"
+                                        checked={generationMode === 'image-reference'}
+                                        onChange={() => setGenerationMode('image-reference')}
+                                        className="w-4 h-4"
+                                    />
+                                    <div>
+                                        <span className="font-medium">画像 + テキスト</span>
+                                        <span className="text-xs text-muted-foreground ml-2">高再現性</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {generationMode === 'text-only'
+                                    ? 'サンプル画像から抽出したテキストのみで新しいデザインを生成します'
+                                    : 'サンプル画像を参照しながら高い再現性でデザインを生成します'}
+                            </p>
+
+                            {/* 画像参照の強度スライダー */}
+                            {generationMode === 'image-reference' && (
+                                <div className="mt-4 pt-4 border-t border-gray-200">
+                                    <label className="block text-sm font-medium mb-2">
+                                        画像参照の強度
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="imageReferenceStrength"
+                                                value="strong"
+                                                checked={imageReferenceStrength === 'strong'}
+                                                onChange={() => setImageReferenceStrength('strong')}
+                                                className="w-4 h-4"
+                                            />
+                                            <div>
+                                                <span className="text-sm font-medium">強い</span>
+                                                <span className="text-xs text-muted-foreground ml-1">(80:20)</span>
+                                            </div>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="imageReferenceStrength"
+                                                value="normal"
+                                                checked={imageReferenceStrength === 'normal'}
+                                                onChange={() => setImageReferenceStrength('normal')}
+                                                className="w-4 h-4"
+                                            />
+                                            <div>
+                                                <span className="text-sm font-medium">普通</span>
+                                                <span className="text-xs text-muted-foreground ml-1">(75:25)</span>
+                                            </div>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="imageReferenceStrength"
+                                                value="weak"
+                                                checked={imageReferenceStrength === 'weak'}
+                                                onChange={() => setImageReferenceStrength('weak')}
+                                                className="w-4 h-4"
+                                            />
+                                            <div>
+                                                <span className="text-sm font-medium">弱い</span>
+                                                <span className="text-xs text-muted-foreground ml-1">(70:30)</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        {imageReferenceStrength === 'strong' && '画像を最優先で忠実に再現します'}
+                                        {imageReferenceStrength === 'normal' && '画像と詳細情報をバランスよく活用します'}
+                                        {imageReferenceStrength === 'weak' && '画像を参考にしつつ詳細情報も重視します'}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* ボタン */}
             <div className="flex gap-3">

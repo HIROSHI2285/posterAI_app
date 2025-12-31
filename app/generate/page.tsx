@@ -112,6 +112,7 @@ export default function GeneratePage() {
             }
 
             console.log("API Request:", requestData)
+            console.log("🔍 generationMode確認:", requestData.generationMode)
 
             // 1. ジョブ作成
             const createResponse = await fetch("/api/jobs", {
