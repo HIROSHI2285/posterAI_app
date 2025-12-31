@@ -155,9 +155,17 @@ export async function generatePosterAsync(
 
         // finishReasonをチェック
         const candidate = response.candidates?.[0]
+        const candidate = result.response.candidates?.[0]
         const finishReason = candidate?.finishReason
 
-        console.log(`[Job ${jobId}] Finish Reason:`, finishReason)
+        console.log(`[Job ${jobId}] Gemini APIレスポンス:`)
+        console.log(`  - finishReason: ${finishReason}`)
+        console.log(`  - candidateCount: ${result.response.candidates?.length || 0}`)
+
+        if (candidate) {
+            console.log(`  - safetyRatings:`, JSON.stringify(candidate.safetyRatings, null, 2))
+            console.log(`  - content parts:`, candidate.content?.parts?.length || 0)
+        }
 
         // エラーチェック
         if (finishReason === 'SAFETY' || finishReason === 'RECITATION') {
@@ -165,6 +173,9 @@ export async function generatePosterAsync(
         }
 
         if (finishReason === 'OTHER' || !candidate?.content?.parts) {
+            console.error(`[Job ${jobId}] 画像生成失敗の詳細:`)
+            console.error(`  - finishReason: ${finishReason}`)
+            console.error(`  - Full response:`, JSON.stringify(result.response, null, 2))
             throw new Error("画像生成に失敗しました。APIが画像を生成できませんでした。")
         }
 
