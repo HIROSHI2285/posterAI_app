@@ -555,18 +555,18 @@ export default function HowToUsePage() {
                         <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
                             <h3 className="text-xl font-bold text-white mb-3">Q: 1日に何回まで使用できますか？</h3>
                             <p className="text-gray-300 mb-3">
-                                A: 1ユーザーあたり、1日に<strong className="text-green-400">最大100回</strong>までポスター生成が可能です。
+                                A: 1ユーザーあたり、1日に<strong className="text-green-400">最大50回</strong>までポスター生成が可能です。
                             </p>
                             <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
                                 <p className="text-sm text-gray-400 mb-2">📊 利用制限の詳細：</p>
                                 <ul className="space-y-2 text-sm text-gray-300">
                                     <li className="flex items-center gap-2">
                                         <span className="text-green-400">✓</span>
-                                        <span><strong className="text-white">画像生成</strong>: 100回/日</span>
+                                        <span><strong className="text-white">画像生成</strong>: 50回/日</span>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <span className="text-green-400">✓</span>
-                                        <span><strong className="text-white">画像解析</strong>: 制限なし（サンプル画像のアップロード）</span>
+                                        <span><strong className="text-white">画像解析</strong>: 200回/日（サンプル画像のアップロード）</span>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <span className="text-blue-400">ℹ️</span>
