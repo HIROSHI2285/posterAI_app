@@ -6,6 +6,21 @@ Google Gemini AIを活用した、プロ品質のポスター生成Webアプリ�
 
 ---
 
+## 📸 スクリーンショット
+
+### TOPページ
+![TOPページ](./docs/screenshots/top_page.png)
+
+### ポスター生成画面
+![ポスター生成画面](./docs/screenshots/generate_page.png)
+
+### 生成サンプル
+| グランドオープン告知 | クリスマスキャンペーン |
+|:---:|:---:|
+| ![サンプル1](./docs/screenshots/poster_sample_1.jpg) | ![サンプル2](./docs/screenshots/poster_sample_2.jpg) |
+
+---
+
 ## 🌟 概要
 
 PosterAIは、テキスト入力やサンプル画像から、AIが自動的に高品質なポスターデザインを生成するツールです。Google Gemini 3 Proの最先端AI技術により、数秒でプロフェッショナルなビジュアルを作成できます。
