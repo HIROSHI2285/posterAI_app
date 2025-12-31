@@ -77,11 +77,14 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
         }
 
         if (onGenerate) {
-            onGenerate({
-                ...formData,
-                generationMode,
-                imageReferenceStrength
-            })
+            // outputSize が 'custom' でない場合、custom* フィールドを除外
+            const submitData = { ...formData, generationMode, imageReferenceStrength }
+            if (formData.outputSize !== 'custom') {
+                delete submitData.customWidth
+                delete submitData.customHeight
+                delete submitData.customUnit
+            }
+            onGenerate(submitData)
         }
     }
 
