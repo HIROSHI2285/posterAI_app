@@ -1,8 +1,51 @@
 # AIモデルと料金体系
 
-**最終更新**: 2025-12-31  
-**バージョン**: v1.2.0  
+**最終更新**: 2026-01-01  
+**バージョン**: v1.3.0  
 **ステータス**: 本番運用中
+
+---
+
+## 🔄 モデル移行手順（正式版リリース時）
+
+現在 `gemini-3-pro-image-preview` (プレビュー版) を使用中です。  
+正式版がリリースされたら、以下の手順で移行してください。
+
+### 環境変数による切り替え（再デプロイ不要）
+
+**対象ファイル**（すべて環境変数から読み込み済み）:
+- `app/api/generate-poster/route.ts`
+- `app/api/generate-poster/async.ts`
+- `app/api/analyze-image/route.ts`
+
+### Vercelの場合
+
+1. **ダッシュボードにアクセス**
+   - https://vercel.com → プロジェクト選択
+
+2. **環境変数を追加**
+   - Settings → Environment Variables
+   - **Add New**:
+     - Name: `GEMINI_IMAGE_MODEL`
+     - Value: `gemini-3-pro-image` (正式版のモデル名)
+   - 全環境（Production/Preview/Development）に適用
+
+3. **保存して完了**
+   - 次のリクエストから新しいモデルを使用
+   - **再デプロイ不要**
+
+### ローカル開発の場合
+
+`.env.local` に追加:
+```env
+GEMINI_IMAGE_MODEL=gemini-3-pro-image
+```
+
+### ロールバック方法
+
+問題が発生した場合:
+1. 環境変数 `GEMINI_IMAGE_MODEL` を削除
+2. デフォルトの `gemini-3-pro-image-preview` に自動的に戻る
 
 ---
 
