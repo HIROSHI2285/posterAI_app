@@ -37,9 +37,6 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
         taste: "modern",
         layout: "center",
         mainColor: "#5d48a8",
-        customWidth: 1920,
-        customHeight: 1080,
-        customUnit: "px",
     })
 
     const [errors, setErrors] = useState<{
@@ -77,12 +74,16 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
         }
 
         if (onGenerate) {
-            // outputSize が 'custom' でない場合、custom* フィールドを除外
-            const submitData = { ...formData, generationMode, imageReferenceStrength }
-            if (formData.outputSize !== 'custom') {
-                delete submitData.customWidth
-                delete submitData.customHeight
-                delete submitData.customUnit
+            // outputSize が 'custom' の場合のみ custom* フィールドを含める
+            const submitData = {
+                ...formData,
+                generationMode,
+                imageReferenceStrength,
+                ...(formData.outputSize === 'custom' ? {
+                    customWidth: formData.customWidth,
+                    customHeight: formData.customHeight,
+                    customUnit: formData.customUnit
+                } : {})
             }
             onGenerate(submitData)
         }
