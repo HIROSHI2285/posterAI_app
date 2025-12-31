@@ -245,6 +245,120 @@ export default function HowToUsePage() {
                                     3
                                 </div>
                                 <div className="flex-1">
+                                    <h3 className="text-2xl font-bold text-white mb-4">⭐ NEW! 画像参照強度の調整（v1.2.0）</h3>
+                                    <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl p-5 mb-6 border-2 border-blue-500">
+                                        <p className="text-blue-100 font-semibold mb-2">🎯 新機能: きめ細かいコントロール</p>
+                                        <p className="text-gray-200">
+                                            サンプル画像をどれくらい参考にするか、3段階で調整できます！
+                                        </p>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                                        <div className="bg-gray-900 rounded-lg p-4 border-2 border-purple-500">
+                                            <h5 className="text-white font-bold mb-2 flex items-center gap-2">
+                                                <span className="text-2xl">💪</span> 強
+                                            </h5>
+                                            <p className="text-gray-300 text-sm mb-2">サンプル画像に<strong className="text-purple-300">忠実</strong></p>
+                                            <p className="text-gray-400 text-xs">画像 80% : プロンプト 20%</p>
+                                        </div>
+                                        <div className="bg-gray-900 rounded-lg p-4 border-2 border-blue-500">
+                                            <h5 className="text-white font-bold mb-2 flex items-center gap-2">
+                                                <span className="text-2xl">⚖️</span> 普通（推奨）
+                                            </h5>
+                                            <p className="text-gray-300 text-sm mb-2"><strong className="text-blue-300">バランス</strong>の取れた再現</p>
+                                            <p className="text-gray-400 text-xs">画像 75% : プロンプト 25%</p>
+                                        </div>
+                                        <div className="bg-gray-900 rounded-lg p-4 border-2 border-green-500">
+                                            <h5 className="text-white font-bold mb-2 flex items-center gap-2">
+                                                <span className="text-2xl">✨</span> 弱
+                                            </h5>
+                                            <p className="text-gray-300 text-sm mb-2">画像はヒント、<strong className="text-green-300">創造的</strong>に</p>
+                                            <p className="text-gray-400 text-xs">画像 70% : プロンプト 30%</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-900 rounded-xl p-5 border border-gray-700 mb-6">
+                                        <h4 className="text-base font-bold text-white mb-3">💡 使い分けのヒント</h4>
+                                        <ul className="space-y-2 text-sm text-gray-300">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-purple-400 mt-0.5">●</span>
+                                                <span><strong>強</strong>: 既存デザインとほぼ同じ雰囲気が欲しいとき</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-blue-400 mt-0.5">●</span>
+                                                <span><strong>普通</strong>: サンプルの良さを残しつつアレンジしたいとき（デフォルト）</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-green-400 mt-0.5">●</span>
+                                                <span><strong>弱</strong>: サンプルはイメージ参考程度で自由に作りたいとき</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* サンプル画像ステップ4 - 生成モード選択 */}
+                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+                            <div className="flex items-start gap-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                                    4
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-bold text-white mb-4">⭐ NEW! 生成モードの選択（v1.2.0）</h3>
+                                    <div className="bg-gradient-to-r from-green-900/50 to-teal-900/50 rounded-xl p-5 mb-6 border-2 border-green-500">
+                                        <p className="text-green-100 font-semibold mb-2">🎯 用途に合わせた2つのモード</p>
+                                        <p className="text-gray-200">
+                                            どのようにポスターを生成するか選べます
+                                        </p>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="bg-gray-900 rounded-xl p-6 border-2 border-blue-500">
+                                            <h5 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                                                <FileImage className="text-blue-400" />
+                                                画像参照モード
+                                            </h5>
+                                            <p className="text-gray-300 mb-4">サンプル画像を<strong className="text-blue-300">直接参考</strong>にして生成</p>
+                                            <div className="bg-black/50 rounded-lg p-3 mb-3 border border-gray-700">
+                                                <p className="text-xs text-gray-400 mb-1">使う場面:</p>
+                                                <ul className="text-sm text-gray-300 space-y-1">
+                                                    <li>• 既存デザインの雰囲気を維持</li>
+                                                    <li>• シリーズ物の統一感</li>
+                                                    <li>• ブランドカラーの再現</li>
+                                                </ul>
+                                            </div>
+                                            <p className="text-green-400 text-sm">✓ 高い再現性</p>
+                                        </div>
+
+                                        <div className="bg-gray-900 rounded-xl p-6 border-2 border-purple-500">
+                                            <h5 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                                                <Sparkles className="text-purple-400" />
+                                                テキストのみモード
+                                            </h5>
+                                            <p className="text-gray-300 mb-4">画像解析結果を<strong className="text-purple-300">プロンプト化</strong>して新規生成</p>
+                                            <div className="bg-black/50 rounded-lg p-3 mb-3 border border-gray-700">
+                                                <p className="text-xs text-gray-400 mb-1">使う場面:</p>
+                                                <ul className="text-sm text-gray-300 space-y-1">
+                                                    <li>• 似た雰囲気で新しいデザイン</li>
+                                                    <li>• バリエーション作成</li>
+                                                    <li>• よりクリエイティブな展開</li>
+                                                </ul>
+                                            </div>
+                                            <p className="text-green-400 text-sm">✓ 高い創造性</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* サンプル画像ステップ5 - プロンプトカスタマイズ */}
+                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+                            <div className="flex items-start gap-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                                    5
+                                </div>
+                                <div className="flex-1">
                                     <h3 className="text-2xl font-bold text-white mb-4">🔧 詳細プロンプトをカスタマイズして生成</h3>
                                     <div className="bg-gray-900 rounded-xl p-5 mb-6 border border-gray-700">
                                         <p className="text-blue-200 font-semibold mb-2">✨ 自由なカスタマイズが可能</p>
@@ -566,7 +680,7 @@ export default function HowToUsePage() {
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <span className="text-green-400">✓</span>
-                                        <span><strong className="text-white">画像解析</strong>: 200回/日（サンプル画像のアップロード）</span>
+                                        <span><strong className="text-white">画像解析</strong>: 100回/日（サンプル画像のアップロード）</span>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <span className="text-blue-400">ℹ️</span>

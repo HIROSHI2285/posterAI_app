@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // レート制限チェック（200回/日 - 生成より多く設定）
-        const { allowed, remaining, resetAt } = rateLimiter.check(session.user.email, 200);
+        // レート制限チェック（100回/日）
+        const { allowed, remaining, resetAt } = rateLimiter.check(session.user.email, 100);
         if (!allowed) {
             return NextResponse.json(
                 {
