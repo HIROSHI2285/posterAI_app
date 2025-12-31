@@ -83,7 +83,7 @@ export const PosterGenerationSchema = z.object({
     // オプションフィールド
     subTitle: z.string().max(100, 'サブタイトルは100文字以内にしてください').optional(),
     freeText: z.string().max(500, '自由記入欄は500文字以内にしてください').optional(),
-    detailedPrompt: z.string().max(3000, '詳細指示は3000文字以内にしてください').optional(),
+    detailedPrompt: z.string().max(5000, '詳細指示は5000文字以内にしてください').optional(),
 
     // 画像データ（Base64）
     sampleImageData: Base64ImageSchema.optional(),
