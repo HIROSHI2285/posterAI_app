@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { jobStore } from '@/lib/job-store'
+import { jobStore } from '@/lib/job-store-supabase'
 
 /**
  * ジョブステータス取得API
@@ -23,8 +23,8 @@ export async function GET(
 
         const { id: jobId } = await params
 
-        // ジョブを取得
-        const job = jobStore.get(jobId)
+        // ジョブを取得（Supabaseから非同期）
+        const job = await jobStore.get(jobId)
 
         if (!job) {
             return NextResponse.json(

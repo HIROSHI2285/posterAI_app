@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { jobStore } from "@/lib/job-store"
+import { jobStore } from "@/lib/job-store-supabase"
 import type { PosterFormData } from "@/types/poster"
 import { OUTPUT_SIZES } from "@/types/poster"
 
@@ -12,7 +12,7 @@ export async function generatePosterAsync(
 ): Promise<void> {
     try {
         // ステータス更新: processing
-        jobStore.update(jobId, {
+        await jobStore.update(jobId, {
             status: 'processing',
             progress: 10
         })
@@ -73,7 +73,7 @@ export async function generatePosterAsync(
             throw new Error("無効な向きです")
         }
 
-        jobStore.update(jobId, { progress: 20 })
+        await jobStore.update(jobId, { progress: 20 })
 
         // アスペクト比を計算
         const aspectRatio = (dimensions.width / dimensions.height).toFixed(3)
@@ -101,7 +101,7 @@ export async function generatePosterAsync(
 
         console.log(`[Job ${jobId}] 画像生成開始`)
 
-        jobStore.update(jobId, { progress: 30 })
+        await jobStore.update(jobId, { progress: 30 })
 
         // モデル名を環境変数から取得（正式版リリース時に変更可能）
         const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"
@@ -109,10 +109,10 @@ export async function generatePosterAsync(
         const model = genAI.getGenerativeModel({
             model: modelName
         })
-        jobStore.update(jobId, { progress: 50 })
+        await jobStore.update(jobId, { progress: 50 })
 
         // 画像を生成（この部分が時間がかかる）
-        jobStore.update(jobId, { progress: 60 })
+        await jobStore.update(jobId, { progress: 60 })
 
         // 生成モードに応じて入力を準備
         // サンプル画像がある場合はデフォルトでimage-referenceを使用（以前の動作に合わせる）
@@ -148,10 +148,10 @@ export async function generatePosterAsync(
         console.log(`[Job ${jobId}] ========================`)
 
         const result = await model.generateContent(generationInput)
-        jobStore.update(jobId, { progress: 70 })
+        await jobStore.update(jobId, { progress: 70 })
 
         const response = result.response
-        jobStore.update(jobId, { progress: 80 })
+        await jobStore.update(jobId, { progress: 80 })
 
         // finishReasonをチェック
         const candidate = response.candidates?.[0]
@@ -178,7 +178,7 @@ export async function generatePosterAsync(
             throw new Error("画像生成に失敗しました。APIが画像を生成できませんでした。")
         }
 
-        jobStore.update(jobId, { progress: 85 })
+        await jobStore.update(jobId, { progress: 85 })
 
         // レスポンスから画像データを取得
         let imageData: string | null = null
@@ -199,16 +199,16 @@ export async function generatePosterAsync(
             }
         }
 
-        jobStore.update(jobId, { progress: 90 })
+        await jobStore.update(jobId, { progress: 90 })
 
         if (!imageData) {
             throw new Error("画像データが生成されませんでした")
         }
 
-        jobStore.update(jobId, { progress: 95 })
+        await jobStore.update(jobId, { progress: 95 })
 
         // 完了
-        jobStore.update(jobId, {
+        await jobStore.update(jobId, {
             status: 'completed',
             progress: 100,
             imageUrl: imageData
@@ -218,7 +218,7 @@ export async function generatePosterAsync(
 
     } catch (error) {
         console.error(`[Job ${jobId}] エラー:`, error)
-        jobStore.update(jobId, {
+        await jobStore.update(jobId, {
             status: 'failed',
             progress: 0,
             error: error instanceof Error ? error.message : '不明なエラーが発生しました'

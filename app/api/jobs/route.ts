@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { jobStore } from '@/lib/job-store'
+import { jobStore } from '@/lib/job-store-supabase'
 import { rateLimiter } from '@/lib/rate-limiter'
 import { getUserDailyLimit } from '@/lib/supabase'
 import { validatePosterGeneration } from '@/lib/validations/poster'
@@ -68,15 +68,15 @@ export async function POST(request: Request) {
         // Job IDを生成
         const jobId = crypto.randomUUID()
 
-        // Jobをストアに保存（userIdを追加）
-        jobStore.create(jobId, session.user.id!)
+        // Jobをストアに保存（Supabaseに非同期で保存）
+        await jobStore.create(jobId, session.user.id!)
 
         console.log(`Created job: ${jobId} for user: ${session.user.email} (${remaining} remaining today)`)
 
         // バックグラウンドで画像生成開始（非同期）
-        generatePosterAsync(jobId, formData as any).catch(error => {
+        generatePosterAsync(jobId, formData as any).catch(async error => {
             console.error(`Job ${jobId} failed:`, error)
-            jobStore.update(jobId, {
+            await jobStore.update(jobId, {
                 status: 'failed',
                 error: error.message || 'Unknown error occurred'
             })
