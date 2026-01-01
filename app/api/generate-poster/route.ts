@@ -159,12 +159,10 @@ export async function POST(request: NextRequest) {
 
         if (Array.isArray(parts)) {
           for (const part of parts) {
-            // @ts-ignore
-            if (part.inlineData) {
-              // @ts-ignore
-              const base64Image = part.inlineData.data;
-              // @ts-ignore
-              const mimeType = part.inlineData.mimeType || "image/png";
+            const partData = part as { inlineData?: { data: string; mimeType?: string } };
+            if (partData.inlineData) {
+              const base64Image = partData.inlineData.data;
+              const mimeType = partData.inlineData.mimeType || "image/png";
               imageData = `data:${mimeType};base64,${base64Image}`;
               console.log("画像生成成功:", mimeType);
               break;
