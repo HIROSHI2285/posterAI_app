@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { jobStore } from '@/lib/job-store-supabase'
@@ -14,6 +15,8 @@ export const maxDuration = 60
 /**
  * ジョブ作成API
  * POST /api/jobs
+ * 
+ * Next.js after() APIを使用してレスポンス後もバックグラウンド処理を継続
  */
 export async function POST(request: Request) {
     try {
@@ -76,13 +79,20 @@ export async function POST(request: Request) {
 
         console.log(`Created job: ${jobId} for user: ${session.user.email} (${remaining} remaining today)`)
 
-        // バックグラウンドで画像生成開始（非同期）
-        generatePosterAsync(jobId, formData as any).catch(async error => {
-            console.error(`Job ${jobId} failed:`, error)
-            await jobStore.update(jobId, {
-                status: 'failed',
-                error: error.message || 'Unknown error occurred'
-            })
+        // after() API: レスポンス返却後もバックグラウンドで処理を継続
+        // これによりVercel Hobbyプランでもタイムアウトを回避できる
+        after(async () => {
+            try {
+                console.log(`[after] Starting background job: ${jobId}`)
+                await generatePosterAsync(jobId, formData as any)
+                console.log(`[after] Completed background job: ${jobId}`)
+            } catch (error) {
+                console.error(`[after] Job ${jobId} failed:`, error)
+                await jobStore.update(jobId, {
+                    status: 'failed',
+                    error: error instanceof Error ? error.message : 'Unknown error occurred'
+                })
+            }
         })
 
         // すぐにJob IDと残り回数を返却
@@ -100,3 +110,4 @@ export async function POST(request: Request) {
         )
     }
 }
+
