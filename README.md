@@ -2,6 +2,8 @@
 
 Google Gemini AIを活用した、プロ品質のポスター生成Webアプリケーション。
 
+🔗 **本番URL**: [https://poster-ai-app.vercel.app](https://poster-ai-app.vercel.app)
+
 ![PosterAI](./public/posterai-logo.svg)
 
 ---
