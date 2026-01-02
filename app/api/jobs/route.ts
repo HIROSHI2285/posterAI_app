@@ -8,6 +8,9 @@ import { validatePosterGeneration } from '@/lib/validations/poster'
 import { generatePosterAsync } from '../generate-poster/async'
 import type { PosterFormData } from '@/types/poster'
 
+// Vercel Pro: 60秒まで延長可能（Hobbyプランでは無効）
+export const maxDuration = 60
+
 /**
  * ジョブ作成API
  * POST /api/jobs
