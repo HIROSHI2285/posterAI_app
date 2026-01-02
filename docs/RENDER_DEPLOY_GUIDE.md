@@ -38,7 +38,7 @@
 | **Name** | `poster-ai-app` |
 | **Region** | `Singapore (Southeast Asia)` ※日本に近い |
 | **Branch** | `main` |
-| **Root Directory** | `posterai-app` |
+| **Root Directory** | **空白のまま**（リポジトリルートにNext.jsアプリがある） |
 | **Runtime** | `Node` |
 | **Build Command** | `npm install && npm run build` |
 | **Start Command** | `npm run start` |

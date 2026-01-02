@@ -115,33 +115,40 @@ Supabaseは組織レベルでの転送が可能。
 
 ---
 
-## 4. Vercel の移行
+## 4. Render の移行（本番ホスティング）
 
-### 4.1 新しいVercelプロジェクト
+### 4.1 新しいRenderプロジェクト
 
-1. [Vercel](https://vercel.com/) で新アカウント/ログイン
-2. **Import Project** → GitHubリポジトリを選択
-3. **Framework Preset**: Next.js
+1. [Render](https://render.com/) で新アカウント/ログイン
+2. **New +** → **Web Service**
+3. GitHubリポジトリを選択
+4. 設定:
+   - **Name**: `poster-ai-app`
+   - **Region**: Singapore (推奨)
+   - **Branch**: `main`
+   - **Root Directory**: 空白
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm run start`
+   - **Instance Type**: Free
 
 ### 4.2 環境変数の設定
 
-**Settings** → **Environment Variables** で以下を設定:
+**Environment** で以下を設定:
 
 | 変数名 | 値 | 説明 |
 |--------|-----|------|
 | `GEMINI_API_KEY` | `AIza...` | Google AI Studio APIキー |
-| `NEXTAUTH_URL` | `https://your-domain.com` | 本番URL |
+| `NEXTAUTH_URL` | `https://your-app.onrender.com` | RenderのURL |
 | `NEXTAUTH_SECRET` | (ランダム文字列) | `openssl rand -base64 32` で生成 |
 | `GOOGLE_CLIENT_ID` | `xxx.apps.googleusercontent.com` | OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | `GOCSPX-...` | OAuth Client Secret |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xxx.supabase.co` | Supabase URL |
 | `SUPABASE_SERVICE_KEY` | `eyJ...` | Supabase Service Role Key |
+| `PORT` | `3000` | ポート番号 |
 
-### 4.3 ドメイン設定（オプション）
+### 4.3 コールドスタート対策（オプション）
 
-1. **Settings** → **Domains**
-2. カスタムドメインを追加
-3. DNSレコードを設定
+UptimeRobotで5分ごとにpingを送ることでスリープを防止できます。
 
 ---
 
