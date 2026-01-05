@@ -313,7 +313,7 @@ export async function toggleUserAdmin(
 /**
  * ユーザーのdaily_limitを取得
  * @param email ユーザーのメールアドレス
- * @returns daily_limit (デフォルト: 100)
+ * @returns daily_limit (デフォルト: 30)
  */
 export async function getUserDailyLimit(email: string): Promise<number> {
     try {
@@ -324,14 +324,14 @@ export async function getUserDailyLimit(email: string): Promise<number> {
             .single()
 
         if (error || !data) {
-            console.warn(`Daily limit not found for ${email}, using default: 100`)
-            return 100
+            console.warn(`Daily limit not found for ${email}, using default: 30`)
+            return 30
         }
 
-        return data.daily_limit || 100
+        return data.daily_limit || 30
     } catch (error) {
         console.error('Error getting daily limit:', error)
-        return 100
+        return 30
     }
 }
 

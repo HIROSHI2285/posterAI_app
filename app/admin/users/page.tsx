@@ -348,7 +348,7 @@ export default function AdminUsersPage() {
                                                 <div className="flex items-center justify-between mb-3">
                                                     <span className="text-sm font-medium text-gray-700">1日の上限</span>
                                                     <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-2xl font-bold text-gray-900">{user.daily_limit || 100}</span>
+                                                        <span className="text-2xl font-bold text-gray-900">{user.daily_limit || 30}</span>
                                                         <span className="text-sm text-gray-600">回/日</span>
                                                     </div>
                                                 </div>
@@ -364,6 +364,16 @@ export default function AdminUsersPage() {
                                                         10
                                                     </button>
                                                     <button
+                                                        onClick={() => handleUpdateLimit(user.id, 30)}
+                                                        disabled={updating === user.id}
+                                                        className={`h-10 w-16 text-lg font-semibold rounded-md transition-colors ${(user.daily_limit === 30 || !user.daily_limit)
+                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    >
+                                                        30
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleUpdateLimit(user.id, 50)}
                                                         disabled={updating === user.id}
                                                         className={`h-10 w-16 text-lg font-semibold rounded-md transition-colors ${user.daily_limit === 50
@@ -372,26 +382,6 @@ export default function AdminUsersPage() {
                                                             } disabled:opacity-50 disabled:cursor-not-allowed`}
                                                     >
                                                         50
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleUpdateLimit(user.id, 100)}
-                                                        disabled={updating === user.id}
-                                                        className={`h-10 w-16 text-lg font-semibold rounded-md transition-colors ${user.daily_limit === 100
-                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                                    >
-                                                        100
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleUpdateLimit(user.id, 999)}
-                                                        disabled={updating === user.id}
-                                                        className={`h-10 w-16 text-2xl font-bold rounded-md transition-colors ${user.daily_limit === 999
-                                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                                    >
-                                                        ∞
                                                     </button>
                                                     <Input
                                                         type="number"
