@@ -37,7 +37,7 @@ export async function generatePosterAsync(
             customUnit,
         } = formData
 
-        // detailedPromptはサンプル画像の詳細情報なので、freeTextとは分けて扱う
+        // detailedPromptはユーザー入力のカスタム指示、またはサンプル画像解析結果
 
         // サンプル画像の有無を確認
         if (sampleImageData) {
@@ -259,11 +259,7 @@ function buildImagePrompt(params: {
         detailedPrompt,
         orientation,
         dimensions,
-        aspectRatio,
         hasSampleImage,
-        sampleImageName,
-        hasMaterials,
-        materialsCount,
         generationMode = 'text-only',  // デフォルト
         imageReferenceStrength = 'normal'  // デフォルト
     } = params
