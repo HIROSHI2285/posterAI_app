@@ -26,6 +26,9 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const insertFileInputRef = useRef<HTMLInputElement>(null)
     const MAX_INSERT_IMAGES = 5
 
+    // アップスケール状態
+    const [isUpscaling, setIsUpscaling] = useState(false)
+
     // 表示する画像（編集済みがあればそちらを優先）
     const displayImageUrl = editedImageUrl || imageUrl
 
@@ -38,6 +41,45 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
+    }
+
+    // 高画質ダウンロード（2倍アップスケール）
+    const handleDownloadHQ = async () => {
+        if (!displayImageUrl) return
+
+        setIsUpscaling(true)
+        try {
+            const response = await fetch('/api/upscale', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageData: displayImageUrl,
+                    scale: 2
+                })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.imageUrl) {
+                    const link = document.createElement("a")
+                    link.href = data.imageUrl
+                    link.download = `poster-hq-${Date.now()}.png`
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                } else {
+                    alert('アップスケールに失敗しました')
+                }
+            } else {
+                const errorData = await response.json()
+                alert(`アップスケールに失敗しました: ${errorData.error || 'Unknown error'}`)
+            }
+        } catch (error) {
+            console.error('Upscale error:', error)
+            alert('アップスケール中にエラーが発生しました')
+        } finally {
+            setIsUpscaling(false)
+        }
     }
 
     const handleEdit = async () => {
@@ -381,14 +423,24 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     再生成
                                 </Button>
                                 <Button
-                                    onClick={handleDownload}
+                                    onClick={handleDownloadHQ}
+                                    disabled={isUpscaling}
                                     variant="default"
                                     size="sm"
                                     className="flex-1"
                                     style={{ backgroundColor: '#48a772', color: 'white' }}
                                 >
-                                    <Download className="h-4 w-4 mr-2" />
-                                    ダウンロード
+                                    {isUpscaling ? (
+                                        <>
+                                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                            処理中...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Download className="h-4 w-4 mr-2" />
+                                            ダウンロード
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         )}
