@@ -26,7 +26,8 @@ export async function POST(request: Request) {
 
         // リクエストボディを取得
         const body = await request.json()
-        const { imageData, editPrompt } = body
+        const { imageData, editPrompt, insertImagesData } = body
+        const insertImages: string[] = insertImagesData || []
 
         if (!imageData || !editPrompt) {
             return NextResponse.json(
@@ -44,16 +45,40 @@ export async function POST(request: Request) {
             )
         }
 
+        const hasInsertImages = insertImages.length > 0
         console.log(`[Edit] 画像編集開始 - ユーザー: ${session.user.email}`)
         console.log(`[Edit] 編集プロンプト: ${editPrompt}`)
+        console.log(`[Edit] 挿入画像数: ${insertImages.length}`)
 
         // Gemini APIクライアントを初期化
         const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
 
-        // 編集用プロンプトを構築
-        const fullPrompt = `この画像を以下の指示に従って編集してください。指定された部分以外は変更しないでください。
+        // プロンプトを構築（画像挿入がある場合は統合プロンプト）
+        let fullPrompt: string
+        if (hasInsertImages) {
+            const imageLabels = insertImages.map((_, i) => `${i + 2}枚目の画像`).join('、')
+            fullPrompt = `以下の${insertImages.length + 1}枚の画像を使って、編集と画像挿入を同時に行ってください。
+
+【1枚目の画像】ベース画像（ポスター）
+この画像をベースにします。
+
+【${imageLabels}】挿入する画像
+これらの画像をベース画像に合成します。
+
+【編集・挿入指示】
+${editPrompt}
+
+【重要な注意事項】
+1. 編集指示に従ってベース画像を修正してください
+2. 挿入する画像は、できるだけ元の形状・色・デザインを維持してください
+3. 挿入画像を変形・歪曲しないでください
+4. ベース画像のレイアウトやテキストを可能な限り維持してください
+5. 挿入画像がベース画像に自然に馴染むよう、影や光の調整のみ行ってください
+6. 高品質で自然な仕上がりになるよう調整してください`
+        } else {
+            fullPrompt = `この画像を以下の指示に従って編集してください。指定された部分以外は変更しないでください。
 
 【編集指示】
 ${editPrompt}
@@ -62,21 +87,39 @@ ${editPrompt}
 - 指示された部分のみを修正し、それ以外の要素（レイアウト、テキスト、その他のビジュアル要素）は可能な限り維持してください
 - 元の画像のスタイルと品質を維持してください
 - 自然な仕上がりになるよう調整してください`
+        }
 
         // 画像データを準備
         const base64Data = imageData.split(',')[1]
         const mimeType = imageData.match(/data:([^;]+);/)?.[1] || 'image/png'
 
-        // 画像編集リクエストを送信
-        const result = await model.generateContent([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const contentParts: any[] = [
             {
                 inlineData: {
                     data: base64Data,
                     mimeType: mimeType
                 }
-            },
-            fullPrompt
-        ])
+            }
+        ]
+
+        // 挿入画像を追加
+        for (const insertImg of insertImages) {
+            const insertBase64 = insertImg.split(',')[1]
+            const insertMimeType = insertImg.match(/data:([^;]+);/)?.[1] || 'image/png'
+            contentParts.push({
+                inlineData: {
+                    data: insertBase64,
+                    mimeType: insertMimeType
+                }
+            })
+        }
+
+        // プロンプトを追加
+        contentParts.push(fullPrompt)
+
+        // 画像編集リクエストを送信
+        const result = await model.generateContent(contentParts)
 
         const response = result.response
         const candidate = response.candidates?.[0]

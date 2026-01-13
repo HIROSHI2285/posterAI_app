@@ -50,7 +50,9 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageData: displayImageUrl,
-                    editPrompt: editPrompt.trim()
+                    editPrompt: editPrompt.trim(),
+                    // 画像が添付されていれば同時に挿入
+                    insertImagesData: insertImages.length > 0 ? insertImages.map(img => img.data) : undefined
                 })
             })
 
@@ -60,6 +62,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                     setEditedImageUrl(data.imageUrl)
                     setIsEditMode(false)
                     setEditPrompt("")
+                    setInsertImages([]) // 挿入画像もクリア
                 } else {
                     alert('編集に失敗しました: 画像が生成されませんでした')
                 }
@@ -78,6 +81,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const handleCancelEdit = () => {
         setIsEditMode(false)
         setEditPrompt("")
+        setInsertImages([]) // 挿入画像もクリア
     }
 
     // 画像挿入関連のハンドラー（複数画像対応）
@@ -179,20 +183,61 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             )}
                         </div>
 
-                        {/* 編集モード */}
+                        {/* 編集モード（画像挿入も同時対応） */}
                         {isEditMode ? (
                             <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <div className="flex items-center gap-2 text-blue-700">
                                     <Edit3 className="h-4 w-4" />
                                     <span className="text-sm font-medium">画像編集モード</span>
                                 </div>
+
                                 <Textarea
                                     value={editPrompt}
                                     onChange={(e) => setEditPrompt(e.target.value)}
                                     placeholder="修正内容を入力してください&#10;例: 背景を夕焼けに変更してください&#10;例: 文字の色を赤に変更してください"
-                                    rows={4}
+                                    rows={3}
                                     className="bg-white"
                                 />
+
+                                {/* 画像追加オプション（任意） */}
+                                <div className="p-2 bg-white rounded border">
+                                    <div className="text-xs text-gray-500 mb-2">画像を追加（任意・最大5枚）</div>
+                                    <input
+                                        ref={insertFileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleInsertImageUpload}
+                                        className="hidden"
+                                    />
+
+                                    {insertImages.length > 0 && (
+                                        <div className="space-y-1 mb-2">
+                                            {insertImages.map((img, index) => (
+                                                <div key={index} className="flex items-center gap-2 p-1 bg-gray-50 rounded text-xs">
+                                                    <img src={img.data} alt={`${index + 1}`} className="w-8 h-8 object-contain rounded" />
+                                                    <span className="flex-1 truncate">{img.name}</span>
+                                                    <Button variant="ghost" size="sm" onClick={() => removeInsertImage(index)} className="h-6 w-6 p-0">
+                                                        <X className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {insertImages.length < MAX_INSERT_IMAGES && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-8 text-xs"
+                                            onClick={() => insertFileInputRef.current?.click()}
+                                        >
+                                            <Upload className="h-3 w-3 mr-1" />
+                                            {insertImages.length === 0 ? '画像を追加' : `追加（あと${MAX_INSERT_IMAGES - insertImages.length}枚）`}
+                                        </Button>
+                                    )}
+                                </div>
+
                                 <div className="flex gap-2">
                                     <Button
                                         onClick={handleEdit}
@@ -202,7 +247,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         style={{ backgroundColor: '#48a772', color: 'white' }}
                                     >
                                         <Wand2 className="h-4 w-4 mr-2" />
-                                        編集を適用
+                                        {insertImages.length > 0 ? '編集+挿入を適用' : '編集を適用'}
                                     </Button>
                                     <Button
                                         onClick={handleCancelEdit}
