@@ -57,17 +57,18 @@ export async function POST(request: Request) {
         const newHeight = Math.round(originalHeight * actualScale)
         console.log(`[Upscale] アップスケール後サイズ: ${newWidth}x${newHeight}`)
 
-        // Lanczos3アルゴリズムでアップスケール
+        // Lanczos3アルゴリズムでアップスケール（PNG無圧縮で高画質維持）
         const upscaledBuffer = await sharp(inputBuffer)
             .resize(newWidth, newHeight, {
                 kernel: sharp.kernel.lanczos3,
                 fit: 'fill'
             })
+            .png({ compressionLevel: 0 })
             .toBuffer()
 
         // Base64にエンコード
         const upscaledBase64 = upscaledBuffer.toString('base64')
-        const upscaledImageData = `data:${mimeType};base64,${upscaledBase64}`
+        const upscaledImageData = `data:image/png;base64,${upscaledBase64}`
 
         console.log(`[Upscale] アップスケール完了`)
 
