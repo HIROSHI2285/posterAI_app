@@ -26,9 +26,11 @@ export async function POST(request: Request) {
 
         // リクエストボディを取得
         const body = await request.json()
-        const { baseImageData, insertImageData, insertPrompt } = body
+        // 複数画像対応: insertImagesData（配列）を優先、フォールバックで単一画像
+        const { baseImageData, insertImagesData, insertImageData, insertPrompt } = body
+        const insertImages: string[] = insertImagesData || (insertImageData ? [insertImageData] : [])
 
-        if (!baseImageData || !insertImageData || !insertPrompt) {
+        if (!baseImageData || insertImages.length === 0 || !insertPrompt) {
             return NextResponse.json(
                 { error: 'ベース画像、挿入画像、配置プロンプトが必要です' },
                 { status: 400 }
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
         }
 
         console.log(`[Insert] 画像挿入開始 - ユーザー: ${session.user.email}`)
+        console.log(`[Insert] 挿入画像数: ${insertImages.length}`)
         console.log(`[Insert] 配置プロンプト: ${insertPrompt}`)
 
         // Gemini APIクライアントを初期化
@@ -52,14 +55,15 @@ export async function POST(request: Request) {
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
 
-        // 挿入用プロンプトを構築（元画像を維持しつつ馴染むように強調）
-        const fullPrompt = `以下の2つの画像を合成してください。
+        // 挿入用プロンプトを構築（複数画像対応）
+        const imageLabels = insertImages.map((_, i) => `${i + 2}枚目の画像`).join('、')
+        const fullPrompt = `以下の${insertImages.length + 1}枚の画像を合成してください。
 
 【1枚目の画像】ベース画像（ポスター）
 この画像の全体的なデザイン、レイアウト、テキスト、色合いを可能な限り維持してください。
 
-【2枚目の画像】挿入する画像
-この画像を以下の指示に従って、ベース画像に挿入・合成してください。
+【${imageLabels}】挿入する画像
+これらの画像を以下の指示に従って、ベース画像に挿入・合成してください。
 
 【配置指示】
 ${insertPrompt}
@@ -71,29 +75,37 @@ ${insertPrompt}
 4. 挿入画像がベース画像に自然に馴染むよう、影や光の調整のみ行ってください
 5. 高品質で自然な仕上がりになるよう調整してください`
 
-        // 画像データを準備
+        // 画像データを準備（ベース画像 + 挿入画像たち）
         const baseBase64 = baseImageData.split(',')[1]
         const baseMimeType = baseImageData.match(/data:([^;]+);/)?.[1] || 'image/png'
 
-        const insertBase64 = insertImageData.split(',')[1]
-        const insertMimeType = insertImageData.match(/data:([^;]+);/)?.[1] || 'image/png'
-
-        // 画像挿入リクエストを送信（2つの画像 + プロンプト）
-        const result = await model.generateContent([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const contentParts: any[] = [
             {
                 inlineData: {
                     data: baseBase64,
                     mimeType: baseMimeType
                 }
-            },
-            {
+            }
+        ]
+
+        // 挿入画像を追加
+        for (const insertImg of insertImages) {
+            const insertBase64 = insertImg.split(',')[1]
+            const insertMimeType = insertImg.match(/data:([^;]+);/)?.[1] || 'image/png'
+            contentParts.push({
                 inlineData: {
                     data: insertBase64,
                     mimeType: insertMimeType
                 }
-            },
-            fullPrompt
-        ])
+            })
+        }
+
+        // プロンプトを追加
+        contentParts.push(fullPrompt)
+
+        // 画像挿入リクエストを送信
+        const result = await model.generateContent(contentParts)
 
         const response = result.response
         const candidate = response.candidates?.[0]

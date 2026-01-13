@@ -18,13 +18,13 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const [isEditing, setIsEditing] = useState(false)
     const [editedImageUrl, setEditedImageUrl] = useState<string | null>(null)
 
-    // 画像挿入モード用の状態
+    // 画像挿入モード用の状態（複数画像対応）
     const [isInsertMode, setIsInsertMode] = useState(false)
-    const [insertImage, setInsertImage] = useState<string | null>(null)
-    const [insertImageName, setInsertImageName] = useState<string>("")
+    const [insertImages, setInsertImages] = useState<{ data: string, name: string }[]>([])
     const [insertPrompt, setInsertPrompt] = useState("")
     const [isInserting, setIsInserting] = useState(false)
     const insertFileInputRef = useRef<HTMLInputElement>(null)
+    const MAX_INSERT_IMAGES = 5
 
     // 表示する画像（編集済みがあればそちらを優先）
     const displayImageUrl = editedImageUrl || imageUrl
@@ -80,21 +80,36 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setEditPrompt("")
     }
 
-    // 画像挿入関連のハンドラー
+    // 画像挿入関連のハンドラー（複数画像対応）
     const handleInsertImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onload = (event) => {
-                setInsertImage(event.target?.result as string)
-                setInsertImageName(file.name)
-            }
-            reader.readAsDataURL(file)
+        const files = e.target.files
+        if (files) {
+            const remainingSlots = MAX_INSERT_IMAGES - insertImages.length
+            const filesToProcess = Array.from(files).slice(0, remainingSlots)
+
+            filesToProcess.forEach(file => {
+                const reader = new FileReader()
+                reader.onload = (event) => {
+                    setInsertImages(prev => [
+                        ...prev,
+                        { data: event.target?.result as string, name: file.name }
+                    ])
+                }
+                reader.readAsDataURL(file)
+            })
+        }
+        // 入力をリセット（同じファイルを再選択可能に）
+        if (insertFileInputRef.current) {
+            insertFileInputRef.current.value = ''
         }
     }
 
+    const removeInsertImage = (index: number) => {
+        setInsertImages(prev => prev.filter((_, i) => i !== index))
+    }
+
     const handleInsert = async () => {
-        if (!displayImageUrl || !insertImage || !insertPrompt.trim()) return
+        if (!displayImageUrl || insertImages.length === 0 || !insertPrompt.trim()) return
 
         setIsInserting(true)
         try {
@@ -103,7 +118,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     baseImageData: displayImageUrl,
-                    insertImageData: insertImage,
+                    insertImagesData: insertImages.map(img => img.data),
                     insertPrompt: insertPrompt.trim()
                 })
             })
@@ -113,8 +128,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                 if (data.imageUrl) {
                     setEditedImageUrl(data.imageUrl)
                     setIsInsertMode(false)
-                    setInsertImage(null)
-                    setInsertImageName("")
+                    setInsertImages([])
                     setInsertPrompt("")
                 } else {
                     alert('画像挿入に失敗しました: 画像が生成されませんでした')
@@ -133,8 +147,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     const handleCancelInsert = () => {
         setIsInsertMode(false)
-        setInsertImage(null)
-        setInsertImageName("")
+        setInsertImages([])
         setInsertPrompt("")
     }
 
@@ -206,34 +219,41 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             <div className="space-y-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
                                 <div className="flex items-center gap-2 text-purple-700">
                                     <ImagePlus className="h-4 w-4" />
-                                    <span className="text-sm font-medium">画像挿入モード</span>
+                                    <span className="text-sm font-medium">画像挿入モード（最大5枚）</span>
                                 </div>
 
                                 {/* 挿入画像アップロード */}
-                                <div>
+                                <div className="space-y-2">
                                     <input
                                         ref={insertFileInputRef}
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         onChange={handleInsertImageUpload}
                                         className="hidden"
                                     />
-                                    {insertImage ? (
-                                        <div className="flex items-center gap-2 p-2 bg-white rounded border">
-                                            <img src={insertImage} alt="Insert" className="w-12 h-12 object-contain rounded" />
-                                            <span className="text-sm flex-1 truncate">{insertImageName}</span>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setInsertImage(null)
-                                                    setInsertImageName("")
-                                                }}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
+
+                                    {/* アップロード済み画像リスト */}
+                                    {insertImages.length > 0 && (
+                                        <div className="space-y-2">
+                                            {insertImages.map((img, index) => (
+                                                <div key={index} className="flex items-center gap-2 p-2 bg-white rounded border">
+                                                    <img src={img.data} alt={`Insert ${index + 1}`} className="w-10 h-10 object-contain rounded" />
+                                                    <span className="text-xs flex-1 truncate">{img.name}</span>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => removeInsertImage(index)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ) : (
+                                    )}
+
+                                    {/* 追加ボタン */}
+                                    {insertImages.length < MAX_INSERT_IMAGES && (
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -241,7 +261,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                             onClick={() => insertFileInputRef.current?.click()}
                                         >
                                             <Upload className="h-4 w-4 mr-2" />
-                                            挿入する画像をアップロード
+                                            {insertImages.length === 0 ? '挿入する画像をアップロード' : `画像を追加（あと${MAX_INSERT_IMAGES - insertImages.length}枚）`}
                                         </Button>
                                     )}
                                 </div>
@@ -258,7 +278,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 <div className="flex gap-2">
                                     <Button
                                         onClick={handleInsert}
-                                        disabled={!insertImage || !insertPrompt.trim()}
+                                        disabled={insertImages.length === 0 || !insertPrompt.trim()}
                                         size="sm"
                                         className="flex-1"
                                         style={{ backgroundColor: '#9333ea', color: 'white' }}
