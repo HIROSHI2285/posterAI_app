@@ -188,31 +188,31 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <div className="flex items-center gap-2 text-blue-700">
                                     <Edit3 className="h-4 w-4" />
-                                    <span className="text-sm font-medium">画像編集モード</span>
+                                    <span className="text-sm font-medium">編集モード</span>
                                 </div>
 
                                 <Textarea
                                     value={editPrompt}
                                     onChange={(e) => setEditPrompt(e.target.value)}
-                                    placeholder="修正内容を入力してください&#10;例: 背景を夕焼けに変更してください&#10;例: 文字の色を赤に変更してください"
-                                    rows={3}
-                                    className="bg-white"
+                                    placeholder="修正内容を入力してください0;&#10;例: 背景を夕焼けに変更してください&#10;例: 文字の色を赤に変更してください&#10;例: 右下にロゴを配置してください"
+                                    rows={6}
+                                    className="bg-white text-base"
                                 />
 
                                 {/* 画像追加オプション（任意） */}
-                                <div className="p-2 bg-white rounded border">
-                                    <div className="text-xs text-gray-500 mb-2">画像を追加（任意・最大5枚）</div>
-                                    <input
-                                        ref={insertFileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        onChange={handleInsertImageUpload}
-                                        className="hidden"
-                                    />
+                                <input
+                                    ref={insertFileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleInsertImageUpload}
+                                    className="hidden"
+                                />
 
-                                    {insertImages.length > 0 && (
-                                        <div className="space-y-1 mb-2">
+                                {insertImages.length > 0 && (
+                                    <div className="p-2 bg-white rounded border">
+                                        <div className="text-xs text-gray-500 mb-1">追加画像（最大5枚）</div>
+                                        <div className="space-y-1">
                                             {insertImages.map((img, index) => (
                                                 <div key={index} className="flex items-center gap-2 p-1 bg-gray-50 rounded text-xs">
                                                     <img src={img.data} alt={`${index + 1}`} className="w-8 h-8 object-contain rounded" />
@@ -223,27 +223,29 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                                 </div>
                                             ))}
                                         </div>
-                                    )}
+                                    </div>
+                                )}
 
-                                    {insertImages.length < MAX_INSERT_IMAGES && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="w-full h-8 text-xs"
-                                            onClick={() => insertFileInputRef.current?.click()}
-                                        >
-                                            <Upload className="h-3 w-3 mr-1" />
-                                            {insertImages.length === 0 ? '画像を追加' : `追加（あと${MAX_INSERT_IMAGES - insertImages.length}枚）`}
-                                        </Button>
-                                    )}
-                                </div>
+                                {/* 画像追加ボタン */}
+                                {insertImages.length < MAX_INSERT_IMAGES && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full"
+                                        onClick={() => insertFileInputRef.current?.click()}
+                                    >
+                                        <Upload className="h-4 w-4 mr-2" />
+                                        {insertImages.length === 0 ? '画像追加（任意）' : `画像追加（${insertImages.length}/5）`}
+                                    </Button>
+                                )}
 
-                                <div className="flex gap-2">
+                                {/* 編集適用 + キャンセル（縦並び） */}
+                                <div className="space-y-2">
                                     <Button
                                         onClick={handleEdit}
                                         disabled={!editPrompt.trim()}
                                         size="sm"
-                                        className="flex-1"
+                                        className="w-full"
                                         style={{ backgroundColor: '#48a772', color: 'white' }}
                                     >
                                         <Wand2 className="h-4 w-4 mr-2" />
@@ -253,6 +255,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         onClick={handleCancelEdit}
                                         variant="outline"
                                         size="sm"
+                                        className="w-full"
                                     >
                                         <X className="h-4 w-4 mr-2" />
                                         キャンセル
