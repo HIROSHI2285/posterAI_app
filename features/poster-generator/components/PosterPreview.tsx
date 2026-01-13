@@ -250,8 +250,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 <Textarea
                                     value={insertPrompt}
                                     onChange={(e) => setInsertPrompt(e.target.value)}
-                                    placeholder="配置場所や挿入方法を指定してください&#10;例: 右下に自然に配置してください&#10;例: 中央上部にロゴとして配置してください&#10;例: 背景として全体に配置してください"
-                                    rows={3}
+                                    placeholder="配置場所や挿入方法を指定してください&#10;【挿入】&#10;例: 右下に自然に配置してください&#10;例: 中央上部にロゴとして配置&#10;【差し替え】&#10;例: 現在の人物をこの画像に差し替え&#10;例: 背景をこの画像に置き換え"
+                                    rows={4}
                                     className="bg-white"
                                 />
 
