@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import sharp from 'sharp'
 
 // Vercel Pro: 60秒まで延長可能
 export const maxDuration = 60
@@ -156,11 +157,38 @@ ${insertPrompt}
             )
         }
 
+        // 元画像のサイズを取得してリサイズ
+        console.log(`[Insert] 元画像サイズを取得中...`)
+        const originalBuffer = Buffer.from(baseBase64, 'base64')
+        const originalMetadata = await sharp(originalBuffer).metadata()
+        const originalWidth = originalMetadata.width
+        const originalHeight = originalMetadata.height
+        console.log(`[Insert] 元画像サイズ: ${originalWidth}x${originalHeight}`)
+
+        // 合成済み画像を元のサイズにリサイズ
+        const insertedBase64 = insertedImageData.split(',')[1]
+        const insertedBuffer = Buffer.from(insertedBase64, 'base64')
+        const insertedMetadata = await sharp(insertedBuffer).metadata()
+        console.log(`[Insert] 合成後画像サイズ: ${insertedMetadata.width}x${insertedMetadata.height}`)
+
+        let finalImageData = insertedImageData
+        if (originalWidth && originalHeight &&
+            (insertedMetadata.width !== originalWidth || insertedMetadata.height !== originalHeight)) {
+            console.log(`[Insert] サイズが異なるためリサイズ実行: ${insertedMetadata.width}x${insertedMetadata.height} -> ${originalWidth}x${originalHeight}`)
+            const resizedBuffer = await sharp(insertedBuffer)
+                .resize(originalWidth, originalHeight, { fit: 'fill' })
+                .toBuffer()
+            const resizedBase64 = resizedBuffer.toString('base64')
+            const insertedMimeType = insertedImageData.match(/data:([^;]+);/)?.[1] || 'image/png'
+            finalImageData = `data:${insertedMimeType};base64,${resizedBase64}`
+            console.log(`[Insert] リサイズ完了`)
+        }
+
         console.log(`[Insert] 挿入完了`)
 
         return NextResponse.json({
             success: true,
-            imageUrl: insertedImageData
+            imageUrl: finalImageData
         })
 
     } catch (error) {

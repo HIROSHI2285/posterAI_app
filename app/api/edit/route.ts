@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import sharp from 'sharp'
 
 // Vercel Pro: 60秒まで延長可能
 export const maxDuration = 60
@@ -170,11 +171,38 @@ ${editPrompt}
             )
         }
 
+        // 元画像のサイズを取得してリサイズ
+        console.log(`[Edit] 元画像サイズを取得中...`)
+        const originalBuffer = Buffer.from(base64Data, 'base64')
+        const originalMetadata = await sharp(originalBuffer).metadata()
+        const originalWidth = originalMetadata.width
+        const originalHeight = originalMetadata.height
+        console.log(`[Edit] 元画像サイズ: ${originalWidth}x${originalHeight}`)
+
+        // 編集済み画像を元のサイズにリサイズ
+        const editedBase64 = editedImageData.split(',')[1]
+        const editedBuffer = Buffer.from(editedBase64, 'base64')
+        const editedMetadata = await sharp(editedBuffer).metadata()
+        console.log(`[Edit] 編集後画像サイズ: ${editedMetadata.width}x${editedMetadata.height}`)
+
+        let finalImageData = editedImageData
+        if (originalWidth && originalHeight &&
+            (editedMetadata.width !== originalWidth || editedMetadata.height !== originalHeight)) {
+            console.log(`[Edit] サイズが異なるためリサイズ実行: ${editedMetadata.width}x${editedMetadata.height} -> ${originalWidth}x${originalHeight}`)
+            const resizedBuffer = await sharp(editedBuffer)
+                .resize(originalWidth, originalHeight, { fit: 'fill' })
+                .toBuffer()
+            const resizedBase64 = resizedBuffer.toString('base64')
+            const editedMimeType = editedImageData.match(/data:([^;]+);/)?.[1] || 'image/png'
+            finalImageData = `data:${editedMimeType};base64,${resizedBase64}`
+            console.log(`[Edit] リサイズ完了`)
+        }
+
         console.log(`[Edit] 編集完了`)
 
         return NextResponse.json({
             success: true,
-            imageUrl: editedImageData
+            imageUrl: finalImageData
         })
 
     } catch (error) {
