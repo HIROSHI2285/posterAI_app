@@ -226,40 +226,47 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     </div>
                                 )}
 
-                                {/* 画像追加ボタン */}
-                                {insertImages.length < MAX_INSERT_IMAGES && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full"
-                                        onClick={() => insertFileInputRef.current?.click()}
-                                    >
-                                        <Upload className="h-4 w-4 mr-2" />
-                                        {insertImages.length === 0 ? '画像追加（任意）' : `画像追加（${insertImages.length}/5）`}
-                                    </Button>
-                                )}
+                                {/* ボタンエリア: 左に画像追加、右に編集+キャンセル */}
+                                <div className="flex gap-2">
+                                    {/* 左側: 画像追加ボタン */}
+                                    <div className="flex-1">
+                                        {insertImages.length < MAX_INSERT_IMAGES && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full h-full min-h-[72px]"
+                                                onClick={() => insertFileInputRef.current?.click()}
+                                            >
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <Upload className="h-5 w-5" />
+                                                    <span className="text-xs">{insertImages.length === 0 ? '画像追加' : `追加(${insertImages.length}/5)`}</span>
+                                                </div>
+                                            </Button>
+                                        )}
+                                    </div>
 
-                                {/* 編集適用 + キャンセル（縦並び） */}
-                                <div className="space-y-2">
-                                    <Button
-                                        onClick={handleEdit}
-                                        disabled={!editPrompt.trim()}
-                                        size="sm"
-                                        className="w-full"
-                                        style={{ backgroundColor: '#48a772', color: 'white' }}
-                                    >
-                                        <Wand2 className="h-4 w-4 mr-2" />
-                                        {insertImages.length > 0 ? '編集+挿入を適用' : '編集を適用'}
-                                    </Button>
-                                    <Button
-                                        onClick={handleCancelEdit}
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full"
-                                    >
-                                        <X className="h-4 w-4 mr-2" />
-                                        キャンセル
-                                    </Button>
+                                    {/* 右側: 編集+キャンセル（縦並び） */}
+                                    <div className="flex-1 space-y-2">
+                                        <Button
+                                            onClick={handleEdit}
+                                            disabled={!editPrompt.trim()}
+                                            size="sm"
+                                            className="w-full"
+                                            style={{ backgroundColor: '#48a772', color: 'white' }}
+                                        >
+                                            <Wand2 className="h-4 w-4 mr-2" />
+                                            {insertImages.length > 0 ? '編集+挿入' : '編集を適用'}
+                                        </Button>
+                                        <Button
+                                            onClick={handleCancelEdit}
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full"
+                                        >
+                                            <X className="h-4 w-4 mr-2" />
+                                            キャンセル
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         ) : isInsertMode ? (
