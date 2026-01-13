@@ -135,6 +135,46 @@ Include professional typography and modern design elements.
 3. エラーハンドリングとリトライロジック
 4. 生成画像をCloudflare R2に保存
 
+### PosterAI APIエンドポイント
+
+| エンドポイント | メソッド | 説明 |
+|---------------|---------|------|
+| `/api/analyze` | POST | サンプル画像の解析 |
+| `/api/jobs` | POST | ポスター生成ジョブの作成 |
+| `/api/jobs/[id]` | GET | ジョブ状態の取得 |
+| `/api/edit` | POST | 生成済み画像の編集（+画像挿入対応） |
+| `/api/insert` | POST | 画像挿入（複数画像合成） |
+
+### 編集・挿入API
+
+#### `/api/edit`（編集+挿入統合）
+```typescript
+POST /api/edit
+Body: {
+  imageData: string,        // ベース画像（base64）
+  editPrompt: string,       // 編集指示
+  insertImagesData?: string[] // 挿入画像（最大5枚、任意）
+}
+Response: {
+  success: boolean,
+  imageUrl: string          // 編集済み画像（base64）
+}
+```
+
+#### `/api/insert`（画像挿入専用）
+```typescript
+POST /api/insert
+Body: {
+  baseImageData: string,    // ベース画像（base64）
+  insertImagesData: string[], // 挿入画像（最大5枚）
+  insertPrompt: string      // 配置指示
+}
+Response: {
+  success: boolean,
+  imageUrl: string          // 合成済み画像（base64）
+}
+```
+
 ## 📚 参考リンク
 
 - [Gemini API Documentation](https://google.dev)

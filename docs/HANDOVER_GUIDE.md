@@ -79,7 +79,7 @@ CREATE TABLE allowed_users (
   email TEXT UNIQUE NOT NULL,
   is_admin BOOLEAN DEFAULT FALSE,
   is_active BOOLEAN DEFAULT TRUE,
-  daily_limit INTEGER DEFAULT 50,
+  daily_limit INTEGER DEFAULT 30,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -177,6 +177,8 @@ UptimeRobotで5分ごとにpingを送ることでスリープを防止できま�
 - [ ] Googleログインが動作する
 - [ ] 管理者がユーザー管理ページにアクセスできる
 - [ ] ポスター生成が動作する
+- [ ] 画像編集機能が動作する
+- [ ] 画像挿入機能が動作する
 - [ ] サンプル画像解析が動作する
 
 ### 旧オーナーが削除すべきもの
@@ -194,4 +196,5 @@ UptimeRobotで5分ごとにpingを送ることでスリープを防止できま�
 ---
 
 **作成日**: 2026-01-02  
-**バージョン**: 1.0
+**更新日**: 2026-01-13  
+**バージョン**: 1.1
