@@ -50,9 +50,19 @@ export default function HowToUsePage() {
                     <h1 className="text-5xl font-bold text-white mb-4">
                         PosterAIの使い方
                     </h1>
-                    <p className="text-xl text-gray-400">
+                    <p className="text-xl text-gray-400 mb-6">
                         AIで簡単にプロ品質のポスターを作成する方法をステップバイステップで解説
                     </p>
+
+                    {/* 謳い文句 */}
+                    <div className="inline-block bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-2xl px-8 py-4 border border-green-500/30">
+                        <p className="text-2xl font-bold text-green-300 mb-2">
+                            ✨ 煩雑なプロンプト設計も画像から自動抽出
+                        </p>
+                        <p className="text-gray-300">
+                            サンプル画像をアップロードするだけで、AIが最適なプロンプトを生成します
+                        </p>
+                    </div>
                 </div>
 
                 {/* 基本的な使い方 */}
@@ -469,6 +479,122 @@ export default function HowToUsePage() {
                     </div>
                 </section>
 
+                {/* 新機能 v1.3.0 セクション */}
+                <section className="mb-20">
+                    <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-3xl p-12 border-2 border-purple-500/50 mb-8">
+                        <h2 className="text-4xl font-bold text-white mb-4 flex items-center gap-3">
+                            🚀 新機能 v1.3.0
+                        </h2>
+                        <p className="text-xl text-gray-200">
+                            生成した画像を編集・カスタマイズできる新機能が追加されました
+                        </p>
+                    </div>
+
+                    <div className="space-y-12">
+                        {/* 画像編集機能 */}
+                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+                            <div className="flex items-start gap-6 mb-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                                    ✏️
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-bold text-white mb-2">画像編集機能</h3>
+                                    <p className="text-gray-300">
+                                        生成されたポスターを後から修正できます。背景色の変更、テキストの編集、要素の追加など自由自在。
+                                    </p>
+                                </div>
+                            </div>
+                            <img
+                                src="/samples/edit_feature.png"
+                                alt="画像編集機能の図解"
+                                className="w-full rounded-xl border border-gray-700"
+                            />
+                            <div className="mt-6 grid md:grid-cols-3 gap-4">
+                                <div className="bg-gray-900 rounded-lg p-4">
+                                    <p className="text-blue-400 font-bold mb-1">背景変更</p>
+                                    <p className="text-gray-400 text-sm">色やパターンを変更</p>
+                                </div>
+                                <div className="bg-gray-900 rounded-lg p-4">
+                                    <p className="text-blue-400 font-bold mb-1">テキスト編集</p>
+                                    <p className="text-gray-400 text-sm">文字の色やサイズを調整</p>
+                                </div>
+                                <div className="bg-gray-900 rounded-lg p-4">
+                                    <p className="text-blue-400 font-bold mb-1">要素追加</p>
+                                    <p className="text-gray-400 text-sm">装飾やイラストを追加</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 画像挿入機能 */}
+                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+                            <div className="flex items-start gap-6 mb-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white text-xl font-bold">
+                                    📸
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-bold text-white mb-2">画像挿入機能</h3>
+                                    <p className="text-gray-300">
+                                        ロゴ、商品写真、人物画像など、準備した画像をポスターに自然に合成できます。最大5枚まで同時挿入可能！
+                                    </p>
+                                </div>
+                            </div>
+                            <img
+                                src="/samples/insert_feature.png"
+                                alt="画像挿入機能の図解"
+                                className="w-full rounded-xl border border-gray-700"
+                            />
+                            <div className="mt-6 bg-gray-900 rounded-xl p-5 border border-gray-700">
+                                <h4 className="text-lg font-bold text-white mb-3">💡 使い方のヒント</h4>
+                                <ul className="space-y-2 text-gray-300">
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-purple-400">✓</span>
+                                        <span>配置場所を指定できます（例：右下にロゴを配置）</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-purple-400">✓</span>
+                                        <span>AIが自動で影や光を調整して自然に合成</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-purple-400">✓</span>
+                                        <span>既存の画像を差し替えることも可能</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* 高画質ダウンロード */}
+                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+                            <div className="flex items-start gap-6 mb-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white text-xl font-bold">
+                                    📥
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-bold text-white mb-2">高画質ダウンロード（350 DPI）</h3>
+                                    <p className="text-gray-300">
+                                        ダウンロード時に自動で2倍にアップスケール。商業印刷にも対応できる高解像度で出力します。追加コストはかかりません！
+                                    </p>
+                                </div>
+                            </div>
+                            <img
+                                src="/samples/download_quality.png"
+                                alt="高画質ダウンロード機能の図解"
+                                className="w-full rounded-xl border border-gray-700"
+                            />
+                            <div className="mt-6 grid md:grid-cols-2 gap-4">
+                                <div className="bg-gray-900 rounded-lg p-4 border-2 border-gray-700">
+                                    <p className="text-gray-400 text-sm mb-1">生成時</p>
+                                    <p className="text-white font-bold">175 DPI</p>
+                                    <p className="text-gray-500 text-xs">1432 × 2024 px</p>
+                                </div>
+                                <div className="bg-gray-900 rounded-lg p-4 border-2 border-green-500">
+                                    <p className="text-green-400 text-sm mb-1">ダウンロード時</p>
+                                    <p className="text-white font-bold">350 DPI ✨</p>
+                                    <p className="text-gray-500 text-xs">2864 × 4048 px</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
                 {/* おすすめの使い方 */}
                 <section className="mb-20">
                     <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
