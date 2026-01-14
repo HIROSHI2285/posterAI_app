@@ -130,7 +130,7 @@ export default function HowToUsePage() {
                         <img
                             src="/samples/guide_basic.png"
                             alt="基本パターン：テキスト入力でポスター作成"
-                            className="w-full max-w-md mx-auto"
+                            className="w-full max-w-md mx-auto rounded-2xl"
                         />
                     </div>
                     <div className="space-y-6">
@@ -208,7 +208,7 @@ export default function HowToUsePage() {
                             <img
                                 src="/samples/guide_step1.png"
                                 alt="STEP 1: サンプル画像をアップロード"
-                                className="w-full max-w-md mx-auto"
+                                className="w-full max-w-md mx-auto rounded-2xl"
                             />
                         </div>
                     </div>
@@ -219,7 +219,7 @@ export default function HowToUsePage() {
                             <img
                                 src="/samples/guide_step2.png"
                                 alt="STEP 2: AIが自動解析"
-                                className="w-full max-w-md mx-auto"
+                                className="w-full max-w-md mx-auto rounded-2xl"
                             />
                         </div>
                         <div>
@@ -281,13 +281,11 @@ export default function HowToUsePage() {
                             </ul>
                         </div>
                         <div className="order-1 lg:order-2">
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                                <img
-                                    src="/samples/guide_step3.png"
-                                    alt="STEP 3: ポスター完成"
-                                    className="w-full max-w-md mx-auto rounded-xl"
-                                />
-                            </div>
+                            <img
+                                src="/samples/guide_step3.png"
+                                alt="STEP 3: ポスター完成"
+                                className="w-full max-w-md mx-auto rounded-2xl"
+                            />
                         </div>
                     </div>
                 </div>
@@ -310,7 +308,7 @@ export default function HowToUsePage() {
                 <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* 編集機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-xl bg-white/5">
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
                             <img
                                 src="/samples/guide_edit.png"
                                 alt="編集機能"
@@ -344,7 +342,7 @@ export default function HowToUsePage() {
 
                     {/* 挿入機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-xl bg-white/5">
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
                             <img
                                 src="/samples/guide_insert.png"
                                 alt="画像挿入機能"
@@ -378,7 +376,7 @@ export default function HowToUsePage() {
 
                     {/* ダウンロード機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-xl bg-white/5">
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
                             <img
                                 src="/samples/guide_download.png"
                                 alt="高画質ダウンロード"
