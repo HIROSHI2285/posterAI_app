@@ -127,13 +127,11 @@ export default function HowToUsePage() {
 
                 <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
                     <div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                            <img
-                                src="/samples/guide_basic.png"
-                                alt="基本パターン：テキスト入力でポスター作成"
-                                className="w-full rounded-xl"
-                            />
-                        </div>
+                        <img
+                            src="/samples/guide_basic.png"
+                            alt="基本パターン：テキスト入力でポスター作成"
+                            className="w-full max-w-md mx-auto"
+                        />
                     </div>
                     <div className="space-y-6">
                         <div className="flex gap-4 items-start">
@@ -207,26 +205,22 @@ export default function HowToUsePage() {
                             </ul>
                         </div>
                         <div className="order-1 lg:order-2">
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                                <img
-                                    src="/samples/guide_step1.png"
-                                    alt="STEP 1: サンプル画像をアップロード"
-                                    className="w-full max-w-md mx-auto rounded-xl"
-                                />
-                            </div>
+                            <img
+                                src="/samples/guide_step1.png"
+                                alt="STEP 1: サンプル画像をアップロード"
+                                className="w-full max-w-md mx-auto"
+                            />
                         </div>
                     </div>
 
                     {/* STEP 2 */}
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
                         <div>
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                                <img
-                                    src="/samples/guide_step2.png"
-                                    alt="STEP 2: AIが自動解析"
-                                    className="w-full max-w-md mx-auto rounded-xl"
-                                />
-                            </div>
+                            <img
+                                src="/samples/guide_step2.png"
+                                alt="STEP 2: AIが自動解析"
+                                className="w-full max-w-md mx-auto"
+                            />
                         </div>
                         <div>
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-500 text-white text-2xl font-bold mb-6 shadow-lg">
