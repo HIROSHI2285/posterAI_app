@@ -111,11 +111,11 @@ export default function HowToUsePage() {
                 </div>
             </section>
 
-            {/* 基本パターン：サンプル画像なしで作成 */}
+            {/* 使い方1：基本パターン */}
             <section className="container mx-auto px-4 py-20">
                 <div className="text-center mb-16">
-                    <div className="inline-block bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-blue-500/30">
-                        📝 基本パターン
+                    <div className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-bold mb-6">
+                        使い方 1：基本パターン
                     </div>
                     <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
                         テキスト入力だけでポスター作成
@@ -165,11 +165,11 @@ export default function HowToUsePage() {
                 </div>
             </section>
 
-            {/* 応用パターン：サンプル画像を使う3ステップ */}
+            {/* 使い方2：応用パターン */}
             <section className="container mx-auto px-4 py-20">
                 <div className="text-center mb-16">
-                    <div className="inline-block bg-green-500/20 text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-green-500/30">
-                        🖼️ 応用パターン
+                    <div className="inline-block bg-green-500 text-white px-6 py-3 rounded-lg text-lg font-bold mb-6">
+                        使い方 2：応用パターン（サンプル画像を使用）
                     </div>
                     <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
                         サンプル画像から<span className="text-green-400">3ステップ</span>で再現
