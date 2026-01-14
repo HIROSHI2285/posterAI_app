@@ -1,850 +1,396 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, CheckCircle2, Sparkles, Upload, Download, Palette, Layout, FileImage } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Image from 'next/image'
+import { ArrowRight, Sparkles, CheckCircle, Download, Edit3, Image, Upload, Wand2 } from 'lucide-react'
 
 export default function HowToUsePage() {
     const router = useRouter()
 
     return (
-        <div
-            className="min-h-screen"
-            style={{
-                backgroundImage: `
-          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-        `,
-                backgroundSize: '30px 30px',
-                backgroundColor: '#1a3d2e'
-            }}
-        >
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
             {/* ヘッダー */}
-            <header className="border-b border-gray-700 bg-gray-900 sticky top-0 z-50">
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            onClick={() => router.push('/')}
-                            className="text-white hover:bg-white/10"
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            ホームに戻る
-                        </Button>
-                        <img
-                            src="/posterai-logo.svg"
-                            alt="PosterAI"
-                            className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
-                            style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-                            onClick={() => router.push('/')}
-                        />
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => router.push('/')}
+                    >
+                        <img src="/logo.png" alt="PosterAI" className="h-8" />
+                        <span className="text-xl font-bold text-green-600">PosterAI</span>
                     </div>
+                    <Button
+                        onClick={() => router.push('/generate')}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                        今すぐ始める <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                 </div>
             </header>
 
-            {/* メインコンテンツ */}
-            <main className="container mx-auto px-4 py-16">
-                {/* タイトルセクション */}
-                <div className="text-center mb-16">
-                    <h1 className="text-5xl font-bold text-white mb-4">
-                        PosterAIの使い方
-                    </h1>
-                    <p className="text-xl text-gray-400 mb-6">
-                        AIで簡単にプロ品質のポスターを作成する方法をステップバイステップで解説
-                    </p>
-
-                    {/* 謳い文句 */}
-                    <div className="inline-block bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-2xl px-8 py-4 border border-green-500/30">
-                        <p className="text-2xl font-bold text-green-300 mb-2">
-                            ✨ 煩雑なプロンプト設計も画像から自動抽出
-                        </p>
-                        <p className="text-gray-300">
-                            サンプル画像をアップロードするだけで、AIが最適なプロンプトを生成します
-                        </p>
+            {/* ヒーローセクション */}
+            <section className="py-20 px-4">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <div className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                                ✨ 煩雑なプロンプト設計も画像から自動抽出
+                            </div>
+                            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                                サンプル画像から<br />
+                                <span className="text-green-600">プロ品質のポスター</span>を<br />
+                                自動生成
+                            </h1>
+                            <p className="text-xl text-gray-600 mb-8">
+                                参考にしたいデザインをアップロードするだけで、AIが自動解析。
+                                複雑なプロンプト設計なしで、理想のポスターが完成します。
+                            </p>
+                            <div className="flex flex-wrap gap-4">
+                                <Button
+                                    size="lg"
+                                    onClick={() => router.push('/generate')}
+                                    className="bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-6"
+                                >
+                                    <Sparkles className="mr-2" />
+                                    無料で始める
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <img
+                                src="/samples/guide_hero.png"
+                                alt="PosterAI ヒーローイメージ"
+                                className="w-full rounded-2xl shadow-2xl"
+                            />
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                {/* 基本的な使い方 */}
-                <section className="mb-20">
-                    <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-                        <Sparkles className="text-green-400" />
-                        基本的な使い方
-                    </h2>
-
-                    <div className="space-y-12">
-                        {/* ステップ1: ログイン */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white text-xl font-bold">
-                                    1
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">Googleアカウントでログイン</h3>
-                                    <p className="text-gray-300">
-                                        安全で簡単なGoogle認証でログインします。TOPページの「Googleで始める」ボタンをクリックしてください。
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ステップ2: ポスター生成ページ */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white text-xl font-bold">
-                                    2
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">ポスター生成ページへ</h3>
-                                    <p className="text-gray-300 mb-6">
-                                        ログイン後、「Get Started」または「今すぐ生成」ボタンからポスター生成ページにアクセスします。
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ステップ3: フォーム入力 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white text-xl font-bold">
-                                    3
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">基本情報を入力</h3>
-                                    <p className="text-gray-300 mb-6">
-                                        ポスターの基本情報を入力します：
-                                    </p>
-                                    <ul className="space-y-3 text-gray-300">
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                            <span><strong>タイトル:</strong> ポスターのメインタイトル（必須）</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                            <span><strong>用途:</strong> イベント告知、SNS投稿など</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                            <span><strong>テイスト:</strong> シンプル、カラフル、モダンなど</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                            <span><strong>レイアウト:</strong> 中央揃え、左右分割など</span>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                            <span><strong>カラー:</strong> メインカラーを指定</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* サンプル画像から生成（メイン機能） */}
-                <section className="mb-20">
-                    <div className="bg-gray-800 rounded-3xl p-12 border-2 border-gray-700 mb-8">
-                        <h2 className="text-4xl font-bold text-white mb-4 flex items-center gap-3">
-                            <Upload className="text-green-400" />
-                            サンプル画像から生成 ⭐ メイン機能
+            {/* 3ステップセクション */}
+            <section className="py-20 px-4 bg-white">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                            たった<span className="text-green-600">3ステップ</span>でポスター完成
                         </h2>
-                        <p className="text-xl text-gray-200">
-                            既存の画像をアップロードすると、AIが自動で色味やスタイルを解析し、新しいポスターに反映します。
+                        <p className="text-xl text-gray-600">
+                            複雑な操作は一切不要。誰でも簡単にプロ品質のポスターを作成できます
                         </p>
                     </div>
 
-                    <div className="space-y-12">
-                        {/* サンプル画像ステップ1 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                    <div className="space-y-24">
+                        {/* STEP 1 */}
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="order-2 lg:order-1">
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 text-2xl font-bold mb-6">
                                     1
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">サンプル画像をアップロード</h3>
-                                    <p className="text-gray-300 mb-6">
-                                        「サンプル画像」セクションで参考にしたい画像をアップロードします。
-                                    </p>
-                                    <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
-                                        <ul className="space-y-2 text-gray-300">
-                                            <li className="flex items-center gap-2">
-                                                <CheckCircle2 className="text-green-400" size={20} />
-                                                対応形式: JPG, PNG, WebP
-                                            </li>
-                                            <li className="flex items-center gap-2">
-                                                <CheckCircle2 className="text-green-400" size={20} />
-                                                推奨サイズ: 最大10MB
-                                            </li>
-                                            <li className="flex items-center gap-2">
-                                                <CheckCircle2 className="text-green-400" size={20} />
-                                                高解像度推奨（より正確な解析）
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                    サンプル画像をアップロード
+                                </h3>
+                                <p className="text-lg text-gray-600 mb-6">
+                                    参考にしたいデザインやレイアウトの画像をドラッグ＆ドロップ。
+                                    既存のポスター、チラシ、Webデザインなど、どんな画像でもOKです。
+                                </p>
+                                <ul className="space-y-3">
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        PNG, JPG形式に対応
+                                    </li>
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        AIが自動で解析開始
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="order-1 lg:order-2">
+                                <img
+                                    src="/samples/guide_step1.png"
+                                    alt="STEP 1: サンプル画像をアップロード"
+                                    className="w-full max-w-md mx-auto"
+                                />
                             </div>
                         </div>
 
-                        {/* サンプル画像ステップ2 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                        {/* STEP 2 */}
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <img
+                                    src="/samples/guide_step2.png"
+                                    alt="STEP 2: AIが自動解析"
+                                    className="w-full max-w-md mx-auto"
+                                />
+                            </div>
+                            <div>
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 text-2xl font-bold mb-6">
                                     2
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">⭐ AIが自動解析して詳細プロンプトに反映</h3>
-                                    <div className="bg-gray-900 rounded-xl p-5 mb-6 border border-gray-700">
-                                        <p className="text-blue-200 font-semibold mb-2">🎯 PosterAIの目玉機能</p>
-                                        <p className="text-gray-300">
-                                            アップロードした画像をAIが自動的に解析し、<strong className="text-blue-200">「詳細指示（プロンプト）」</strong>に反映します。
-                                            この詳細プロンプトを自由に編集・カスタマイズできるのが特徴です。
-                                        </p>
-                                    </div>
-
-                                    <h4 className="text-lg font-bold text-white mb-4">🔍 AIが解析する要素：</h4>
-                                    <div className="grid md:grid-cols-2 gap-4 mb-6">
-                                        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                                            <Palette className="text-blue-400 mb-2" />
-                                            <h5 className="text-white font-bold mb-2">カラーパレット</h5>
-                                            <p className="text-gray-400 text-sm">主要な色、アクセントカラー、配色比率を抽出</p>
-                                        </div>
-                                        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                                            <Layout className="text-blue-400 mb-2" />
-                                            <h5 className="text-white font-bold mb-2">レイアウトスタイル</h5>
-                                            <p className="text-gray-400 text-sm">構図、要素の配置、バランスを分析</p>
-                                        </div>
-                                        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                                            <Sparkles className="text-blue-400 mb-2" />
-                                            <h5 className="text-white font-bold mb-2">雰囲気・テイスト</h5>
-                                            <p className="text-gray-400 text-sm">デザインの全体的な雰囲気、スタイルを検出</p>
-                                        </div>
-                                        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                                            <FileImage className="text-blue-400 mb-2" />
-                                            <h5 className="text-white font-bold mb-2">詳細なデザイン要素</h5>
-                                            <p className="text-gray-400 text-sm">フォントスタイル、装飾要素、質感など</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-gray-900 rounded-xl p-5 border border-gray-700">
-                                        <h4 className="text-lg font-bold text-green-300 mb-3">✨ 詳細プロンプトに自動反映</h4>
-                                        <p className="text-gray-300 mb-3">
-                                            AIが解析した内容は、<strong>「詳細指示（プロンプト）」フィールド</strong>に自動的に入力されます。
-                                        </p>
-                                        <div className="bg-black rounded-lg p-4 mb-3 border border-gray-700">
-                                            <p className="text-sm text-gray-400 mb-2">例: サンプル画像解析後のプロンプト</p>
-                                            <code className="text-xs text-green-200">
-                                                "クリスマスをテーマにした豪華なデザイン。メインカラーは深いグリーン(#1a5d3a)とゴールド(#d4af37)。中央にイラスト、上部にタイトル、下部に詳細情報を配置。オーナメントとキラキラした装飾を追加。エレガントで華やかな雰囲気。"
-                                            </code>
-                                        </div>
-                                        <div className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                            <p className="text-gray-300 text-sm">
-                                                このプロンプトは<strong className="text-green-300">自由に編集・追記・変更可能</strong>です！
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* サンプル画像ステップ3 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                                    3
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">⭐ NEW! 画像参照強度の調整（v1.2.0）</h3>
-                                    <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl p-5 mb-6 border-2 border-blue-500">
-                                        <p className="text-blue-100 font-semibold mb-2">🎯 新機能: きめ細かいコントロール</p>
-                                        <p className="text-gray-200">
-                                            サンプル画像をどれくらい参考にするか、3段階で調整できます！
-                                        </p>
-                                    </div>
-
-                                    <div className="grid md:grid-cols-3 gap-4 mb-6">
-                                        <div className="bg-gray-900 rounded-lg p-4 border-2 border-purple-500">
-                                            <h5 className="text-white font-bold mb-2 flex items-center gap-2">
-                                                <span className="text-2xl">💪</span> 強
-                                            </h5>
-                                            <p className="text-gray-300 text-sm mb-2">サンプル画像に<strong className="text-purple-300">忠実</strong></p>
-                                            <p className="text-gray-400 text-xs">画像 80% : プロンプト 20%</p>
-                                        </div>
-                                        <div className="bg-gray-900 rounded-lg p-4 border-2 border-blue-500">
-                                            <h5 className="text-white font-bold mb-2 flex items-center gap-2">
-                                                <span className="text-2xl">⚖️</span> 普通（推奨）
-                                            </h5>
-                                            <p className="text-gray-300 text-sm mb-2"><strong className="text-blue-300">バランス</strong>の取れた再現</p>
-                                            <p className="text-gray-400 text-xs">画像 75% : プロンプト 25%</p>
-                                        </div>
-                                        <div className="bg-gray-900 rounded-lg p-4 border-2 border-green-500">
-                                            <h5 className="text-white font-bold mb-2 flex items-center gap-2">
-                                                <span className="text-2xl">✨</span> 弱
-                                            </h5>
-                                            <p className="text-gray-300 text-sm mb-2">画像はヒント、<strong className="text-green-300">創造的</strong>に</p>
-                                            <p className="text-gray-400 text-xs">画像 70% : プロンプト 30%</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-gray-900 rounded-xl p-5 border border-gray-700 mb-6">
-                                        <h4 className="text-base font-bold text-white mb-3">💡 使い分けのヒント</h4>
-                                        <ul className="space-y-2 text-sm text-gray-300">
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-purple-400 mt-0.5">●</span>
-                                                <span><strong>強</strong>: 既存デザインとほぼ同じ雰囲気が欲しいとき</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-blue-400 mt-0.5">●</span>
-                                                <span><strong>普通</strong>: サンプルの良さを残しつつアレンジしたいとき（デフォルト）</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-green-400 mt-0.5">●</span>
-                                                <span><strong>弱</strong>: サンプルはイメージ参考程度で自由に作りたいとき</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* サンプル画像ステップ4 - 生成モード選択 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                                    4
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">⭐ NEW! 生成モードの選択（v1.2.0）</h3>
-                                    <div className="bg-gradient-to-r from-green-900/50 to-teal-900/50 rounded-xl p-5 mb-6 border-2 border-green-500">
-                                        <p className="text-green-100 font-semibold mb-2">🎯 用途に合わせた2つのモード</p>
-                                        <p className="text-gray-200">
-                                            どのようにポスターを生成するか選べます
-                                        </p>
-                                    </div>
-
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="bg-gray-900 rounded-xl p-6 border-2 border-blue-500">
-                                            <h5 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                                                <FileImage className="text-blue-400" />
-                                                画像参照モード
-                                            </h5>
-                                            <p className="text-gray-300 mb-4">サンプル画像を<strong className="text-blue-300">直接参考</strong>にして生成</p>
-                                            <div className="bg-black/50 rounded-lg p-3 mb-3 border border-gray-700">
-                                                <p className="text-xs text-gray-400 mb-1">使う場面:</p>
-                                                <ul className="text-sm text-gray-300 space-y-1">
-                                                    <li>• 既存デザインの雰囲気を維持</li>
-                                                    <li>• シリーズ物の統一感</li>
-                                                    <li>• ブランドカラーの再現</li>
-                                                </ul>
-                                            </div>
-                                            <p className="text-green-400 text-sm">✓ 高い再現性</p>
-                                        </div>
-
-                                        <div className="bg-gray-900 rounded-xl p-6 border-2 border-purple-500">
-                                            <h5 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                                                <Sparkles className="text-purple-400" />
-                                                テキストのみモード
-                                            </h5>
-                                            <p className="text-gray-300 mb-4">画像解析結果を<strong className="text-purple-300">プロンプト化</strong>して新規生成</p>
-                                            <div className="bg-black/50 rounded-lg p-3 mb-3 border border-gray-700">
-                                                <p className="text-xs text-gray-400 mb-1">使う場面:</p>
-                                                <ul className="text-sm text-gray-300 space-y-1">
-                                                    <li>• 似た雰囲気で新しいデザイン</li>
-                                                    <li>• バリエーション作成</li>
-                                                    <li>• よりクリエイティブな展開</li>
-                                                </ul>
-                                            </div>
-                                            <p className="text-green-400 text-sm">✓ 高い創造性</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* サンプル画像ステップ5 - プロンプトカスタマイズ */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                                    5
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-4">🔧 詳細プロンプトをカスタマイズして生成</h3>
-                                    <div className="bg-gray-900 rounded-xl p-5 mb-6 border border-gray-700">
-                                        <p className="text-blue-200 font-semibold mb-2">✨ 自由なカスタマイズが可能</p>
-                                        <p className="text-gray-300">
-                                            AIが生成した詳細プロンプトは、あなたのイメージに合わせて<strong className="text-blue-200">自由に編集・追加・変更</strong>できます。
-                                        </p>
-                                    </div>
-
-                                    <p className="text-gray-300 mb-4">
-                                        AIが抽出した設定をベースに、以下をカスタマイズできます：
-                                    </p>
-                                    <ul className="space-y-3 text-gray-300 mb-6">
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-blue-400 mt-1" />
-                                            <div>
-                                                <strong className="text-white">タイトル:</strong> 新しい内容に変更
-                                            </div>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-blue-400 mt-1" />
-                                            <div>
-                                                <strong className="text-white">色調整:</strong> サンプルベースまたは完全カスタム
-                                            </div>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-blue-400 mt-1" />
-                                            <div>
-                                                <strong className="text-white">詳細プロンプト編集:</strong> 装飾要素、質感、雰囲気を詳しく指定
-                                            </div>
-                                        </li>
-                                        <li className="flex items-start gap-3">
-                                            <CheckCircle2 className="text-blue-400 mt-1" />
-                                            <div>
-                                                <strong className="text-white">生成実行:</strong> 「生成する」ボタンで生成開始
-                                            </div>
-                                        </li>
-                                    </ul>
-
-                                    <div className="bg-gray-900 rounded-xl p-5 border border-gray-700">
-                                        <h4 className="text-base font-bold text-white mb-2">💡 カスタマイズ例</h4>
-                                        <p className="text-sm text-gray-400 mb-2">元のプロンプト:</p>
-                                        <code className="text-xs text-gray-400 block mb-3">"シンプルでモダンなデザイン"</code>
-                                        <p className="text-sm text-gray-400 mb-2">カスタマイズ後:</p>
-                                        <code className="text-xs text-blue-200 block">"シンプルでモダンなデザイン。<span className="text-green-300">幾何学的パターンを背景に追加。フォントは太めのサンセリフ体を使用。</span>"</code>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 生成サンプル画像 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-2xl font-bold text-white mb-6">✨ 実際の生成サンプル</h3>
-                            <p className="text-gray-300 mb-6">PosterAIで生成されたポスターの例をご覧ください</p>
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <img
-                                        src="/samples/christmas_lottery.jpg"
-                                        alt="クリスマス抽選会ポスター"
-                                        className="rounded-xl shadow-2xl border-2 border-gray-700 w-full"
-                                    />
-                                    <p className="text-center text-gray-300 text-sm">イベントポスター例</p>
-                                </div>
-                                <div className="space-y-3">
-                                    <img
-                                        src="/samples/grand_opening.jpg"
-                                        alt="グランドオープンポスター"
-                                        className="rounded-xl shadow-2xl border-2 border-gray-700 w-full"
-                                    />
-                                    <p className="text-center text-gray-300 text-sm">店舗告知ポスター例</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* サンプル画像の利点 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-2xl font-bold text-white mb-6">サンプル画像機能の利点</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-blue-400 mt-1 flex-shrink-0" />
-                                    <div>
-                                        <h4 className="text-white font-bold mb-1">時間短縮</h4>
-                                        <p className="text-gray-300 text-sm">ゼロから考える必要なし</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-blue-400 mt-1 flex-shrink-0" />
-                                    <div>
-                                        <h4 className="text-white font-bold mb-1">一貫性維持</h4>
-                                        <p className="text-gray-300 text-sm">ブランドイメージを統一</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-blue-400 mt-1 flex-shrink-0" />
-                                    <div>
-                                        <h4 className="text-white font-bold mb-1">プロ品質</h4>
-                                        <p className="text-gray-300 text-sm">AIによる最適化</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-blue-400 mt-1 flex-shrink-0" />
-                                    <div>
-                                        <h4 className="text-white font-bold mb-1">柔軟性</h4>
-                                        <p className="text-gray-300 text-sm">自由なカスタマイズ可能</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 新機能 v1.3.0 セクション */}
-                <section className="mb-20">
-                    <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-3xl p-12 border-2 border-purple-500/50 mb-8">
-                        <h2 className="text-4xl font-bold text-white mb-4 flex items-center gap-3">
-                            🚀 新機能 v1.3.0
-                        </h2>
-                        <p className="text-xl text-gray-200">
-                            生成した画像を編集・カスタマイズできる新機能が追加されました
-                        </p>
-                    </div>
-
-                    <div className="space-y-12">
-                        {/* 画像編集機能 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6 mb-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                                    ✏️
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-2">画像編集機能</h3>
-                                    <p className="text-gray-300">
-                                        生成されたポスターを後から修正できます。背景色の変更、テキストの編集、要素の追加など自由自在。
-                                    </p>
-                                </div>
-                            </div>
-                            <img
-                                src="/samples/edit_feature.png"
-                                alt="画像編集機能の図解"
-                                className="w-full rounded-xl border border-gray-700"
-                            />
-                            <div className="mt-6 grid md:grid-cols-3 gap-4">
-                                <div className="bg-gray-900 rounded-lg p-4">
-                                    <p className="text-blue-400 font-bold mb-1">背景変更</p>
-                                    <p className="text-gray-400 text-sm">色やパターンを変更</p>
-                                </div>
-                                <div className="bg-gray-900 rounded-lg p-4">
-                                    <p className="text-blue-400 font-bold mb-1">テキスト編集</p>
-                                    <p className="text-gray-400 text-sm">文字の色やサイズを調整</p>
-                                </div>
-                                <div className="bg-gray-900 rounded-lg p-4">
-                                    <p className="text-blue-400 font-bold mb-1">要素追加</p>
-                                    <p className="text-gray-400 text-sm">装飾やイラストを追加</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 画像挿入機能 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6 mb-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white text-xl font-bold">
-                                    📸
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-2">画像挿入機能</h3>
-                                    <p className="text-gray-300">
-                                        ロゴ、商品写真、人物画像など、準備した画像をポスターに自然に合成できます。最大5枚まで同時挿入可能！
-                                    </p>
-                                </div>
-                            </div>
-                            <img
-                                src="/samples/insert_feature.png"
-                                alt="画像挿入機能の図解"
-                                className="w-full rounded-xl border border-gray-700"
-                            />
-                            <div className="mt-6 bg-gray-900 rounded-xl p-5 border border-gray-700">
-                                <h4 className="text-lg font-bold text-white mb-3">💡 使い方のヒント</h4>
-                                <ul className="space-y-2 text-gray-300">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-purple-400">✓</span>
-                                        <span>配置場所を指定できます（例：右下にロゴを配置）</span>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                    AIが自動でプロンプト生成
+                                </h3>
+                                <p className="text-lg text-gray-600 mb-6">
+                                    アップロードされた画像をAIが詳細に分析。
+                                    色彩、レイアウト、フォント、デザインスタイルを自動で抽出し、
+                                    最適なプロンプトを生成します。
+                                </p>
+                                <ul className="space-y-3">
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-purple-500" />
+                                        色彩パレットの自動抽出
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-purple-400">✓</span>
-                                        <span>AIが自動で影や光を調整して自然に合成</span>
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-purple-500" />
+                                        レイアウト構造の分析
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-purple-400">✓</span>
-                                        <span>既存の画像を差し替えることも可能</span>
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-purple-500" />
+                                        デザインスタイルの判定
                                     </li>
                                 </ul>
                             </div>
                         </div>
 
-                        {/* 高画質ダウンロード */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <div className="flex items-start gap-6 mb-6">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white text-xl font-bold">
-                                    📥
+                        {/* STEP 3 */}
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="order-2 lg:order-1">
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 text-2xl font-bold mb-6">
+                                    3
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-white mb-2">高画質ダウンロード（350 DPI）</h3>
-                                    <p className="text-gray-300">
-                                        ダウンロード時に自動で2倍にアップスケール。商業印刷にも対応できる高解像度で出力します。追加コストはかかりません！
-                                    </p>
-                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                    ボタン一つでポスター完成！
+                                </h3>
+                                <p className="text-lg text-gray-600 mb-6">
+                                    「ポスター生成」ボタンをクリックするだけで、
+                                    AIがあなた専用のオリジナルポスターを生成。
+                                    約30秒で高品質なデザインが完成します。
+                                </p>
+                                <ul className="space-y-3">
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-orange-500" />
+                                        約30秒で生成完了
+                                    </li>
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-orange-500" />
+                                        A4/A3/B4/B5サイズ対応
+                                    </li>
+                                    <li className="flex items-center gap-3 text-gray-600">
+                                        <CheckCircle className="h-5 w-5 text-orange-500" />
+                                        縦向き・横向き選択可能
+                                    </li>
+                                </ul>
                             </div>
-                            <img
-                                src="/samples/download_quality.png"
-                                alt="高画質ダウンロード機能の図解"
-                                className="w-full rounded-xl border border-gray-700"
-                            />
-                            <div className="mt-6 grid md:grid-cols-2 gap-4">
-                                <div className="bg-gray-900 rounded-lg p-4 border-2 border-gray-700">
-                                    <p className="text-gray-400 text-sm mb-1">生成時</p>
-                                    <p className="text-white font-bold">175 DPI</p>
-                                    <p className="text-gray-500 text-xs">1432 × 2024 px</p>
-                                </div>
-                                <div className="bg-gray-900 rounded-lg p-4 border-2 border-green-500">
-                                    <p className="text-green-400 text-sm mb-1">ダウンロード時</p>
-                                    <p className="text-white font-bold">350 DPI ✨</p>
-                                    <p className="text-gray-500 text-xs">2864 × 4048 px</p>
-                                </div>
+                            <div className="order-1 lg:order-2">
+                                <img
+                                    src="/samples/guide_step3.png"
+                                    alt="STEP 3: ポスター完成"
+                                    className="w-full max-w-md mx-auto"
+                                />
                             </div>
                         </div>
                     </div>
-                </section>
-                {/* おすすめの使い方 */}
-                <section className="mb-20">
-                    <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-                        <Sparkles className="text-yellow-400" />
-                        おすすめの使い方
-                    </h2>
+                </div>
+            </section>
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* パターン1 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-4">🎪 イベントポスター作成</h3>
-                            <p className="text-gray-300 mb-4">
-                                セミナー、コンサート、展示会などのイベント告知に最適
-                            </p>
-                            <div className="bg-gray-900 rounded-lg p-4">
-                                <p className="text-sm text-gray-400 mb-2">フロー:</p>
-                                <ol className="text-sm text-gray-300 space-y-1 list-decimal list-inside">
-                                    <li>過去の成功イベントポスターをサンプルに</li>
-                                    <li>新しい日程・タイトルに変更</li>
-                                    <li>同じテイストで統一感のあるシリーズ作成</li>
-                                </ol>
-                            </div>
+            {/* 新機能セクション */}
+            <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="text-center mb-16">
+                        <div className="inline-block bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                            🚀 NEW v1.3.0
                         </div>
-
-                        {/* パターン2 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-4">📱 SNS投稿用画像</h3>
-                            <p className="text-gray-300 mb-4">
-                                Instagram, Twitter, Facebookなどの投稿に
-                            </p>
-                            <div className="bg-gray-900 rounded-lg p-4">
-                                <p className="text-sm text-gray-400 mb-2">フロー:</p>
-                                <ol className="text-sm text-gray-300 space-y-1 list-decimal list-inside">
-                                    <li>ブランドカラーの既存画像をサンプルに</li>
-                                    <li>縦向き/横向きを選択</li>
-                                    <li>キャッチコピーを追加</li>
-                                </ol>
-                            </div>
-                        </div>
-
-                        {/* パターン3 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-4">🏪 店舗POP作成</h3>
-                            <p className="text-gray-300 mb-4">
-                                セール告知、新商品案内などの店内ポスター
-                            </p>
-                            <div className="bg-gray-900 rounded-lg p-4">
-                                <p className="text-sm text-gray-400 mb-2">フロー:</p>
-                                <ol className="text-sm text-gray-300 space-y-1 list-decimal list-inside">
-                                    <li>店舗イメージの写真をサンプルに</li>
-                                    <li>「ポップ」「カラフル」テイストを選択</li>
-                                    <li>特典情報を追加</li>
-                                </ol>
-                            </div>
-                        </div>
-
-                        {/* パターン4 */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-4">📚 シリーズ物の作成</h3>
-                            <p className="text-gray-300 mb-4">
-                                連続講座、シリーズイベントなど統一感が重要な場合
-                            </p>
-                            <div className="bg-gray-900 rounded-lg p-4">
-                                <p className="text-sm text-gray-400 mb-2">フロー:</p>
-                                <ol className="text-sm text-gray-300 space-y-1 list-decimal list-inside">
-                                    <li>第1回のポスターをサンプルに</li>
-                                    <li>タイトルと日程だけ変更</li>
-                                    <li>統一感のあるシリーズポスター完成</li>
-                                </ol>
-                            </div>
-                        </div>
+                        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                            生成後も自由に編集
+                        </h2>
+                        <p className="text-xl text-gray-600">
+                            ポスター生成後も、編集・画像挿入で理想のデザインに仕上げられます
+                        </p>
                     </div>
-                </section>
 
-                {/* Tips & ベストプラクティス */}
-                <section className="mb-20">
-                    <h2 className="text-3xl font-bold text-white mb-8">💡 Tips & ベストプラクティス</h2>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* DO */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border-2 border-gray-700">
-                            <h3 className="text-2xl font-bold text-green-400 mb-6">✅ おすすめ</h3>
-                            <ul className="space-y-4">
-                                <li className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-200">サンプル画像は高解像度を使用</span>
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* 編集機能 */}
+                        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                            <div className="w-full h-48 mb-6 overflow-hidden rounded-xl">
+                                <img
+                                    src="/samples/guide_edit.png"
+                                    alt="編集機能"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <Edit3 className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900">画像編集</h3>
+                            </div>
+                            <p className="text-gray-600 mb-4">
+                                生成後のポスターを自由に編集。背景色の変更、テキストの修正、要素の追加など、AIが指示通りに修正します。
+                            </p>
+                            <ul className="space-y-2 text-sm text-gray-500">
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    背景・色の変更
                                 </li>
-                                <li className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-200">メインカラーは3色以内に</span>
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    テキストの編集
                                 </li>
-                                <li className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-200">タイトルは短く、インパクトのある言葉</span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <CheckCircle2 className="text-green-400 mt-1 flex-shrink-0" />
-                                    <span className="text-gray-200">サブタイトルで詳細を補足</span>
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    要素の追加・削除
                                 </li>
                             </ul>
                         </div>
 
-                        {/* DON'T */}
-                        <div className="bg-gray-800 rounded-2xl p-8 border-2 border-gray-700">
-                            <h3 className="text-2xl font-bold text-red-400 mb-6">⚠️ 避けるべきこと</h3>
-                            <ul className="space-y-4">
-                                <li className="flex items-start gap-3">
-                                    <span className="text-red-400 mt-1 flex-shrink-0">×</span>
-                                    <span className="text-gray-200">テキストを詰め込みすぎない</span>
+                        {/* 挿入機能 */}
+                        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                            <div className="w-full h-48 mb-6 overflow-hidden rounded-xl">
+                                <img
+                                    src="/samples/guide_insert.png"
+                                    alt="画像挿入機能"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                    <Image className="h-5 w-5 text-purple-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900">画像挿入</h3>
+                            </div>
+                            <p className="text-gray-600 mb-4">
+                                ロゴ、商品写真、人物画像などを自然に合成。最大5枚まで同時挿入可能で、AIが影や光を自動調整します。
+                            </p>
+                            <ul className="space-y-2 text-sm text-gray-500">
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    最大5枚同時挿入
                                 </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="text-red-400 mt-1 flex-shrink-0">×</span>
-                                    <span className="text-gray-200">サンプル画像と全く異なるテイストは避ける</span>
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    自然な合成処理
                                 </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="text-red-400 mt-1 flex-shrink-0">×</span>
-                                    <span className="text-gray-200">低解像度の画像をアップロード</span>
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    配置位置の指定可能
                                 </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="text-red-400 mt-1 flex-shrink-0">×</span>
-                                    <span className="text-gray-200">複雑すぎるレイアウト</span>
+                            </ul>
+                        </div>
+
+                        {/* ダウンロード機能 */}
+                        <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                            <div className="w-full h-48 mb-6 overflow-hidden rounded-xl">
+                                <img
+                                    src="/samples/guide_download.png"
+                                    alt="高画質ダウンロード"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                    <Download className="h-5 w-5 text-green-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900">高画質DL</h3>
+                            </div>
+                            <p className="text-gray-600 mb-4">
+                                ダウンロード時に自動で2倍アップスケール。350 DPIの印刷対応品質で出力され、商業印刷にも対応できます。
+                            </p>
+                            <ul className="space-y-2 text-sm text-gray-500">
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    350 DPI高解像度
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    商業印刷対応
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    追加コストなし
                                 </li>
                             </ul>
                         </div>
                     </div>
+                </div>
+            </section>
 
-                    {/* 推奨サイズ */}
-                    <div className="mt-8 bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                        <h3 className="text-2xl font-bold text-white mb-6">📐 推奨サイズ</h3>
-                        <div className="grid md:grid-cols-4 gap-4">
-                            <div className="bg-gray-900 rounded-lg p-4 text-center">
-                                <p className="text-white font-bold mb-2">Instagram</p>
-                                <p className="text-gray-400 text-sm">縦向き</p>
-                                <p className="text-green-400 text-sm">1080x1350</p>
-                            </div>
-                            <div className="bg-gray-900 rounded-lg p-4 text-center">
-                                <p className="text-white font-bold mb-2">Twitter/X</p>
-                                <p className="text-gray-400 text-sm">横向き</p>
-                                <p className="text-green-400 text-sm">1200x675</p>
-                            </div>
-                            <div className="bg-gray-900 rounded-lg p-4 text-center">
-                                <p className="text-white font-bold mb-2">A4印刷</p>
-                                <p className="text-gray-400 text-sm">縦向き</p>
-                                <p className="text-green-400 text-sm">2480×3508</p>
-                            </div>
-                            <div className="bg-gray-900 rounded-lg p-4 text-center">
-                                <p className="text-white font-bold mb-2">ポスター</p>
-                                <p className="text-gray-400 text-sm">縦向き</p>
-                                <p className="text-green-400 text-sm">大サイズ</p>
-                            </div>
-                        </div>
+            {/* アプリスクリーンショット */}
+            <section className="py-20 px-4 bg-white">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                            シンプルで使いやすいインターフェース
+                        </h2>
+                        <p className="text-xl text-gray-600">
+                            直感的な操作で、誰でもすぐに使いこなせます
+                        </p>
                     </div>
-                </section>
+                    <div className="rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+                        <img
+                            src="/samples/app_screenshot_main.png"
+                            alt="PosterAI 画面スクリーンショット"
+                            className="w-full"
+                        />
+                    </div>
+                </div>
+            </section>
 
-                {/* FAQ */}
-                <section className="mb-20">
-                    <h2 className="text-3xl font-bold text-white mb-8">❓ よくある質問</h2>
+            {/* FAQ セクション */}
+            <section className="py-20 px-4 bg-gray-50">
+                <div className="container mx-auto max-w-4xl">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                            よくある質問
+                        </h2>
+                    </div>
 
                     <div className="space-y-6">
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-3">Q: サンプル画像なしでも生成できますか？</h3>
-                            <p className="text-gray-300">
-                                A: はい、テキストと設定だけでも生成できます。ただし、サンプル画像を使用すると、より一貫性のあるデザインが作成できます。
+                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Q: 1日に何回まで使用できますか？</h3>
+                            <p className="text-gray-600">
+                                A: デフォルトで<strong className="text-green-600">30回/日</strong>まで画像生成が可能です。
+                                画像解析は100回/日、編集・挿入機能は無制限でご利用いただけます。
                             </p>
                         </div>
-
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-3">Q: 生成に時間がかかるのはなぜ？</h3>
-                            <p className="text-gray-300">
-                                A: AIが高品質な画像を生成するため、30秒〜1分程度かかります。複雑なデザインほど時間がかかる場合があります。
+                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Q: サンプル画像がなくても使えますか？</h3>
+                            <p className="text-gray-600">
+                                A: はい、使えます。サンプル画像なしでも、テキスト入力とオプション選択のみでポスターを生成できます。
+                                ただし、サンプル画像があるとより精度の高いデザインが生成されます。
                             </p>
                         </div>
-
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-3">Q: 同じサンプル画像で何度も生成できますか？</h3>
-                            <p className="text-gray-300 mb-3">
-                                A: はい、タイトルやテイストを変えて何度でも生成できます。シリーズ物のポスター作成に便利です。
-                            </p>
-                            <p className="text-yellow-300 text-sm bg-gray-900 rounded-lg p-3 border border-gray-700">
-                                ⚠️ 注意: 同じサンプル画像でも、再生成するたびにAIが新しい画像を生成するため、若干イメージが変わります。完全に同じ画像が必要な場合は、一度生成した画像を保存してください。
-                            </p>
-                        </div>
-
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-3">Q: 商用利用は可能ですか？</h3>
-                            <p className="text-gray-300">
-                                A: 生成された画像は自由に利用できます。ただし、アップロードしたサンプル画像の著作権は元の所有者に帰属します。
-                            </p>
-                        </div>
-
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-3">Q: 生成された画像のサイズを変更できますか？</h3>
-                            <p className="text-gray-300">
-                                A: 生成前に「出力サイズ」と「向き」を選択できます。縦向き・横向きを選択し、用途に応じたサイズで生成してください。
-                            </p>
-                        </div>
-
-                        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-                            <h3 className="text-xl font-bold text-white mb-3">Q: 1日に何回まで使用できますか？</h3>
-                            <p className="text-gray-300 mb-3">
-                                A: 1ユーザーあたり、1日に<strong className="text-green-400">最大30回</strong>までポスター生成が可能です（デフォルト設定）。
-                            </p>
-                            <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                                <p className="text-sm text-gray-400 mb-2">📊 利用制限の詳細：</p>
-                                <ul className="space-y-2 text-sm text-gray-300">
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-green-400">✓</span>
-                                        <span><strong className="text-white">画像生成</strong>: 30回/日（デフォルト）</span>
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-green-400">✓</span>
-                                        <span><strong className="text-white">画像解析</strong>: 100回/日（サンプル画像のアップロード）</span>
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-green-400">✓</span>
-                                        <span><strong className="text-white">編集・挿入</strong>: 制限なし（生成回数とは別カウント）</span>
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span className="text-blue-400">ℹ️</span>
-                                        <span>制限は毎日午前0時（JST）にリセットされます</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <p className="text-yellow-300 text-sm bg-gray-900 rounded-lg p-3 border border-gray-700 mt-3">
-                                💡 ヒント: 残り回数は生成ページで確認できます。上限に達した場合は翌日0時まで待つか、管理者に制限緩和をご相談ください。
+                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Q: 生成したポスターの著作権は？</h3>
+                            <p className="text-gray-600">
+                                A: 生成されたポスターは商用利用可能です。ただし、サンプル画像に第三者の著作物が含まれる場合は、
+                                その著作権に注意してご利用ください。
                             </p>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                {/* CTA */}
-                <div className="text-center bg-gray-800 rounded-3xl p-12 border-2 border-gray-700">
-                    <h2 className="text-3xl font-bold text-white mb-4">準備はできましたか？</h2>
-                    <p className="text-xl text-gray-200 mb-8">
-                        今すぐPosterAIでプロ品質のポスターを作成しましょう
+            {/* CTA セクション */}
+            <section className="py-20 px-4 bg-gradient-to-r from-green-600 to-green-700">
+                <div className="container mx-auto max-w-4xl text-center">
+                    <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+                        今すぐPosterAIを始めよう
+                    </h2>
+                    <p className="text-xl text-green-100 mb-8">
+                        サンプル画像をアップロードして、あなただけのオリジナルポスターを作成しましょう
                     </p>
                     <Button
                         size="lg"
                         onClick={() => router.push('/generate')}
-                        className="bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-6"
+                        className="bg-white text-green-600 hover:bg-gray-100 text-lg px-8 py-6"
                     >
                         <Sparkles className="mr-2" />
-                        ポスターを作成する
+                        無料でポスターを作成
                     </Button>
                 </div>
-            </main>
-
+            </section>
 
             {/* フッター */}
-            <footer className="border-t border-gray-700 bg-gray-900 py-8">
+            <footer className="bg-gray-900 py-8">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-gray-400">
                         © 2025 PosterAI. Powered by Google Gemini AI.
