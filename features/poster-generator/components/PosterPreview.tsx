@@ -238,7 +238,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     onChange={(e) => setEditPrompt(e.target.value)}
                                     placeholder="修正内容を入力してください0;&#10;例: 背景を夕焼けに変更してください&#10;例: 文字の色を赤に変更してください&#10;例: 右下にロゴを配置してください"
                                     rows={6}
-                                    className="bg-white text-base"
+                                    className="bg-white text-sm"
                                 />
 
                                 {/* 画像追加オプション（任意） */}
