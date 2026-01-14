@@ -111,14 +111,73 @@ export default function HowToUsePage() {
                 </div>
             </section>
 
-            {/* 3ステップセクション */}
+            {/* 基本パターン：サンプル画像なしで作成 */}
             <section className="container mx-auto px-4 py-20">
                 <div className="text-center mb-16">
+                    <div className="inline-block bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-blue-500/30">
+                        📝 基本パターン
+                    </div>
                     <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-                        たった<span className="text-green-400">3ステップ</span>でポスター完成
+                        テキスト入力だけでポスター作成
                     </h2>
                     <p className="text-xl text-green-100">
-                        複雑な操作は一切不要。誰でも簡単にプロ品質のポスターを作成できます
+                        サンプル画像がなくても、オプション選択とテキスト入力だけで高品質なポスターが完成
+                    </p>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+                    <div>
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                            <img
+                                src="/samples/guide_basic.png"
+                                alt="基本パターン：テキスト入力でポスター作成"
+                                className="w-full rounded-xl"
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-6">
+                        <div className="flex gap-4 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-lg">1</div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-2">デザイン設定を選択</h3>
+                                <p className="text-green-100">用途（イベント、広告など）、テイスト（モダン、ポップなど）、レイアウト、カラーを選択します。</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-4 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-lg">2</div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-2">テキストを入力</h3>
+                                <p className="text-green-100">メインタイトルと追加テキスト（日時、場所、詳細など）を入力します。</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-4 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-lg">3</div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-2">生成ボタンをクリック</h3>
+                                <p className="text-green-100">「ポスター生成」ボタンをクリックすると、AIが設定に基づいてポスターを生成します。</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30">
+                            <p className="text-blue-200 text-sm">
+                                💡 <strong>ポイント：</strong>詳細指示（プロンプト）に具体的なイメージを記載すると、より希望に近いデザインが生成されます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 応用パターン：サンプル画像を使う3ステップ */}
+            <section className="container mx-auto px-4 py-20">
+                <div className="text-center mb-16">
+                    <div className="inline-block bg-green-500/20 text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-green-500/30">
+                        🖼️ 応用パターン
+                    </div>
+                    <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+                        サンプル画像から<span className="text-green-400">3ステップ</span>で再現
+                    </h2>
+                    <p className="text-xl text-green-100">
+                        参考にしたいデザインがあれば、AIが自動解析してより精度の高いポスターを生成
                     </p>
                 </div>
 
