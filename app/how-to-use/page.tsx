@@ -410,6 +410,48 @@ export default function HowToUsePage() {
                 </div>
             </section>
 
+            {/* サンプル画像ギャラリー */}
+            <section className="container mx-auto px-4 py-20">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+                        生成されたポスターサンプル
+                    </h2>
+                    <p className="text-xl text-green-100">
+                        PosterAIで実際に生成されたポスターの例をご覧ください
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                    <div className="rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+                        <img
+                            src="/hero-poster-1.jpg"
+                            alt="クリスマス抽選会ポスター"
+                            className="w-full h-auto"
+                        />
+                    </div>
+                    <div className="rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+                        <img
+                            src="/hero-poster-2.jpg"
+                            alt="熱くなれ日本！キャンペーンポスター"
+                            className="w-full h-auto"
+                        />
+                    </div>
+                    <div className="rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+                        <img
+                            src="/hero-poster-3.jpg"
+                            alt="グランドオープンポスター"
+                            className="w-full h-auto"
+                        />
+                    </div>
+                    <div className="rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+                        <img
+                            src="/hero-poster-4.jpg"
+                            alt="レストランポスター"
+                            className="w-full h-auto"
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* アプリスクリーンショット */}
             <section className="container mx-auto px-4 py-20">
                 <div className="text-center mb-12">
