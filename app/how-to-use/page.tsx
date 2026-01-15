@@ -485,7 +485,7 @@ export default function HowToUsePage() {
             {/* フッター */}
             <footer className="border-t border-white/10 bg-black/20 py-10">
                 <div className="container mx-auto px-4 text-center text-green-200">
-                    <p className="text-lg">© 2025 PosterAI. Powered by Google Gemini AI.</p>
+                    <p className="text-lg">© 2025 PosterAI. All Rights Reserved h.yamaguchi</p>
                 </div>
             </footer>
         </div>
