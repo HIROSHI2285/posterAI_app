@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   description: "Google Gemini AIを使用してプロ品質のポスターを自動生成",
   keywords: ["AI", "poster", "generator", "design", "event", "social media"],
   authors: [{ name: "PosterAI" }],
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "PosterAI - AI Poster Generator",
     description: "Create professional posters with AI in seconds",
