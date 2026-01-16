@@ -308,11 +308,12 @@ export default function HowToUsePage() {
                 <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* 素材画像アップロード機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                            <div className="text-center">
-                                <Image className="h-16 w-16 text-blue-300 mx-auto mb-2" />
-                                <span className="text-white/80 text-sm">素材画像を追加</span>
-                            </div>
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
+                            <img
+                                src="/samples/guide_materials.png"
+                                alt="素材画像アップロード"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center">
@@ -341,11 +342,12 @@ export default function HowToUsePage() {
 
                     {/* 用途指定機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                            <div className="text-center">
-                                <Edit3 className="h-16 w-16 text-purple-300 mx-auto mb-2" />
-                                <span className="text-white/80 text-sm">用途を入力</span>
-                            </div>
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
+                            <img
+                                src="/samples/guide_usage.png"
+                                alt="用途指定"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center">
