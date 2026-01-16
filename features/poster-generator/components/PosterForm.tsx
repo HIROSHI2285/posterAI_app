@@ -660,11 +660,7 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                             </div>
                         )}
 
-                        {materialImages.length > 0 && (
-                            <p className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                                💡 素材画像を最初から含めると、後で追加するより約¥20節約できます
-                            </p>
-                        )}
+
                     </div>
                 </CardContent>
             </Card>
