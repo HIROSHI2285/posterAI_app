@@ -295,81 +295,79 @@ export default function HowToUsePage() {
             <section className="container mx-auto px-4 py-20">
                 <div className="text-center mb-16">
                     <div className="inline-block bg-purple-500/20 text-purple-300 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-purple-500/30">
-                        🚀 NEW v1.3.0
+                        🚀 NEW v1.4.0
                     </div>
                     <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-                        生成後も自由に編集
+                        素材画像を最初から含めて生成
                     </h2>
                     <p className="text-xl text-green-100">
-                        ポスター生成後も、編集・画像挿入で理想のデザインに仕上げられます
+                        ロゴや商品写真を最初から含めて生成したり、各画像の用途を個別に指定できます
                     </p>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {/* 編集機能 */}
+                    {/* 素材画像アップロード機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
-                            <img
-                                src="/samples/guide_edit.png"
-                                alt="編集機能"
-                                className="w-full h-full object-cover"
-                            />
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                            <div className="text-center">
+                                <Image className="h-16 w-16 text-blue-300 mx-auto mb-2" />
+                                <span className="text-white/80 text-sm">素材画像を追加</span>
+                            </div>
                         </div>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center">
-                                <Edit3 className="h-5 w-5 text-blue-300" />
+                                <Image className="h-5 w-5 text-blue-300" />
                             </div>
-                            <h3 className="text-xl font-bold text-white">画像編集</h3>
+                            <h3 className="text-xl font-bold text-white">素材画像</h3>
                         </div>
                         <p className="text-green-100 mb-4">
-                            生成後のポスターを自由に編集。背景色の変更、テキストの修正、要素の追加など、AIが指示通りに修正します。
+                            ロゴ、商品写真、人物画像などを最初から含めて生成。各画像の用途を個別に指定できます。
                         </p>
                         <ul className="space-y-2 text-sm text-green-200">
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                背景・色の変更
+                                最大5枚まで追加可能
                             </li>
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                テキストの編集
+                                用途を個別に指定
                             </li>
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                要素の追加・削除
+                                サンプル画像と組み合わせ
                             </li>
                         </ul>
                     </div>
 
-                    {/* 挿入機能 */}
+                    {/* 用途指定機能 */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl">
-                            <img
-                                src="/samples/guide_insert.png"
-                                alt="画像挿入機能"
-                                className="w-full h-full object-cover"
-                            />
+                        <div className="w-full h-48 mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                            <div className="text-center">
+                                <Edit3 className="h-16 w-16 text-purple-300 mx-auto mb-2" />
+                                <span className="text-white/80 text-sm">用途を入力</span>
+                            </div>
                         </div>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center">
-                                <Image className="h-5 w-5 text-purple-300" />
+                                <Edit3 className="h-5 w-5 text-purple-300" />
                             </div>
-                            <h3 className="text-xl font-bold text-white">画像挿入</h3>
+                            <h3 className="text-xl font-bold text-white">用途指定</h3>
                         </div>
                         <p className="text-green-100 mb-4">
-                            ロゴ、商品写真、人物画像などを自然に合成。最大5枚まで同時挿入可能で、AIが影や光を自動調整します。
+                            各画像の用途を個別に入力可能。「ロゴとして右下に配置」など、AIに正確な指示を伝えられます。
                         </p>
                         <ul className="space-y-2 text-sm text-green-200">
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                最大5枚同時挿入
+                                画像ごとに用途を入力
                             </li>
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                自然な合成処理
+                                解析結果より優先
                             </li>
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                配置位置の指定可能
+                                編集時も同様に指定可能
                             </li>
                         </ul>
                     </div>
