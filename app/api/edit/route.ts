@@ -27,8 +27,9 @@ export async function POST(request: Request) {
 
         // リクエストボディを取得
         const body = await request.json()
-        const { imageData, editPrompt, insertImagesData } = body
+        const { imageData, editPrompt, insertImagesData, insertImagesUsages } = body
         const insertImages: string[] = insertImagesData || []
+        const insertUsages: string[] = insertImagesUsages || []
 
         if (!imageData || !editPrompt) {
             return NextResponse.json(
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
         console.log(`[Edit] 画像編集開始 - ユーザー: ${session.user.email}`)
         console.log(`[Edit] 編集プロンプト: ${editPrompt}`)
         console.log(`[Edit] 挿入画像数: ${insertImages.length}`)
+        console.log(`[Edit] 挿入画像用途: ${insertUsages.join(', ')}`)
 
         // Gemini APIクライアントを初期化
         const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"
@@ -59,26 +61,31 @@ export async function POST(request: Request) {
         // プロンプトを構築（画像挿入がある場合は統合プロンプト）
         let fullPrompt: string
         if (hasInsertImages) {
-            const imageLabels = insertImages.map((_, i) => `${i + 2}枚目の画像`).join('、')
+            // 各画像の用途を個別に記載
+            const imageUsageDescriptions = insertImages.map((_, i) => {
+                const usage = insertUsages[i] || '適切な位置に配置'
+                return `【${i + 2}枚目の画像】${usage}`
+            }).join('\n')
+
             fullPrompt = `以下の${insertImages.length + 1}枚の画像を使って、編集と画像挿入を同時に行ってください。
 
 【1枚目の画像】ベース画像（ポスター）
 この画像をベースにします。
 
-【${imageLabels}】挿入する画像
-これらの画像をベース画像に合成します。
+${imageUsageDescriptions}
 
-【編集・挿入指示】
+【編集指示】
 ${editPrompt}
 
 【重要な注意事項】
 1. 出力画像のサイズは必ずベース画像（1枚目）と同じサイズにしてください。挿入画像のサイズに合わせないでください（指示で明示的にサイズ変更を求められた場合を除く）
 2. 編集指示に従ってベース画像を修正してください
-3. 挿入する画像は、できるだけ元の形状・色・デザインを維持してください
-4. 挿入画像を変形・歪曲しないでください
-5. ベース画像のレイアウトやテキストを可能な限り維持してください
-6. 挿入画像がベース画像に自然に馴染むよう、影や光の調整のみ行ってください
-7. 高品質で自然な仕上がりになるよう調整してください`
+3. 各挿入画像は上記で指定された用途に従って配置してください
+4. 挿入する画像は、できるだけ元の形状・色・デザインを維持してください
+5. 挿入画像を変形・歪曲しないでください
+6. ベース画像のレイアウトやテキストを可能な限り維持してください
+7. 挿入画像がベース画像に自然に馴染むよう、影や光の調整のみ行ってください
+8. 高品質で自然な仕上がりになるよう調整してください`
         } else {
             fullPrompt = `この画像を以下の指示に従って編集してください。指定された部分以外は変更しないでください。
 

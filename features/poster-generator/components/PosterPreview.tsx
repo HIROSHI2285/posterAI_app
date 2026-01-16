@@ -20,7 +20,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     // 画像挿入モード用の状態（複数画像対応）
     const [isInsertMode, setIsInsertMode] = useState(false)
-    const [insertImages, setInsertImages] = useState<{ data: string, name: string }[]>([])
+    const [insertImages, setInsertImages] = useState<{ data: string, name: string, usage: string }[]>([])
     const [insertPrompt, setInsertPrompt] = useState("")
     const [isInserting, setIsInserting] = useState(false)
     const insertFileInputRef = useRef<HTMLInputElement>(null)
@@ -94,7 +94,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                     imageData: displayImageUrl,
                     editPrompt: editPrompt.trim(),
                     // 画像が添付されていれば同時に挿入
-                    insertImagesData: insertImages.length > 0 ? insertImages.map(img => img.data) : undefined
+                    insertImagesData: insertImages.length > 0 ? insertImages.map(img => img.data) : undefined,
+                    insertImagesUsages: insertImages.length > 0 ? insertImages.map(img => img.usage) : undefined
                 })
             })
 
@@ -138,7 +139,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                 reader.onload = (event) => {
                     setInsertImages(prev => [
                         ...prev,
-                        { data: event.target?.result as string, name: file.name }
+                        { data: event.target?.result as string, name: file.name, usage: '' }
                     ])
                 }
                 reader.readAsDataURL(file)
@@ -332,18 +333,31 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
                                     {/* アップロード済み画像リスト */}
                                     {insertImages.length > 0 && (
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {insertImages.map((img, index) => (
-                                                <div key={index} className="flex items-center gap-2 p-2 bg-white rounded border">
-                                                    <img src={img.data} alt={`Insert ${index + 1}`} className="w-10 h-10 object-contain rounded" />
-                                                    <span className="text-xs flex-1 truncate">{img.name}</span>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => removeInsertImage(index)}
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
+                                                <div key={index} className="p-2 bg-white rounded border">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <img src={img.data} alt={`Insert ${index + 1}`} className="w-10 h-10 object-contain rounded" />
+                                                        <span className="text-xs flex-1 truncate">{img.name}</span>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => removeInsertImage(index)}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="用途: 例) 中央に大きく配置、ロゴとして右下に配置"
+                                                        value={img.usage}
+                                                        onChange={(e) => {
+                                                            setInsertImages(prev => prev.map((item, i) =>
+                                                                i === index ? { ...item, usage: e.target.value } : item
+                                                            ))
+                                                        }}
+                                                        className="w-full text-xs p-2 border rounded bg-white"
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
