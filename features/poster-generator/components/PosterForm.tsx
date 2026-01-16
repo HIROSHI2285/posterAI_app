@@ -48,6 +48,9 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
     const [generationMode, setGenerationMode] = useState<'text-only' | 'image-reference'>('text-only')
     const [imageReferenceStrength, setImageReferenceStrength] = useState<'strong' | 'normal' | 'weak'>('normal')
 
+    // 素材画像（ロゴ、商品写真等）- 最大5枚
+    const [materialImages, setMaterialImages] = useState<{ file: File; data: string; name: string }[]>([])
+
     // mm to px conversion at 175 DPI: 1mm = 6.89 pixels
     const mmToPx = (mm: number): number => Math.round(mm * 6.89)
     const pxToMm = (px: number): number => Math.round(px / 6.89)
@@ -79,6 +82,9 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                 ...formData,
                 generationMode,
                 imageReferenceStrength,
+                // 素材画像データを追加
+                materialsData: materialImages.map(img => img.data),
+                materialsNames: materialImages.map(img => img.name),
                 ...(formData.outputSize === 'custom' ? {
                     customWidth: formData.customWidth,
                     customHeight: formData.customHeight,
@@ -567,6 +573,79 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                     <X className="h-4 w-4" />
                                 </button>
                             </div>
+                        )}
+                    </div>
+
+                    {/* 素材画像アップロード */}
+                    <div className="space-y-2 pt-4 border-t border-gray-200">
+                        <Label className="text-sm font-medium">素材画像（ロゴ・商品写真等）</Label>
+                        <p className="text-xs text-muted-foreground mb-2">ポスターに組み込みたい画像を追加（最大5枚）- コスト削減に有効！</p>
+
+                        {materialImages.length < 5 && (
+                            <div
+                                onClick={() => document.getElementById('materialImageInput')?.click()}
+                                className="border-2 border-dashed border-blue-300 rounded-lg p-3 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all min-h-[80px]"
+                            >
+                                <input
+                                    id="materialImageInput"
+                                    type="file"
+                                    accept=".png,.jpg,.jpeg,.webp"
+                                    multiple
+                                    onChange={async (e) => {
+                                        const files = e.target.files
+                                        if (files) {
+                                            const remainingSlots = 5 - materialImages.length
+                                            const filesToAdd = Array.from(files).slice(0, remainingSlots)
+
+                                            for (const file of filesToAdd) {
+                                                const reader = new FileReader()
+                                                reader.onload = (event) => {
+                                                    const imageData = event.target?.result as string
+                                                    setMaterialImages(prev => [...prev, {
+                                                        file,
+                                                        data: imageData,
+                                                        name: file.name
+                                                    }])
+                                                }
+                                                reader.readAsDataURL(file)
+                                            }
+                                        }
+                                        // inputをリセットして同じファイルを再選択可能に
+                                        e.target.value = ''
+                                    }}
+                                    className="hidden"
+                                />
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mb-1">
+                                    <Upload className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <p className="text-xs text-center text-blue-600 font-medium">クリックで追加</p>
+                                <p className="text-xs text-center text-muted-foreground">残り{5 - materialImages.length}枚</p>
+                            </div>
+                        )}
+
+                        {/* 追加済み素材画像リスト */}
+                        {materialImages.length > 0 && (
+                            <div className="space-y-2">
+                                {materialImages.map((img, index) => (
+                                    <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded text-xs border border-blue-200">
+                                        <img src={img.data} alt={img.name} className="w-10 h-10 object-cover rounded" />
+                                        <span className="truncate flex-1">{img.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMaterialImages(prev => prev.filter((_, i) => i !== index))}
+                                            className="text-muted-foreground hover:text-destructive"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {materialImages.length > 0 && (
+                            <p className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                                💡 素材画像を最初から含めると、後で追加するより約¥20節約できます
+                            </p>
                         )}
                     </div>
                 </CardContent>
