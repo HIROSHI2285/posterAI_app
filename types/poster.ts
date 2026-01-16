@@ -49,6 +49,7 @@ export interface PosterFormData {
     materials?: File[]
     materialsData?: string[]
     materialsNames?: string[]
+    materialsUsages?: string[]
     customWidth?: number
     customHeight?: number
     customUnit?: CustomSizeUnit

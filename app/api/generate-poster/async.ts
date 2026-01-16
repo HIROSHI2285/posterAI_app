@@ -32,6 +32,7 @@ export async function generatePosterAsync(
             sampleImageName,
             materialsData,
             materialsNames,
+            materialsUsages,
             customWidth,
             customHeight,
             customUnit,
@@ -99,6 +100,28 @@ export async function generatePosterAsync(
             imageReferenceStrength: formData.imageReferenceStrength || 'normal'
         })
 
+        // 素材画像の用途指示をプロンプトに追加（解析結果より優先）
+        let finalPrompt = imagePrompt
+        if (materialsUsages && materialsUsages.length > 0) {
+            const usageInstructions = materialsUsages
+                .map((usage: string, index: number) => {
+                    if (usage && usage.trim()) {
+                        return `【素材画像${index + 1}】${usage.trim()}`
+                    }
+                    return null
+                })
+                .filter(Boolean)
+                .join('\n')
+
+            if (usageInstructions) {
+                finalPrompt = `【重要：素材画像の用途指示（最優先で適用してください）】
+${usageInstructions}
+
+${imagePrompt}`
+                console.log(`[Job ${jobId}] 素材画像の用途指示を追加:`, usageInstructions)
+            }
+        }
+
         console.log(`[Job ${jobId}] 画像生成開始`)
 
         await jobStore.update(jobId, { progress: 30 })
@@ -143,7 +166,7 @@ export async function generatePosterAsync(
                     }
                 },
                 ...materialInlineImages,
-                imagePrompt
+                finalPrompt
             ]
             const imageDataSize = sampleImageData.split(',')[1].length
             console.log(`[Job ${jobId}] ✅ 画像参照モード: サンプル画像 + 素材${materialInlineImages.length}枚を含めて生成`)
@@ -153,12 +176,12 @@ export async function generatePosterAsync(
             // テキスト + 素材画像モード: 素材画像 + テキストプロンプト
             generationInput = [
                 ...materialInlineImages,
-                imagePrompt
+                finalPrompt
             ]
             console.log(`[Job ${jobId}] ✅ テキスト+素材モード: 素材${materialInlineImages.length}枚を含めて生成`)
         } else {
             // テキストのみモード: プロンプトのみ（画像は使用しない）
-            generationInput = imagePrompt
+            generationInput = finalPrompt
             console.log(`[Job ${jobId}] ✅ テキストのみモード: プロンプトから新規生成`)
             console.log(`[Job ${jobId}] 入力: テキストプロンプトのみ（画像なし）`)
         }

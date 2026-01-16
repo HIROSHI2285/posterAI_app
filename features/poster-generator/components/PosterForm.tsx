@@ -48,8 +48,8 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
     const [generationMode, setGenerationMode] = useState<'text-only' | 'image-reference'>('text-only')
     const [imageReferenceStrength, setImageReferenceStrength] = useState<'strong' | 'normal' | 'weak'>('normal')
 
-    // 素材画像（ロゴ、商品写真等）- 最大5枚
-    const [materialImages, setMaterialImages] = useState<{ file: File; data: string; name: string }[]>([])
+    // 素材画像（ロゴ、商品写真等）- 最大5枚、各画像に用途を設定可能
+    const [materialImages, setMaterialImages] = useState<{ file: File; data: string; name: string; usage: string }[]>([])
 
     // mm to px conversion at 175 DPI: 1mm = 6.89 pixels
     const mmToPx = (mm: number): number => Math.round(mm * 6.89)
@@ -82,9 +82,10 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                 ...formData,
                 generationMode,
                 imageReferenceStrength,
-                // 素材画像データを追加
+                // 素材画像データと用途を追加
                 materialsData: materialImages.map(img => img.data),
                 materialsNames: materialImages.map(img => img.name),
+                materialsUsages: materialImages.map(img => img.usage),
                 ...(formData.outputSize === 'custom' ? {
                     customWidth: formData.customWidth,
                     customHeight: formData.customHeight,
@@ -604,7 +605,8 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                                     setMaterialImages(prev => [...prev, {
                                                         file,
                                                         data: imageData,
-                                                        name: file.name
+                                                        name: file.name,
+                                                        usage: '' // 用途は後から入力
                                                     }])
                                                 }
                                                 reader.readAsDataURL(file)
@@ -625,18 +627,34 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
 
                         {/* 追加済み素材画像リスト */}
                         {materialImages.length > 0 && (
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 {materialImages.map((img, index) => (
-                                    <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded text-xs border border-blue-200">
-                                        <img src={img.data} alt={img.name} className="w-10 h-10 object-cover rounded" />
-                                        <span className="truncate flex-1">{img.name}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setMaterialImages(prev => prev.filter((_, i) => i !== index))}
-                                            className="text-muted-foreground hover:text-destructive"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
+                                    <div key={index} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <img src={img.data} alt={img.name} className="w-12 h-12 object-cover rounded" />
+                                            <span className="truncate flex-1 text-sm font-medium">{img.name}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setMaterialImages(prev => prev.filter((_, i) => i !== index))}
+                                                className="text-muted-foreground hover:text-destructive"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs text-blue-700">この画像の用途（必須）:</Label>
+                                            <Input
+                                                type="text"
+                                                placeholder="例: 商品写真として中央に大きく配置"
+                                                value={img.usage}
+                                                onChange={(e) => {
+                                                    setMaterialImages(prev => prev.map((item, i) =>
+                                                        i === index ? { ...item, usage: e.target.value } : item
+                                                    ))
+                                                }}
+                                                className="text-sm bg-white"
+                                            />
+                                        </div>
                                     </div>
                                 ))}
                             </div>
