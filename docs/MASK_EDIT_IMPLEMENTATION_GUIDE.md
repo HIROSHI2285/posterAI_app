@@ -8,8 +8,8 @@
 
 ✅ **完成済み**:
 - `/api/edit-region` APIエンドポイント
-- 8領域対応
-- 画像挿入統合
+- **5領域対応**（赤、青、緑、黄、マゼンタ）
+- 画像挿入統合（最大5枚）
 
 ⏳ **実装が必要**:
 - PosterPreview.tsx のフロントエンド部分
@@ -31,7 +31,7 @@ const [brushSize, setBrushSize] = useState(20)
 const [currentRegion, setCurrentRegion] = useState(1)
 const [isDrawing, setIsDrawing] = useState(false)
 const maskCanvasRef = useRef<HTMLCanvasElement>(null)
-const regionColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080']
+const regionColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF']
 ```
 
 ---
@@ -136,11 +136,11 @@ const handleMaskEdit = async () => {
                     }} />
                 </div>
                 <Button
-                    onClick={() => setCurrentRegion(prev => Math.min(prev + 1, 8))}
+                    onClick={() => setCurrentRegion(prev => Math.min(prev + 1, 5))}
                     size="sm"
                     variant="outline"
                 >
-                    次の領域 ({currentRegion}/8)
+                    次の領域 ({currentRegion}/5)
                 </Button>
                 <label className="text-xs">サイズ: {brushSize}px</label>
                 <input 
