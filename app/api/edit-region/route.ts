@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
         if (hasInsertImages) {
             // 画像挿入ありの場合
-            const imageUsageDescriptions = insertImages.map((_, i) => {
+            const imageUsageDescriptions = insertImages.map((_: string, i: number) => {
                 const usage = insertUsages[i] || '適切な位置に配置'
                 return `【画像${i + 1}】${usage}`
             }).join('\n')
@@ -63,9 +63,6 @@ ${imageUsageDescriptions}
 - 緑色の領域 = 領域3
 - 黄色の領域 = 領域4
 - マゼンタの領域 = 領域5
-- シアンの領域 = 領域6
-- オレンジの領域 = 領域7
-- 紫の領域 = 領域8
 
 【重要な注意】
 1. 色で塗られた領域のみを編集指示に従って変更してください
@@ -87,9 +84,6 @@ ${maskEditPrompt}
 - 緑色の領域 = 領域3
 - 黄色の領域 = 領域4
 - マゼンタの領域 = 領域5
-- シアンの領域 = 領域6
-- オレンジの領域 = 領域7
-- 紫の領域 = 領域8
 
 【重要な注意】
 1. 色で塗られた領域のみを編集してください
