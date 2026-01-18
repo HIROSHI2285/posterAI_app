@@ -88,7 +88,7 @@ export const PosterGenerationSchema = z.object({
     // 画像データ（Base64）
     sampleImageData: Base64ImageSchema.optional(),
     sampleImageName: z.string().optional(),
-    materialsData: z.array(Base64ImageSchema).max(5, '素材画像は最大5枚までです').optional(),
+    materialsData: z.array(Base64ImageSchema).max(8, '素材画像は最大8枚までです').optional(),
     materialsNames: z.array(z.string()).optional(),
 
     // カスタムサイズ

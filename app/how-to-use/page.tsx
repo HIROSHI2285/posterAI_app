@@ -327,7 +327,7 @@ export default function HowToUsePage() {
                         <ul className="space-y-2 text-sm text-green-200">
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />
-                                最大5枚まで追加可能
+                                最大8枚まで追加可能
                             </li>
                             <li className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-400" />

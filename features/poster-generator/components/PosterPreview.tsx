@@ -24,7 +24,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const [insertPrompt, setInsertPrompt] = useState("")
     const [isInserting, setIsInserting] = useState(false)
     const insertFileInputRef = useRef<HTMLInputElement>(null)
-    const MAX_INSERT_IMAGES = 5
+    const MAX_INSERT_IMAGES = 8
 
     // アップスケール状態
     const [isUpscaling, setIsUpscaling] = useState(false)
@@ -254,7 +254,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
                                 {insertImages.length > 0 && (
                                     <div className="p-2 bg-white rounded border">
-                                        <div className="text-xs text-gray-500 mb-1">追加画像（最大5枚）</div>
+                                        <div className="text-xs text-gray-500 mb-1">追加画像（最大8枚）</div>
                                         <div className="space-y-1">
                                             {insertImages.map((img, index) => (
                                                 <div key={index} className="flex items-center gap-2 p-1 bg-gray-50 rounded text-xs">
@@ -317,7 +317,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             <div className="space-y-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
                                 <div className="flex items-center gap-2 text-purple-700">
                                     <ImagePlus className="h-4 w-4" />
-                                    <span className="text-sm font-medium">画像挿入モード（最大5枚）</span>
+                                    <span className="text-sm font-medium">画像挿入モード（最大8枚）</span>
                                 </div>
 
                                 {/* 挿入画像アップロード */}

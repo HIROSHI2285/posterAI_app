@@ -48,7 +48,7 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
     const [generationMode, setGenerationMode] = useState<'text-only' | 'image-reference'>('text-only')
     const [imageReferenceStrength, setImageReferenceStrength] = useState<'strong' | 'normal' | 'weak'>('normal')
 
-    // 素材画像（ロゴ、商品写真等）- 最大5枚、各画像に用途を設定可能
+    // 素材画像（ロゴ、商品写真等）- 最大8枚、各画像に用途を設定可能
     const [materialImages, setMaterialImages] = useState<{ file: File; data: string; name: string; usage: string }[]>([])
 
     // mm to px conversion at 175 DPI: 1mm = 6.89 pixels
@@ -580,9 +580,9 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                     {/* 素材画像アップロード */}
                     <div className="space-y-2 pt-4 border-t border-gray-200">
                         <Label className="text-sm font-medium">素材画像（ロゴ・商品写真等）</Label>
-                        <p className="text-xs text-muted-foreground mb-2">ポスターに組み込みたい画像を追加（最大5枚）- コスト削減に有効！</p>
+                        <p className="text-xs text-muted-foreground mb-2">ポスターに組み込みたい画像を追加（最大8枚）- コスト削減に有効！</p>
 
-                        {materialImages.length < 5 && (
+                        {materialImages.length < 8 && (
                             <div
                                 onClick={() => document.getElementById('materialImageInput')?.click()}
                                 className="border-2 border-dashed border-blue-300 rounded-lg p-3 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all min-h-[80px]"
