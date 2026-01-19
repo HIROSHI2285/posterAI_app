@@ -51,7 +51,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     // マスク編集用
     const [tempMaskPrompt, setTempMaskPrompt] = useState("")
-    const [brushSize, setBrushSize] = useState(20)
+    const [brushSize, setBrushSize] = useState(10)
     const [isDrawing, setIsDrawing] = useState(false)
     const [isEraser, setIsEraser] = useState(false)
     const maskCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -294,15 +294,25 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const createCombinedMaskData = async (): Promise<{ maskOverlay: string, maskPrompt: string } | null> => {
         if (!bgImageRef.current || pendingMaskEdits.length === 0) return null
 
-        // 画像の幅と高さを安全に取得
-        const imgWidth = bgImageRef.current.naturalWidth || bgImageRef.current.width
-        const imgHeight = bgImageRef.current.naturalHeight || bgImageRef.current.height
+        const imgElement = bgImageRef.current
 
-        if (!imgWidth || !imgHeight) {
-            console.error('❌ Image dimensions not available')
+        // HTMLImageElementとして有効か確認
+        if (!(imgElement instanceof HTMLImageElement)) {
+            console.error('❌ bgImageRef is not an HTMLImageElement')
+            alert('画像の参照が無効です。ページを再読み込みしてください。')
+            return null
+        }
+
+        // 画像が完全に読み込まれているか確認
+        if (!imgElement.complete || !imgElement.naturalWidth) {
+            console.error('❌ Image not fully loaded')
             alert('画像が読み込まれていません。少し待ってから再度お試しください。')
             return null
         }
+
+        // 画像の幅と高さを取得
+        const imgWidth = imgElement.naturalWidth
+        const imgHeight = imgElement.naturalHeight
 
         const maskOnlyCanvas = document.createElement('canvas')
         maskOnlyCanvas.width = imgWidth
@@ -326,7 +336,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         overlayCanvas.height = imgHeight
         const overlayCtx = overlayCanvas.getContext('2d')!
 
-        overlayCtx.drawImage(bgImageRef.current, 0, 0)
+        overlayCtx.drawImage(imgElement, 0, 0)
         overlayCtx.globalAlpha = 0.7
         overlayCtx.drawImage(maskOnlyCanvas, 0, 0)
         overlayCtx.globalAlpha = 1.0
