@@ -145,138 +145,123 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
                 </span>
             </div>
 
-            {/* 2カラムレイアウト: 画像 | テキストリスト */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 左: 元画像（編集不可、参照用） */}
-                <div className="border rounded bg-white overflow-hidden">
-                    <div className="text-xs text-gray-500 p-2 bg-gray-100 border-b">
-                        元画像（参照用）
-                    </div>
-                    <img
-                        src={imageUrl}
-                        alt="Original"
-                        className="w-full h-auto"
-                        style={{ maxHeight: '400px', objectFit: 'contain' }}
-                    />
+            {/* テキストリスト（編集可能） */}
+            <div className="border rounded bg-white overflow-hidden">
+                <div className="text-xs text-gray-500 p-2 bg-gray-100 border-b flex justify-between">
+                    <span>検出されたテキスト（クリックで編集）</span>
+                    <span>{textLayers.length}個</span>
                 </div>
-
-                {/* 右: テキストリスト（編集可能） */}
-                <div className="border rounded bg-white overflow-hidden">
-                    <div className="text-xs text-gray-500 p-2 bg-gray-100 border-b">
-                        検出されたテキスト（クリックで編集）
-                    </div>
-                    <div className="max-h-[400px] overflow-y-auto">
-                        {textLayers.length === 0 && !isLoading && (
-                            <div className="p-4 text-center text-gray-500 text-sm">
-                                テキストが検出されませんでした
-                            </div>
-                        )}
-                        {textLayers.map((layer, index) => (
+                <div className="max-h-[500px] overflow-y-auto">
+                    {textLayers.length === 0 && !isLoading && (
+                        <div className="p-4 text-center text-gray-500 text-sm">
+                            テキストが検出されませんでした
+                        </div>
+                    )}
+                    {textLayers.map((layer, index) => (
+                        <div
+                            key={index}
+                            className={`border-b last:border-b-0 ${expandedIndex === index ? 'bg-green-50' : 'hover:bg-gray-50'}`}
+                        >
+                            {/* テキスト行 */}
                             <div
-                                key={index}
-                                className={`border-b last:border-b-0 ${expandedIndex === index ? 'bg-green-50' : 'hover:bg-gray-50'}`}
+                                className="p-3 cursor-pointer flex items-center justify-between gap-2"
+                                onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
                             >
-                                {/* テキスト行 */}
-                                <div
-                                    className="p-3 cursor-pointer flex items-center justify-between gap-2"
-                                    onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                                >
-                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                        <span className="text-xs text-white bg-green-600 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                                            {index + 1}
-                                        </span>
-                                        <span
-                                            className="text-sm truncate"
-                                            style={{ color: layer.style.color }}
-                                        >
-                                            {layer.content}
-                                        </span>
-                                    </div>
-                                    {expandedIndex === index ? (
-                                        <ChevronUp className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                    ) : (
-                                        <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                    )}
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <span className="text-xs text-white bg-green-600 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                                        {index + 1}
+                                    </span>
+                                    <span
+                                        className="text-sm truncate"
+                                        style={{ color: layer.style.color }}
+                                    >
+                                        {layer.content}
+                                    </span>
                                 </div>
-
-                                {/* 展開時の編集パネル */}
-                                {expandedIndex === index && (
-                                    <div className="p-3 pt-0 space-y-3">
-                                        {/* テキスト編集 */}
-                                        <div>
-                                            <label className="text-xs text-gray-500 block mb-1">テキスト内容</label>
-                                            <input
-                                                type="text"
-                                                value={layer.content}
-                                                onChange={(e) => updateTextContent(index, e.target.value)}
-                                                className="w-full p-2 border rounded text-sm"
-                                                placeholder="テキストを入力..."
-                                            />
-                                        </div>
-
-                                        {/* スタイル編集 */}
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {/* 色 */}
-                                            <div>
-                                                <label className="text-xs text-gray-500 block mb-1">色</label>
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={layer.style.color}
-                                                        onChange={(e) => updateTextStyle(index, 'color', e.target.value)}
-                                                        className="w-8 h-8 rounded border cursor-pointer"
-                                                    />
-                                                    <span className="text-xs text-gray-500">{layer.style.color}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* サイズ */}
-                                            <div>
-                                                <label className="text-xs text-gray-500 block mb-1">サイズ</label>
-                                                <select
-                                                    value={layer.style.fontSize}
-                                                    onChange={(e) => updateTextStyle(index, 'fontSize', e.target.value)}
-                                                    className="w-full p-1.5 border rounded text-sm"
-                                                >
-                                                    <option value="small">小</option>
-                                                    <option value="medium">中</option>
-                                                    <option value="large">大</option>
-                                                    <option value="xlarge">特大</option>
-                                                </select>
-                                            </div>
-
-                                            {/* 太さ */}
-                                            <div>
-                                                <label className="text-xs text-gray-500 block mb-1">太さ</label>
-                                                <select
-                                                    value={layer.style.fontWeight}
-                                                    onChange={(e) => updateTextStyle(index, 'fontWeight', e.target.value)}
-                                                    className="w-full p-1.5 border rounded text-sm"
-                                                >
-                                                    <option value="normal">通常</option>
-                                                    <option value="bold">太字</option>
-                                                </select>
-                                            </div>
-
-                                            {/* フォント */}
-                                            <div>
-                                                <label className="text-xs text-gray-500 block mb-1">フォント</label>
-                                                <select
-                                                    value={layer.style.fontFamily}
-                                                    onChange={(e) => updateTextStyle(index, 'fontFamily', e.target.value)}
-                                                    className="w-full p-1.5 border rounded text-sm"
-                                                >
-                                                    <option value="sans-serif">ゴシック</option>
-                                                    <option value="serif">明朝</option>
-                                                    <option value="display">装飾</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
+                                {expandedIndex === index ? (
+                                    <ChevronUp className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                ) : (
+                                    <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
                                 )}
                             </div>
-                        ))}
-                    </div>
+
+                            {/* 展開時の編集パネル */}
+                            {expandedIndex === index && (
+                                <div className="p-3 pt-0 space-y-3">
+                                    {/* テキスト編集 */}
+                                    <div>
+                                        <label className="text-xs text-gray-500 block mb-1">テキスト内容</label>
+                                        <input
+                                            type="text"
+                                            value={layer.content}
+                                            onChange={(e) => updateTextContent(index, e.target.value)}
+                                            className="w-full p-2 border rounded text-sm"
+                                            placeholder="テキストを入力..."
+                                        />
+                                    </div>
+
+                                    {/* スタイル編集 */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {/* 色 */}
+                                        <div>
+                                            <label className="text-xs text-gray-500 block mb-1">色</label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="color"
+                                                    value={layer.style.color}
+                                                    onChange={(e) => updateTextStyle(index, 'color', e.target.value)}
+                                                    className="w-8 h-8 rounded border cursor-pointer"
+                                                />
+                                                <span className="text-xs text-gray-500">{layer.style.color}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* サイズ */}
+                                        <div>
+                                            <label className="text-xs text-gray-500 block mb-1">サイズ</label>
+                                            <select
+                                                value={layer.style.fontSize}
+                                                onChange={(e) => updateTextStyle(index, 'fontSize', e.target.value)}
+                                                className="w-full p-1.5 border rounded text-sm"
+                                            >
+                                                <option value="small">小</option>
+                                                <option value="medium">中</option>
+                                                <option value="large">大</option>
+                                                <option value="xlarge">特大</option>
+                                            </select>
+                                        </div>
+
+                                        {/* 太さ */}
+                                        <div>
+                                            <label className="text-xs text-gray-500 block mb-1">太さ</label>
+                                            <select
+                                                value={layer.style.fontWeight}
+                                                onChange={(e) => updateTextStyle(index, 'fontWeight', e.target.value)}
+                                                className="w-full p-1.5 border rounded text-sm"
+                                            >
+                                                <option value="normal">通常</option>
+                                                <option value="bold">太字</option>
+                                            </select>
+                                        </div>
+
+                                        {/* フォント */}
+                                        <div>
+                                            <label className="text-xs text-gray-500 block mb-1">フォント</label>
+                                            <select
+                                                value={layer.style.fontFamily}
+                                                onChange={(e) => updateTextStyle(index, 'fontFamily', e.target.value)}
+                                                className="w-full p-1.5 border rounded text-sm"
+                                            >
+                                                <option value="sans-serif">ゴシック</option>
+                                                <option value="serif">明朝</option>
+                                                <option value="display">装飾</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
 
