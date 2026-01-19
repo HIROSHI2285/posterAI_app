@@ -379,12 +379,12 @@ async function exportPDF(canvas: fabric.Canvas): Promise<Blob> {
 
 ## 📋 実装フェーズ
 
-### Phase 1: OCR情報のマッピング（2週間）
+### Phase 1: OCR情報のマッピング ✅ 完了
 
-- [ ] Gemini Vision APIでテキスト座標抽出
-- [ ] プロンプトチューニング（精度向上）
-- [ ] Fabric.js `IText` オーバーレイ表示
-- [ ] テキスト編集機能の動作確認
+- [x] Gemini Vision APIでテキスト座標抽出 (`/api/extract-text-layers`)
+- [x] プロンプトチューニング（精度向上）
+- [x] Canvas `IText` オーバーレイ表示 (`TextEditCanvas.tsx`)
+- [x] テキスト編集機能の動作確認
 
 ### Phase 2: オブジェクト分離（2週間）
 
@@ -440,4 +440,5 @@ async function exportPDF(canvas: fabric.Canvas): Promise<Blob> {
 ---
 
 *Created: 2026-01-19*
-*Status: 計画策定完了、Phase 1着手待ち*
+*Updated: 2026-01-19*
+*Status: Phase 1完了、Phase 2以降は必要に応じて実装*
