@@ -411,31 +411,21 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
                                     {/* アップロード済み画像リスト */}
                                     {insertImages.length > 0 && (
-                                        <div className="space-y-3">
+                                        <div className="flex flex-wrap gap-2">
                                             {insertImages.map((img, index) => (
-                                                <div key={index} className="p-2 bg-white rounded border">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <img src={img.data} alt={`Insert ${index + 1}`} className="w-10 h-10 object-contain rounded" />
-                                                        <span className="text-xs flex-1 truncate">{img.name}</span>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => removeInsertImage(index)}
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="用途: 例) 中央に大きく配置、ロゴとして右下に配置"
-                                                        value={img.usage}
-                                                        onChange={(e) => {
-                                                            setInsertImages(prev => prev.map((item, i) =>
-                                                                i === index ? { ...item, usage: e.target.value } : item
-                                                            ))
-                                                        }}
-                                                        className="w-full text-xs p-2 border rounded bg-white"
-                                                    />
+                                                <div key={index} className="relative group">
+                                                    <img src={img.data} alt={`Insert ${index + 1}`} className="w-16 h-16 object-contain rounded border" />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="absolute -top-2 -right-2 w-5 h-5 p-0 bg-red-500 hover:bg-red-600 rounded-full"
+                                                        onClick={() => removeInsertImage(index)}
+                                                    >
+                                                        <X className="h-3 w-3 text-white" />
+                                                    </Button>
+                                                    <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs text-center truncate px-1">
+                                                        {img.name.substring(0, 10)}
+                                                    </span>
                                                 </div>
                                             ))}
                                         </div>
@@ -455,12 +445,12 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     )}
                                 </div>
 
-                                {/* 配置指示 */}
+                                {/* 配置指示（1つのみ） */}
                                 <Textarea
                                     value={insertPrompt}
                                     onChange={(e) => setInsertPrompt(e.target.value)}
-                                    placeholder="配置場所や挿入方法を指定してください&#10;【挿入】&#10;例: 右下に自然に配置してください&#10;例: 中央上部にロゴとして配置&#10;【差し替え】&#10;例: 現在の人物をこの画像に差し替え&#10;例: 背景をこの画像に置き換え"
-                                    rows={4}
+                                    placeholder="配置場所や挿入方法を指定してください&#10;例: 右下にロゴとして配置&#10;例: 中央の人物をこの画像に差し替え&#10;例: 背景をこの画像に置き換え"
+                                    rows={3}
                                     className="bg-white"
                                 />
 

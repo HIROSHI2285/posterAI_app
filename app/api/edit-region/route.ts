@@ -32,7 +32,12 @@ export async function POST(request: NextRequest) {
 
         const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp'
         const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: modelName })
+        const model = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+                responseModalities: ['Text', 'Image']
+            } as any
+        })
 
         // 画像挿入がある場合
         const hasInsertImages = insertImagesData && insertImagesData.length > 0
@@ -132,11 +137,28 @@ ${maskEditPrompt}
 
         const result = await model.generateContent(parts)
         const response = result.response
-        const imageBlob = response.candidates?.[0]?.content?.parts?.[0]?.inlineData
+
+        // 応答の詳細をログ出力
+        console.log('Gemini response candidates:', JSON.stringify(response.candidates?.length || 0))
+
+        // 画像データを探す
+        let imageBlob = null
+        if (response.candidates && response.candidates.length > 0) {
+            const parts = response.candidates[0].content?.parts || []
+            for (const part of parts) {
+                if (part.inlineData) {
+                    imageBlob = part.inlineData
+                    break
+                }
+            }
+        }
 
         if (!imageBlob) {
+            // テキスト応答がある場合はログ出力
+            const textResponse = response.candidates?.[0]?.content?.parts?.[0]?.text
+            console.error('No image in response. Text response:', textResponse?.substring(0, 200))
             return NextResponse.json(
-                { error: '画像生成に失敗しました' },
+                { error: '画像生成に失敗しました。AIが画像を返しませんでした。' },
                 { status: 500 }
             )
         }
@@ -151,8 +173,9 @@ ${maskEditPrompt}
 
     } catch (error) {
         console.error('Edit region error:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         return NextResponse.json(
-            { error: '領域編集中にエラーが発生しました' },
+            { error: `領域編集中にエラーが発生しました: ${errorMessage}` },
             { status: 500 }
         )
     }
