@@ -281,8 +281,14 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
             </div>
 
             {/* 使い方ヒント */}
-            <div className="text-xs text-gray-500 bg-white p-2 rounded border">
-                💡 テキストをクリックして展開し、内容を編集できます。保存するとAIが画像内のテキストを差し替えます。
+            <div className="text-xs bg-yellow-50 p-3 rounded border border-yellow-200">
+                <div className="font-medium text-yellow-800 mb-1">📝 使い方</div>
+                <ol className="text-yellow-700 space-y-1 list-decimal list-inside">
+                    <li>編集したいテキストをクリックして展開</li>
+                    <li>内容・色・サイズなどを変更</li>
+                    <li><strong>すべての編集が終わったら</strong>「すべての変更を反映」ボタンを押す</li>
+                </ol>
+                <div className="mt-2 text-yellow-600">※ 保存は最後に1回だけ押してください</div>
             </div>
 
             {/* ボタンエリア */}
@@ -301,7 +307,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
                     ) : (
                         <>
                             <Save className="h-4 w-4 mr-2" />
-                            保存（AIで反映）
+                            すべての変更を反映
                         </>
                     )}
                 </Button>
