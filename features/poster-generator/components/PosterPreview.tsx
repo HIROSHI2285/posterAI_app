@@ -29,6 +29,15 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     // アップスケール状態
     const [isUpscaling, setIsUpscaling] = useState(false)
 
+    // マスク編集用の状態
+    const [isMaskMode, setIsMaskMode] = useState(false)
+    const [maskEditPrompt, setMaskEditPrompt] = useState("")
+    const [brushSize, setBrushSize] = useState(20)
+    const [currentRegion, setCurrentRegion] = useState(1)
+    const [isDrawing, setIsDrawing] = useState(false)
+    const maskCanvasRef = useRef<HTMLCanvasElement>(null)
+    const regionColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF']
+
     // 表示する画像（編集済みがあればそちらを優先）
     const displayImageUrl = editedImageUrl || imageUrl
 
@@ -196,6 +205,71 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setIsInsertMode(false)
         setInsertImages([])
         setInsertPrompt("")
+    }
+
+    // マスク編集用のハンドラー
+    const handleMaskDraw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!isDrawing || !maskCanvasRef.current) return
+
+        const canvas = maskCanvasRef.current
+        const rect = canvas.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+
+        const ctx = canvas.getContext('2d')!
+        ctx.fillStyle = regionColors[currentRegion - 1]
+        ctx.globalAlpha = 0.5
+        ctx.beginPath()
+        ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2)
+        ctx.fill()
+    }
+
+    const handleClearMask = () => {
+        if (!maskCanvasRef.current) return
+        const ctx = maskCanvasRef.current.getContext('2d')!
+        ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
+    }
+
+    const handleMaskEdit = async () => {
+        if (!displayImageUrl || !maskEditPrompt.trim() || !maskCanvasRef.current) return
+
+        setIsEditing(true)
+        try {
+            const maskImageData = maskCanvasRef.current.toDataURL('image/png')
+
+            const response = await fetch('/api/edit-region', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageData: displayImageUrl,
+                    maskData: maskImageData,
+                    maskEditPrompt: maskEditPrompt.trim(),
+                    insertImagesData: insertImages.length > 0 ? insertImages.map(img => img.data) : undefined,
+                    insertImagesUsages: insertImages.length > 0 ? insertImages.map(img => img.usage) : undefined
+                })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.imageUrl) {
+                    setEditedImageUrl(data.imageUrl)
+                    setIsMaskMode(false)
+                    setMaskEditPrompt("")
+                    setInsertImages([])
+                    handleClearMask()
+                } else {
+                    alert('マスク編集に失敗しました')
+                }
+            } else {
+                const errorData = await response.json()
+                alert(`マスク編集エラー: ${errorData.error || 'Unknown error'}`)
+            }
+        } catch (error) {
+            console.error('Mask edit error:', error)
+            alert('マスク編集中にエラーが発生しました')
+        } finally {
+            setIsEditing(false)
+        }
     }
 
     return (
@@ -407,6 +481,122 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     </Button>
                                 </div>
                             </div>
+                        ) : isMaskMode ? (
+                            /* マスク編集モード */
+                            <div className="space-y-3 p-3 bg-pink-50 rounded-lg border border-pink-200">
+                                <div className="flex items-center gap-2 text-pink-700">
+                                    <Wand2 className="h-4 w-4" />
+                                    <span className="text-sm font-medium">マスク編集モード</span>
+                                </div>
+
+                                {/* ステップ1: 領域指定 */}
+                                <div className="border rounded p-3 bg-white">
+                                    <h3 className="font-bold mb-2 text-sm">1. 編集箇所を指定</h3>
+
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs">領域: {currentRegion}</span>
+                                            <div style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                backgroundColor: regionColors[currentRegion - 1],
+                                                border: '2px solid black',
+                                                borderRadius: '4px'
+                                            }} />
+                                        </div>
+                                        <Button
+                                            onClick={() => setCurrentRegion(prev => Math.min(prev + 1, 5))}
+                                            size="sm"
+                                            variant="outline"
+                                        >
+                                            次の領域 ({currentRegion}/5)
+                                        </Button>
+                                        <label className="text-xs">サイズ: {brushSize}px</label>
+                                        <input
+                                            type="range"
+                                            min="5"
+                                            max="50"
+                                            value={brushSize}
+                                            onChange={(e) => setBrushSize(Number(e.target.value))}
+                                            className="w-24"
+                                        />
+                                        <Button onClick={handleClearMask} size="sm" variant="outline">
+                                            クリア
+                                        </Button>
+                                    </div>
+
+                                    <div style={{ position: 'relative' }} className="rounded overflow-hidden">
+                                        {displayImageUrl && (
+                                            <>
+                                                <img
+                                                    src={displayImageUrl}
+                                                    alt="Preview"
+                                                    style={{ maxWidth: '100%', display: 'block' }}
+                                                    onLoad={(e) => {
+                                                        const img = e.target as HTMLImageElement
+                                                        if (maskCanvasRef.current) {
+                                                            maskCanvasRef.current.width = img.width
+                                                            maskCanvasRef.current.height = img.height
+                                                        }
+                                                    }}
+                                                />
+                                                <canvas
+                                                    ref={maskCanvasRef}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: 0,
+                                                        left: 0,
+                                                        cursor: 'crosshair'
+                                                    }}
+                                                    onMouseDown={(e) => {
+                                                        setIsDrawing(true)
+                                                        handleMaskDraw(e)
+                                                    }}
+                                                    onMouseMove={handleMaskDraw}
+                                                    onMouseUp={() => setIsDrawing(false)}
+                                                    onMouseLeave={() => setIsDrawing(false)}
+                                                />
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* ステップ2: 編集内容 */}
+                                <div className="border rounded p-3 bg-white">
+                                    <h3 className="font-bold mb-2 text-sm">2. 編集内容を入力</h3>
+                                    <Textarea
+                                        value={maskEditPrompt}
+                                        onChange={(e) => setMaskEditPrompt(e.target.value)}
+                                        placeholder="例：&#10;1: タイトルを『新年セール』に変更&#10;2: 日付を『1/20』に変更&#10;3: ロゴを削除"
+                                        rows={5}
+                                        className="text-sm"
+                                    />
+                                </div>
+
+                                {/* 実行ボタン */}
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={handleMaskEdit}
+                                        disabled={!maskEditPrompt.trim() || isEditing}
+                                        className="flex-1"
+                                        style={{ backgroundColor: '#ec4899', color: 'white' }}
+                                    >
+                                        <Wand2 className="h-4 w-4 mr-2" />
+                                        {isEditing ? '編集中...' : 'マスク編集を実行'}
+                                    </Button>
+                                    <Button
+                                        onClick={() => {
+                                            setIsMaskMode(false)
+                                            setMaskEditPrompt("")
+                                            handleClearMask()
+                                        }}
+                                        variant="outline"
+                                    >
+                                        <X className="h-4 w-4 mr-2" />
+                                        キャンセル
+                                    </Button>
+                                </div>
+                            </div>
                         ) : (
                             <div className="flex gap-2 flex-wrap">
                                 <Button
@@ -417,6 +607,15 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 >
                                     <Edit3 className="h-4 w-4 mr-2" />
                                     編集
+                                </Button>
+                                <Button
+                                    onClick={() => setIsMaskMode(true)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50"
+                                >
+                                    <Wand2 className="h-4 w-4 mr-2" />
+                                    マスク編集
                                 </Button>
                                 <Button
                                     onClick={() => setIsInsertMode(true)}
