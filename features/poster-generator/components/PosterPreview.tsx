@@ -4,7 +4,8 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload } from "lucide-react"
+import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type } from "lucide-react"
+import { TextEditCanvas } from "./TextEditCanvas"
 
 interface PosterPreviewProps {
     imageUrl?: string
@@ -37,6 +38,9 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const [isDrawing, setIsDrawing] = useState(false)
     const maskCanvasRef = useRef<HTMLCanvasElement>(null)
     const regionColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF']
+
+    // テキスト編集モード用の状態
+    const [isTextEditMode, setIsTextEditMode] = useState(false)
 
     // 表示する画像（編集済みがあればそちらを優先）
     const displayImageUrl = editedImageUrl || imageUrl
@@ -481,6 +485,16 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     </Button>
                                 </div>
                             </div>
+                        ) : isTextEditMode ? (
+                            /* テキスト編集モード */
+                            <TextEditCanvas
+                                imageUrl={displayImageUrl!}
+                                onSave={(newImageUrl) => {
+                                    setEditedImageUrl(newImageUrl)
+                                    setIsTextEditMode(false)
+                                }}
+                                onCancel={() => setIsTextEditMode(false)}
+                            />
                         ) : isMaskMode ? (
                             /* マスク編集モード */
                             <div className="space-y-3 p-3 bg-pink-50 rounded-lg border border-pink-200">
@@ -607,6 +621,15 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 >
                                     <Edit3 className="h-4 w-4 mr-2" />
                                     編集
+                                </Button>
+                                <Button
+                                    onClick={() => setIsTextEditMode(true)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-green-300 text-green-600 hover:bg-green-50"
+                                >
+                                    <Type className="h-4 w-4 mr-2" />
+                                    テキスト編集
                                 </Button>
                                 <Button
                                     onClick={() => setIsMaskMode(true)}
