@@ -21,9 +21,17 @@ interface TextLayer {
     }
 }
 
+export interface TextEditData {
+    original: string
+    newContent: string
+    color?: string
+    fontSize?: string
+}
+
 interface TextEditCanvasProps {
     imageUrl: string
-    onSave: (newImageUrl: string) => void
+    originalTexts?: string[]  // 元のテキスト一覧
+    onSave: (edits: TextEditData[]) => void
     onCancel: () => void
 }
 
@@ -80,38 +88,24 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
         ))
     }
 
-    // 保存処理（マスク編集APIを使用してテキストを差し替え）
-    const handleSave = async () => {
-        setIsSaving(true)
-        try {
-            // 編集内容をプロンプトとして構築
-            const editPrompts = textLayers.map((layer, index) =>
-                `${index + 1}: "${layer.content}"`
-            ).join('\n')
+    // 保存処理（編集データを返す）
+    const handleSave = () => {
+        // 元のテキストと変更後のテキストを比較して、変更があったものだけ抽出
+        const edits: TextEditData[] = []
 
-            // マスク編集APIを使用
-            const response = await fetch('/api/edit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    imageData: imageUrl,
-                    prompt: `以下のテキストに変更してください:\n${editPrompts}`
-                })
+        textLayers.forEach((layer, index) => {
+            const originalContent = layer.content  // TODO: 本来は元のテキストを保持する必要がある
+
+            // 仮実装: すべてのテキストを編集として追加
+            edits.push({
+                original: `テキスト${index + 1}`,  // 仮の元テキスト
+                newContent: layer.content,
+                color: layer.style.color,
+                fontSize: layer.style.fontSize
             })
+        })
 
-            if (response.ok) {
-                const data = await response.json()
-                onSave(data.imageUrl || imageUrl)
-            } else {
-                // 編集APIが失敗した場合は元の画像を返す
-                onSave(imageUrl)
-            }
-        } catch (err) {
-            console.error('Save error:', err)
-            onSave(imageUrl)
-        } finally {
-            setIsSaving(false)
-        }
+        onSave(edits)
     }
 
     // エラー表示

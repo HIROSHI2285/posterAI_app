@@ -651,8 +651,17 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                         {isTextEditMode && (
                             <TextEditCanvas
                                 imageUrl={displayImageUrl!}
-                                onSave={(newImageUrl) => {
-                                    setEditedImageUrl(newImageUrl)
+                                onSave={(edits) => {
+                                    // 編集データを保留リストに追加
+                                    edits.forEach(edit => {
+                                        setPendingTextEdits(prev => [...prev, {
+                                            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                                            original: edit.original,
+                                            newContent: edit.newContent,
+                                            color: edit.color,
+                                            fontSize: edit.fontSize
+                                        }])
+                                    })
                                     setIsTextEditMode(false)
                                 }}
                                 onCancel={() => setIsTextEditMode(false)}
