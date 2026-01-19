@@ -25,7 +25,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const [insertPrompt, setInsertPrompt] = useState("")
     const [isInserting, setIsInserting] = useState(false)
     const insertFileInputRef = useRef<HTMLInputElement>(null)
-    const MAX_INSERT_IMAGES = 5
+    const MAX_INSERT_IMAGES = 8
 
     // アップスケール状態
     const [isUpscaling, setIsUpscaling] = useState(false)
