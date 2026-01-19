@@ -16,6 +16,7 @@ interface UnifiedEditRequest {
     insertImages?: { data: string, usage: string }[]
     maskData?: string
     maskPrompt?: string
+    generalPrompt?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, maskData, maskPrompt } = body
+        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt } = body
 
         if (!imageData) {
             return NextResponse.json(
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp'
+        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview'
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName,
@@ -56,6 +57,13 @@ export async function POST(request: NextRequest) {
 
         // 統合プロンプトを構築
         const promptParts: string[] = ['この画像を以下の指示に従って編集してください。\n']
+
+        // 全般的なプロンプト
+        if (generalPrompt) {
+            promptParts.push('【全般的な編集】')
+            promptParts.push(generalPrompt)
+            promptParts.push('')
+        }
 
         // テキスト編集の指示
         if (textEdits && textEdits.length > 0) {
@@ -78,24 +86,30 @@ export async function POST(request: NextRequest) {
             promptParts.push('')
         }
 
-        // マスク編集の指示
+        // マスク編集の指示（超シンプル版）
         if (maskData && maskPrompt) {
-            promptParts.push('【マスク領域の編集】')
+            console.log('🎨 Mask Edit Detected:')
+            console.log('  - Mask Prompt:', maskPrompt)
+
+            promptParts.push('')
+            promptParts.push('以下の2枚の画像があります:')
+            promptParts.push('1枚目: 元画像')
+            promptParts.push('2枚目: 元画像の上に編集したい領域を色で示した画像')
+            promptParts.push('')
+            promptParts.push('編集指示:')
             promptParts.push(maskPrompt)
             promptParts.push('')
-            promptParts.push('マスク画像の色分け:')
-            promptParts.push('- 赤色 = 領域1')
-            promptParts.push('- 青色 = 領域2')
-            promptParts.push('- 緑色 = 領域3')
-            promptParts.push('- 黄色 = 領域4')
-            promptParts.push('- マゼンタ = 領域5')
-            promptParts.push('')
+            promptParts.push('重要: 色が塗られた部分だけ編集し、それ以外は絶対に変更しないでください。')
         }
 
-        promptParts.push('【重要な注意】')
-        promptParts.push('1. 指定された編集のみを行い、それ以外の部分は変更しないでください')
-        promptParts.push('2. 元の画像のスタイル、品質、解像度を維持してください')
-        promptParts.push('3. 編集箇所が自然に馴染むようにしてください')
+        // マスク編集がない場合のみ品質要件を追加
+        if (!maskData) {
+            promptParts.push('')
+            promptParts.push('【品質要件】')
+            promptParts.push('- 元画像の画質・スタイル・雰囲気を維持')
+            promptParts.push('- 文字やロゴは読みやすさを維持')
+        }
+
 
         const fullPrompt = promptParts.join('\n')
 

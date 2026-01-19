@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         // Gemini Vision APIを使用してテキストを抽出
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
-            model: process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp'
+            model: process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview'
         })
 
         // Base64データの準備

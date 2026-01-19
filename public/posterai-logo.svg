@@ -2,7 +2,7 @@
   <title>PosterAI Logo - Horizontal</title>
   <desc>A green geometric line-art symbol of the letter 'P' on the left, followed by the dark grey text 'Poster' and green text 'AI'.</desc>
   <g fill="none" fill-rule="evenodd">
-    <g transform="translate(0, 5)" stroke="#50ad78" stroke-width="4">
+    <g transform="translate(0, 5)" stroke="#50ad78" stroke-width="6">
       <path d="M10,0 L50,0 C55.52,0 60,4.48 60,10 L60,30 C60,35.52 55.52,40 50,40 L30,40 L30,50" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M10,15 L45,15" stroke-linecap="round"/>
       <path d="M30,15 L30,40" stroke-linecap="round"/>

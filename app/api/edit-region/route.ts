@@ -14,14 +14,21 @@ export async function POST(request: NextRequest) {
         const { imageData, overlayImage, regionPrompts, insertImagesData, insertImagesUsages } = await request.json()
 
         // バリデーション
-        if (!imageData || !overlayImage) {
+        if (!imageData) {
             return NextResponse.json(
-                { error: '必須パラメータが不足しています（元画像とオーバーレイ画像が必要です）' },
+                { error: '必須パラメータ imageData が不足しています' },
+                { status: 400 }
+            )
+        }
+        if (!overlayImage) {
+            return NextResponse.json(
+                { error: '必須パラメータ overlayImage が不足しています' },
                 { status: 400 }
             )
         }
 
         // Gemini API初期化
+        // ... (省略)
         const apiKey = process.env.GEMINI_API_KEY
         if (!apiKey) {
             return NextResponse.json(
@@ -30,7 +37,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp'
+        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview'
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName,
@@ -42,7 +49,7 @@ export async function POST(request: NextRequest) {
         // 領域のプロンプトを結合
         const regionPromptsText = Array.isArray(regionPrompts)
             ? regionPrompts.join('\n')
-            : ''
+            : (typeof regionPrompts === 'string' ? regionPrompts : '')
 
         // 画像挿入がある場合
         const hasInsertImages = insertImagesData && insertImagesData.length > 0
@@ -52,43 +59,38 @@ export async function POST(request: NextRequest) {
         // プロンプト構築（Geminiアドバイスに従う）
         let fullPrompt: string
 
+        const commonInstructions = `
+【最優先事項】
+2枚目の画像（マスク画像）で色が塗られた領域のみを編集してください。
+色が塗られていない部分は、1ピクセルも変更してはいけません。
+元の画像のスタイル、背景、品質を完全に維持してください。
+編集箇所が周囲と自然に馴染むように、高品質に生成してください。
+`
+
         if (hasInsertImages) {
             const imageUsageDescriptions = insertImages.map((_: string, i: number) => {
                 const usage = insertUsages[i] || '適切な位置に配置'
                 return `【画像${i + 1}】${usage}`
             }).join('\n')
 
-            fullPrompt = `以下の2枚の画像を使って編集を行ってください。
+            fullPrompt = `以下の2枚の画像（元画像とマスク画像）を使って、領域限定の編集を行ってください。
 
-【画像1】元の画像
-【画像2】編集対象を色で示した画像（色で塗られた部分が編集対象）
-
-【編集指示】
+【編集対象の定義】
+2枚目のマスク画像で色が塗られた部分を、以下の指示に従って書き換えてください。
 ${regionPromptsText}
 
-【挿入画像の用途】
+【追加画像の使用方法】
 ${imageUsageDescriptions}
 
-【重要な注意】
-1. 2枚目の画像で色が塗られた領域のみを編集してください
-2. それ以外の部分は1ピクセルも変更しないでください
-3. 元の画像のスタイル、品質、解像度を完全に維持してください
-4. 編集箇所が周囲と自然に馴染むようにしてください
-5. 挿入画像は指定された用途に従って配置してください`
+${commonInstructions}`
         } else {
-            fullPrompt = `以下の2枚の画像を使って編集を行ってください。
+            fullPrompt = `以下の2枚の画像（元画像とマスク画像）を使って、領域限定の編集を行ってください。
 
-【画像1】元の画像
-【画像2】編集対象を色で示した画像（色で塗られた部分が編集対象）
-
-【編集指示】
+【編集対象の定義】
+2枚目のマスク画像で色が塗られた部分を、以下の指示に従って書き換えてください。
 ${regionPromptsText}
 
-【重要な注意】
-1. 2枚目の画像で色が塗られた領域のみを編集してください
-2. それ以外の部分は1ピクセルも変更しないでください
-3. 元の画像のスタイル、品質、解像度を完全に維持してください
-4. 編集箇所が周囲と自然に馴染むようにしてください`
+${commonInstructions}`
         }
 
         // 画像データを準備（元画像とオーバーレイ画像の2枚）
