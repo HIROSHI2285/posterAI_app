@@ -824,6 +824,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     )}
                                 </Button>
                             </div>
+
                             {/* 保留中の編集表示エリア */}
                         {hasPendingEdits && (
                             <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
@@ -871,7 +872,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     )}
                                 </Button>
                             </div>
-                        )}
                         )}
                     </div>
                 ) : (
