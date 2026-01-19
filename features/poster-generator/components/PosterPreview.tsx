@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,7 +59,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     const handleDownload = () => {
         if (!displayImageUrl) return
-
         const link = document.createElement("a")
         link.href = displayImageUrl
         link.download = `poster-${Date.now()}.png`
@@ -72,7 +70,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     // 高画質ダウンロード（2倍アップスケール）
     const handleDownloadHQ = async () => {
         if (!displayImageUrl) return
-
         setIsUpscaling(true)
         try {
             const response = await fetch('/api/upscale', {
@@ -110,7 +107,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     const handleEdit = async () => {
         if (!displayImageUrl || !editPrompt.trim()) return
-
         setIsEditing(true)
         try {
             const response = await fetch('/api/edit', {
@@ -183,7 +179,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     const handleInsert = async () => {
         if (!displayImageUrl || insertImages.length === 0 || !insertPrompt.trim()) return
-
         setIsInserting(true)
         try {
             const response = await fetch('/api/insert', {
@@ -240,8 +235,10 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
         const tempCanvas = document.createElement('canvas')
         const maskCanvas = maskCanvasRef.current
+
         tempCanvas.width = maskCanvas.width
         tempCanvas.height = maskCanvas.height
+
         const ctx = tempCanvas.getContext('2d')
         if (!ctx) return null
 
@@ -277,7 +274,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     // すべての編集を一括適用
     const handleApplyAllEdits = async () => {
         if (!displayImageUrl || !hasPendingEdits) return
-
         setIsApplyingAll(true)
         try {
             const response = await fetch('/api/unified-edit', {
@@ -349,7 +345,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const handleMaskEdit = async () => {
         const hasPrompts = Object.values(regionPrompts).some(p => p.trim())
         if (!displayImageUrl || !hasPrompts || !maskCanvasRef.current) return
-
         setIsEditing(true)
         try {
             // 元画像の上にマスクを重ねた合成画像を作成
@@ -373,7 +368,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageData: displayImageUrl,
-                    overlayImage: overlayImage,
+                    overlayImage: overlayImage, // マスク合成画像
                     regionPrompts: promptParts,
                     insertImagesData: insertImages.length > 0 ? insertImages.map(img => img.data) : undefined,
                     insertImagesUsages: insertImages.length > 0 ? insertImages.map(img => img.usage) : undefined
@@ -438,11 +433,10 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     <Edit3 className="h-4 w-4" />
                                     <span className="text-sm font-medium">編集モード</span>
                                 </div>
-
                                 <Textarea
                                     value={editPrompt}
                                     onChange={(e) => setEditPrompt(e.target.value)}
-                                    placeholder="修正内容を入力してください0;&#10;例: 背景を夕焼けに変更してください&#10;例: 文字の色を赤に変更してください&#10;例: 右下にロゴを配置してください"
+                                    placeholder="修正内容を入力してください&#10;例: 背景を夕焼けに変更してください&#10;例: 文字の色を赤に変更してください&#10;例: 右下にロゴを配置してください"
                                     rows={6}
                                     className="bg-white text-sm"
                                 />
@@ -456,7 +450,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     onChange={handleInsertImageUpload}
                                     className="hidden"
                                 />
-
                                 {insertImages.length > 0 && (
                                     <div className="p-2 bg-white rounded border">
                                         <div className="text-xs text-gray-500 mb-1">追加画像（最大5枚）</div>
@@ -623,7 +616,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 {/* ステップ1: 領域指定 */}
                                 <div className="border rounded p-3 bg-white">
                                     <h3 className="font-bold mb-2 text-sm">1. 編集箇所を指定</h3>
-
                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs">領域: {currentRegion}</span>
@@ -757,121 +749,124 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex gap-2 flex-wrap">
-                                <Button
-                                    onClick={() => setIsEditMode(true)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 border-blue-300 text-blue-600 hover:bg-blue-50"
-                                >
-                                    <Edit3 className="h-4 w-4 mr-2" />
-                                    編集
-                                </Button>
-                                <Button
-                                    onClick={() => setIsTextEditMode(true)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 border-green-300 text-green-600 hover:bg-green-50"
-                                >
-                                    <Type className="h-4 w-4 mr-2" />
-                                    テキスト編集
-                                </Button>
-                                <Button
-                                    onClick={() => setIsMaskMode(true)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50"
-                                >
-                                    <Wand2 className="h-4 w-4 mr-2" />
-                                    マスク編集
-                                </Button>
-                                <Button
-                                    onClick={() => setIsInsertMode(true)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 border-purple-300 text-purple-600 hover:bg-purple-50"
-                                >
-                                    <ImagePlus className="h-4 w-4 mr-2" />
-                                    画像挿入
-                                </Button>
-                                <Button
-                                    onClick={onRegenerate}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1"
-                                >
-                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                    再生成
-                                </Button>
-                                <Button
-                                    onClick={handleDownloadHQ}
-                                    disabled={isUpscaling}
-                                    variant="default"
-                                    size="sm"
-                                    className="flex-1"
-                                    style={{ backgroundColor: '#48a772', color: 'white' }}
-                                >
-                                    {isUpscaling ? (
-                                        <>
-                                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                            処理中...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Download className="h-4 w-4 mr-2" />
-                                            ダウンロード
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-
-                            {/* 保留中の編集表示エリア */}
-                        {hasPendingEdits && (
-                            <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-orange-700">📋 保留中の編集</span>
+                            <>
+                                <div className="flex gap-2 flex-wrap">
                                     <Button
-                                        variant="ghost"
+                                        onClick={() => setIsEditMode(true)}
+                                        variant="outline"
                                         size="sm"
-                                        onClick={handleClearPendingEdits}
-                                        className="text-orange-600 hover:text-orange-800 h-6 px-2"
+                                        className="flex-1 border-blue-300 text-blue-600 hover:bg-blue-50"
                                     >
-                                        クリア
+                                        <Edit3 className="h-4 w-4 mr-2" />
+                                        編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => setIsTextEditMode(true)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 border-green-300 text-green-600 hover:bg-green-50"
+                                    >
+                                        <Type className="h-4 w-4 mr-2" />
+                                        テキスト編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => setIsMaskMode(true)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50"
+                                    >
+                                        <Wand2 className="h-4 w-4 mr-2" />
+                                        マスク編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => setIsInsertMode(true)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 border-purple-300 text-purple-600 hover:bg-purple-50"
+                                    >
+                                        <ImagePlus className="h-4 w-4 mr-2" />
+                                        画像挿入
+                                    </Button>
+                                    <Button
+                                        onClick={onRegenerate}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1"
+                                    >
+                                        <RefreshCw className="h-4 w-4 mr-2" />
+                                        再生成
+                                    </Button>
+                                    <Button
+                                        onClick={handleDownloadHQ}
+                                        disabled={isUpscaling}
+                                        variant="default"
+                                        size="sm"
+                                        className="flex-1"
+                                        style={{ backgroundColor: '#48a772', color: 'white' }}
+                                    >
+                                        {isUpscaling ? (
+                                            <>
+                                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                                処理中...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Download className="h-4 w-4 mr-2" />
+                                                ダウンロード
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
-                                <div className="space-y-1 text-xs text-orange-600">
-                                    {pendingTextEdits.length > 0 && (
-                                        <div>✏️ テキスト編集: {pendingTextEdits.length}件</div>
-                                    )}
-                                    {pendingInsertImages.length > 0 && (
-                                        <div>🖼️ 画像挿入: {pendingInsertImages.length}枚</div>
-                                    )}
-                                    {pendingMaskOverlay && (
-                                        <div>🎭 マスク編集: {Object.keys(pendingRegionPrompts).length}領域</div>
-                                    )}
-                                    {pendingGeneralPrompt && (
-                                        <div>📝 プロンプト編集: 設定済み</div>
-                                    )}
-                                </div>
-                                <Button
-                                    onClick={handleApplyAllEdits}
-                                    disabled={isApplyingAll}
-                                    className="w-full mt-3"
-                                    style={{ backgroundColor: '#f97316', color: 'white' }}
-                                >
-                                    {isApplyingAll ? (
-                                        <>
-                                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                            適用中...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Wand2 className="h-4 w-4 mr-2" />
-                                            すべての編集を一括適用
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
+
+                                {/* 保留中の編集表示エリア */}
+                                {hasPendingEdits && (
+                                    <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium text-orange-700">📋 保留中の編集</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={handleClearPendingEdits}
+                                                className="text-orange-600 hover:text-orange-800 h-6 px-2"
+                                            >
+                                                クリア
+                                            </Button>
+                                        </div>
+                                        <div className="space-y-1 text-xs text-orange-600">
+                                            {pendingTextEdits.length > 0 && (
+                                                <div>✏️ テキスト編集: {pendingTextEdits.length}件</div>
+                                            )}
+                                            {pendingInsertImages.length > 0 && (
+                                                <div>🖼️ 画像挿入: {pendingInsertImages.length}枚</div>
+                                            )}
+                                            {pendingMaskOverlay && (
+                                                <div>🎭 マスク編集: {Object.keys(pendingRegionPrompts).length}領域</div>
+                                            )}
+                                            {pendingGeneralPrompt && (
+                                                <div>📝 プロンプト編集: 設定済み</div>
+                                            )}
+                                        </div>
+                                        <Button
+                                            onClick={handleApplyAllEdits}
+                                            disabled={isApplyingAll}
+                                            className="w-full mt-3"
+                                            style={{ backgroundColor: '#f97316', color: 'white' }}
+                                        >
+                                            {isApplyingAll ? (
+                                                <>
+                                                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                                    適用中...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Wand2 className="h-4 w-4 mr-2" />
+                                                    すべての編集を一括適用
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 ) : (
