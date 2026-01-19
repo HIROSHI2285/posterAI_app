@@ -294,9 +294,19 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const createCombinedMaskData = async (): Promise<{ maskOverlay: string, maskPrompt: string } | null> => {
         if (!bgImageRef.current || pendingMaskEdits.length === 0) return null
 
+        // 画像の幅と高さを安全に取得
+        const imgWidth = bgImageRef.current.naturalWidth || bgImageRef.current.width
+        const imgHeight = bgImageRef.current.naturalHeight || bgImageRef.current.height
+
+        if (!imgWidth || !imgHeight) {
+            console.error('❌ Image dimensions not available')
+            alert('画像が読み込まれていません。少し待ってから再度お試しください。')
+            return null
+        }
+
         const maskOnlyCanvas = document.createElement('canvas')
-        maskOnlyCanvas.width = bgImageRef.current.naturalWidth
-        maskOnlyCanvas.height = bgImageRef.current.naturalHeight
+        maskOnlyCanvas.width = imgWidth
+        maskOnlyCanvas.height = imgHeight
         const maskCtx = maskOnlyCanvas.getContext('2d')!
 
         for (const edit of pendingMaskEdits) {
@@ -312,8 +322,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         }
 
         const overlayCanvas = document.createElement('canvas')
-        overlayCanvas.width = bgImageRef.current.naturalWidth
-        overlayCanvas.height = bgImageRef.current.naturalHeight
+        overlayCanvas.width = imgWidth
+        overlayCanvas.height = imgHeight
         const overlayCtx = overlayCanvas.getContext('2d')!
 
         overlayCtx.drawImage(bgImageRef.current, 0, 0)
