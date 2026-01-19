@@ -11,12 +11,12 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const { imageData, maskData, maskEditPrompt, insertImagesData, insertImagesUsages } = await request.json()
+        const { imageData, overlayImage, regionPrompts, insertImagesData, insertImagesUsages } = await request.json()
 
         // バリデーション
-        if (!imageData || !maskData || !maskEditPrompt) {
+        if (!imageData || !overlayImage) {
             return NextResponse.json(
-                { error: '必須パラメータが不足しています' },
+                { error: '必須パラメータが不足しています（元画像とオーバーレイ画像が必要です）' },
                 { status: 400 }
             )
         }
@@ -39,70 +39,63 @@ export async function POST(request: NextRequest) {
             } as any
         })
 
+        // 領域のプロンプトを結合
+        const regionPromptsText = Array.isArray(regionPrompts)
+            ? regionPrompts.join('\n')
+            : ''
+
         // 画像挿入がある場合
         const hasInsertImages = insertImagesData && insertImagesData.length > 0
         const insertImages = hasInsertImages ? insertImagesData : []
         const insertUsages = hasInsertImages ? (insertImagesUsages || []) : []
 
-        // プロンプト構築
+        // プロンプト構築（Geminiアドバイスに従う）
         let fullPrompt: string
 
         if (hasInsertImages) {
-            // 画像挿入ありの場合
             const imageUsageDescriptions = insertImages.map((_: string, i: number) => {
                 const usage = insertUsages[i] || '適切な位置に配置'
                 return `【画像${i + 1}】${usage}`
             }).join('\n')
 
-            fullPrompt = `以下の色で塗られた領域を編集し、さらに画像を挿入してください。
+            fullPrompt = `以下の2枚の画像を使って編集を行ってください。
 
-【マスク領域の編集指示】
-${maskEditPrompt}
+【画像1】元の画像
+【画像2】編集対象を色で示した画像（色で塗られた部分が編集対象）
+
+【編集指示】
+${regionPromptsText}
 
 【挿入画像の用途】
 ${imageUsageDescriptions}
 
-【領域の色分け】
-- 赤色の領域 = 領域1
-- 青色の領域 = 領域2
-- 緑色の領域 = 領域3
-- 黄色の領域 = 領域4
-- マゼンタの領域 = 領域5
-
 【重要な注意】
-1. 色で塗られた領域のみを編集指示に従って変更してください
-2. 各領域は編集指示の「1:」「2:」などの番号に対応しています
-3. それ以外の部分は絶対に変更しないでください
-4. 挿入画像は指定された用途に従って配置してください
-5. 編集前の画像のスタイル、品質を維持してください
-6. マスク領域と周囲が自然に馴染むようにしてください`
+1. 2枚目の画像で色が塗られた領域のみを編集してください
+2. それ以外の部分は1ピクセルも変更しないでください
+3. 元の画像のスタイル、品質、解像度を完全に維持してください
+4. 編集箇所が周囲と自然に馴染むようにしてください
+5. 挿入画像は指定された用途に従って配置してください`
         } else {
-            // マスク編集のみ
-            fullPrompt = `以下の色で塗られた領域を編集してください。
+            fullPrompt = `以下の2枚の画像を使って編集を行ってください。
+
+【画像1】元の画像
+【画像2】編集対象を色で示した画像（色で塗られた部分が編集対象）
 
 【編集指示】
-${maskEditPrompt}
-
-【領域の色分け】
-- 赤色の領域 = 領域1
-- 青色の領域 = 領域2
-- 緑色の領域 = 領域3
-- 黄色の領域 = 領域4
-- マゼンタの領域 = 領域5
+${regionPromptsText}
 
 【重要な注意】
-1. 色で塗られた領域のみを編集してください
-2. 各領域は編集指示の「1:」「2:」などの番号に対応しています
-3. それ以外の部分は絶対に変更しないでください
-4. 編集前の画像のスタイル、品質、解像度を完全に維持してください
-5. マスク領域と周囲が自然に馴染むようにしてください`
+1. 2枚目の画像で色が塗られた領域のみを編集してください
+2. それ以外の部分は1ピクセルも変更しないでください
+3. 元の画像のスタイル、品質、解像度を完全に維持してください
+4. 編集箇所が周囲と自然に馴染むようにしてください`
         }
 
-        // 画像データを準備
+        // 画像データを準備（元画像とオーバーレイ画像の2枚）
         const baseImageBase64 = imageData.split(',')[1]
-        const maskImageBase64 = maskData.split(',')[1]
+        const overlayImageBase64 = overlayImage.split(',')[1]
         const baseMimeType = imageData.match(/data:([^;]+);/)?.[1] || 'image/png'
-        const maskMimeType = maskData.match(/data:([^;]+);/)?.[1] || 'image/png'
+        const overlayMimeType = overlayImage.match(/data:([^;]+);/)?.[1] || 'image/png'
 
         // Gemini APIにリクエスト
         const parts: any[] = [
@@ -115,8 +108,8 @@ ${maskEditPrompt}
             },
             {
                 inlineData: {
-                    mimeType: maskMimeType,
-                    data: maskImageBase64
+                    mimeType: overlayMimeType,
+                    data: overlayImageBase64
                 }
             }
         ]
@@ -135,6 +128,8 @@ ${maskEditPrompt}
             })
         }
 
+        console.log('Mask edit prompt:', fullPrompt.substring(0, 500))
+
         const result = await model.generateContent(parts)
         const response = result.response
 
@@ -144,8 +139,8 @@ ${maskEditPrompt}
         // 画像データを探す
         let imageBlob = null
         if (response.candidates && response.candidates.length > 0) {
-            const parts = response.candidates[0].content?.parts || []
-            for (const part of parts) {
+            const responseParts = response.candidates[0].content?.parts || []
+            for (const part of responseParts) {
                 if (part.inlineData) {
                     imageBlob = part.inlineData
                     break

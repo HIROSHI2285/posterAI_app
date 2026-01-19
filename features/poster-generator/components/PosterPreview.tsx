@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type } from "lucide-react"
+import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus } from "lucide-react"
 import { TextEditCanvas } from "./TextEditCanvas"
 
 interface PosterPreviewProps {
@@ -32,15 +32,28 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
     // マスク編集用の状態
     const [isMaskMode, setIsMaskMode] = useState(false)
-    const [maskEditPrompt, setMaskEditPrompt] = useState("")
     const [brushSize, setBrushSize] = useState(20)
     const [currentRegion, setCurrentRegion] = useState(1)
     const [isDrawing, setIsDrawing] = useState(false)
     const maskCanvasRef = useRef<HTMLCanvasElement>(null)
+    const bgImageRef = useRef<HTMLImageElement | null>(null)
     const regionColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF']
+    // 領域ごとのプロンプト
+    const [regionPrompts, setRegionPrompts] = useState<{ [key: number]: string }>({})
 
     // テキスト編集モード用の状態
     const [isTextEditMode, setIsTextEditMode] = useState(false)
+
+    // 保留中の編集内容（一括適用用）
+    const [pendingTextEdits, setPendingTextEdits] = useState<{ original: string, newContent: string, color?: string, fontSize?: string }[]>([])
+    const [pendingInsertImages, setPendingInsertImages] = useState<{ data: string, usage: string }[]>([])
+    const [pendingMaskOverlay, setPendingMaskOverlay] = useState<string | null>(null)
+    const [pendingRegionPrompts, setPendingRegionPrompts] = useState<{ [key: number]: string }>({})
+    const [pendingGeneralPrompt, setPendingGeneralPrompt] = useState<string>("")
+    const [isApplyingAll, setIsApplyingAll] = useState(false)
+
+    // 保留中の編集があるかどうか
+    const hasPendingEdits = pendingTextEdits.length > 0 || pendingInsertImages.length > 0 || pendingMaskOverlay || pendingGeneralPrompt
 
     // 表示する画像（編集済みがあればそちらを優先）
     const displayImageUrl = editedImageUrl || imageUrl
@@ -211,6 +224,105 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setInsertPrompt("")
     }
 
+    // 編集を保留に追加するハンドラ
+    const handleAddToQueue = (type: 'insert') => {
+        if (type === 'insert' && insertImages.length > 0 && insertPrompt.trim()) {
+            setPendingInsertImages(insertImages.map(img => ({ data: img.data, usage: insertPrompt })))
+            setIsInsertMode(false)
+            setInsertImages([])
+            setInsertPrompt("")
+        }
+    }
+
+    // マスク合成画像を作成（元画像の上にブラシ跡を重ねる）
+    const createMaskOverlayImage = (): string | null => {
+        if (!maskCanvasRef.current || !displayImageUrl) return null
+
+        const tempCanvas = document.createElement('canvas')
+        const maskCanvas = maskCanvasRef.current
+        tempCanvas.width = maskCanvas.width
+        tempCanvas.height = maskCanvas.height
+        const ctx = tempCanvas.getContext('2d')
+        if (!ctx) return null
+
+        // 1. 元画像を描画
+        if (bgImageRef.current) {
+            ctx.drawImage(bgImageRef.current, 0, 0, tempCanvas.width, tempCanvas.height)
+        }
+
+        // 2. マスクを半透明で重ねる
+        ctx.globalAlpha = 0.6
+        ctx.drawImage(maskCanvas, 0, 0)
+
+        return tempCanvas.toDataURL('image/png')
+    }
+
+    // マスク編集を保留に追加
+    const handleAddMaskToQueue = () => {
+        const hasPrompts = Object.values(regionPrompts).some(p => p.trim())
+        if (maskCanvasRef.current && hasPrompts) {
+            const overlayImage = createMaskOverlayImage()
+            if (overlayImage) {
+                setPendingMaskOverlay(overlayImage)
+                setPendingRegionPrompts({ ...regionPrompts })
+                setIsMaskMode(false)
+                setRegionPrompts({})
+                // マスクキャンバスをクリア
+                const ctx = maskCanvasRef.current.getContext('2d')
+                if (ctx) ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
+            }
+        }
+    }
+
+    // すべての編集を一括適用
+    const handleApplyAllEdits = async () => {
+        if (!displayImageUrl || !hasPendingEdits) return
+
+        setIsApplyingAll(true)
+        try {
+            const response = await fetch('/api/unified-edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageData: displayImageUrl,
+                    textEdits: pendingTextEdits.length > 0 ? pendingTextEdits : undefined,
+                    insertImages: pendingInsertImages.length > 0 ? pendingInsertImages : undefined,
+                    maskOverlay: pendingMaskOverlay || undefined,
+                    regionPrompts: Object.keys(pendingRegionPrompts).length > 0 ? pendingRegionPrompts : undefined,
+                    generalPrompt: pendingGeneralPrompt || undefined
+                })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.imageUrl) {
+                    setEditedImageUrl(data.imageUrl)
+                    // 保留中の編集をクリア
+                    handleClearPendingEdits()
+                } else {
+                    alert('編集に失敗しました: 画像が生成されませんでした')
+                }
+            } else {
+                const errorData = await response.json()
+                alert(`編集に失敗しました: ${errorData.error || 'Unknown error'}`)
+            }
+        } catch (error) {
+            console.error('Apply all edits error:', error)
+            alert('編集中にエラーが発生しました')
+        } finally {
+            setIsApplyingAll(false)
+        }
+    }
+
+    // 保留中の編集をクリア
+    const handleClearPendingEdits = () => {
+        setPendingTextEdits([])
+        setPendingInsertImages([])
+        setPendingMaskOverlay(null)
+        setPendingRegionPrompts({})
+        setPendingGeneralPrompt("")
+    }
+
     // マスク編集用のハンドラー
     const handleMaskDraw = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!isDrawing || !maskCanvasRef.current) return
@@ -235,19 +347,34 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     }
 
     const handleMaskEdit = async () => {
-        if (!displayImageUrl || !maskEditPrompt.trim() || !maskCanvasRef.current) return
+        const hasPrompts = Object.values(regionPrompts).some(p => p.trim())
+        if (!displayImageUrl || !hasPrompts || !maskCanvasRef.current) return
 
         setIsEditing(true)
         try {
-            const maskImageData = maskCanvasRef.current.toDataURL('image/png')
+            // 元画像の上にマスクを重ねた合成画像を作成
+            const overlayImage = createMaskOverlayImage()
+            if (!overlayImage) {
+                alert('マスク画像の作成に失敗しました')
+                setIsEditing(false)
+                return
+            }
+
+            // 領域ごとのプロンプトを構築
+            const promptParts = Object.entries(regionPrompts)
+                .filter(([_, prompt]) => prompt.trim())
+                .map(([region, prompt]) => {
+                    const colorNames = ['赤', '青', '緑', '黄', 'マゼンタ']
+                    return `${colorNames[parseInt(region) - 1]}色で塗られた領域: ${prompt.trim()}`
+                })
 
             const response = await fetch('/api/edit-region', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageData: displayImageUrl,
-                    maskData: maskImageData,
-                    maskEditPrompt: maskEditPrompt.trim(),
+                    overlayImage: overlayImage,
+                    regionPrompts: promptParts,
                     insertImagesData: insertImages.length > 0 ? insertImages.map(img => img.data) : undefined,
                     insertImagesUsages: insertImages.length > 0 ? insertImages.map(img => img.usage) : undefined
                 })
@@ -258,7 +385,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                 if (data.imageUrl) {
                     setEditedImageUrl(data.imageUrl)
                     setIsMaskMode(false)
-                    setMaskEditPrompt("")
+                    setRegionPrompts({})
                     setInsertImages([])
                     handleClearMask()
                 } else {
@@ -565,33 +692,61 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     </div>
                                 </div>
 
-                                {/* ステップ2: 編集内容 */}
+                                {/* ステップ2: 領域ごとの編集内容 */}
                                 <div className="border rounded p-3 bg-white">
-                                    <h3 className="font-bold mb-2 text-sm">2. 編集内容を入力</h3>
-                                    <Textarea
-                                        value={maskEditPrompt}
-                                        onChange={(e) => setMaskEditPrompt(e.target.value)}
-                                        placeholder="例：&#10;1: タイトルを『新年セール』に変更&#10;2: 日付を『1/20』に変更&#10;3: ロゴを削除"
-                                        rows={5}
-                                        className="text-sm"
-                                    />
+                                    <h3 className="font-bold mb-2 text-sm">2. 各領域の編集内容を入力</h3>
+                                    <div className="space-y-2">
+                                        {[1, 2, 3, 4, 5].map(regionNum => (
+                                            <div key={regionNum} className="flex items-center gap-2">
+                                                <div
+                                                    className="w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                                                    style={{ backgroundColor: regionColors[regionNum - 1] }}
+                                                >
+                                                    {regionNum}
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={regionPrompts[regionNum] || ''}
+                                                    onChange={(e) => setRegionPrompts(prev => ({
+                                                        ...prev,
+                                                        [regionNum]: e.target.value
+                                                    }))}
+                                                    placeholder={`領域${regionNum}の編集指示（例: タイトルを変更）`}
+                                                    className="flex-1 text-sm p-2 border rounded"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        ※ 塗った色に対応する領域の指示を入力してください
+                                    </p>
                                 </div>
 
                                 {/* 実行ボタン */}
                                 <div className="flex gap-2">
                                     <Button
+                                        onClick={handleAddMaskToQueue}
+                                        disabled={!Object.values(regionPrompts).some(p => p.trim())}
+                                        className="flex-1"
+                                        variant="outline"
+                                        style={{ borderColor: '#f97316', color: '#f97316' }}
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        編集リストに追加
+                                    </Button>
+                                    <Button
                                         onClick={handleMaskEdit}
-                                        disabled={!maskEditPrompt.trim() || isEditing}
+                                        disabled={!Object.values(regionPrompts).some(p => p.trim()) || isEditing}
                                         className="flex-1"
                                         style={{ backgroundColor: '#ec4899', color: 'white' }}
                                     >
                                         <Wand2 className="h-4 w-4 mr-2" />
-                                        {isEditing ? '編集中...' : 'マスク編集を実行'}
+                                        {isEditing ? '編集中...' : '今すぐ実行'}
                                     </Button>
                                     <Button
                                         onClick={() => {
                                             setIsMaskMode(false)
-                                            setMaskEditPrompt("")
+                                            setRegionPrompts({})
                                             handleClearMask()
                                         }}
                                         variant="outline"
@@ -669,6 +824,54 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     )}
                                 </Button>
                             </div>
+                            {/* 保留中の編集表示エリア */}
+                        {hasPendingEdits && (
+                            <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-orange-700">📋 保留中の編集</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleClearPendingEdits}
+                                        className="text-orange-600 hover:text-orange-800 h-6 px-2"
+                                    >
+                                        クリア
+                                    </Button>
+                                </div>
+                                <div className="space-y-1 text-xs text-orange-600">
+                                    {pendingTextEdits.length > 0 && (
+                                        <div>✏️ テキスト編集: {pendingTextEdits.length}件</div>
+                                    )}
+                                    {pendingInsertImages.length > 0 && (
+                                        <div>🖼️ 画像挿入: {pendingInsertImages.length}枚</div>
+                                    )}
+                                    {pendingMaskOverlay && (
+                                        <div>🎭 マスク編集: {Object.keys(pendingRegionPrompts).length}領域</div>
+                                    )}
+                                    {pendingGeneralPrompt && (
+                                        <div>📝 プロンプト編集: 設定済み</div>
+                                    )}
+                                </div>
+                                <Button
+                                    onClick={handleApplyAllEdits}
+                                    disabled={isApplyingAll}
+                                    className="w-full mt-3"
+                                    style={{ backgroundColor: '#f97316', color: 'white' }}
+                                >
+                                    {isApplyingAll ? (
+                                        <>
+                                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                            適用中...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Wand2 className="h-4 w-4 mr-2" />
+                                            すべての編集を一括適用
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
                         )}
                     </div>
                 ) : (
