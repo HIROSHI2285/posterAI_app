@@ -127,7 +127,7 @@ ${imagePrompt}`
         await jobStore.update(jobId, { progress: 30 })
 
         // モデル名を環境変数から取得（正式版リリース時に変更可能）
-        const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"
+        const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-2.0-flash-exp"  // 検証用に一時変更
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName
