@@ -86,20 +86,35 @@ export async function POST(request: NextRequest) {
             promptParts.push('')
         }
 
-        // マスク編集の指示（超シンプル版）
+        // マスク編集の指示（詳細説明版）
         if (maskData && maskPrompt) {
             console.log('🎨 Mask Edit Detected:')
             console.log('  - Mask Prompt:', maskPrompt)
 
             promptParts.push('')
-            promptParts.push('以下の2枚の画像があります:')
-            promptParts.push('1枚目: 元画像')
-            promptParts.push('2枚目: 元画像の上に編集したい領域を色で示した画像')
+            promptParts.push('='.repeat(50))
+            promptParts.push('【重要: 領域限定編集指示】')
+            promptParts.push('='.repeat(50))
             promptParts.push('')
-            promptParts.push('編集指示:')
+            promptParts.push('あなたには2枚の画像を提供します:')
+            promptParts.push('')
+            promptParts.push('■ 1枚目: 編集対象の元画像')
+            promptParts.push('■ 2枚目: マスク画像（編集領域をハイライトした画像）')
+            promptParts.push('')
+            promptParts.push('**2枚目の画像の役割**:')
+            promptParts.push('2枚目の画像では、色（赤、青、緑など）でハイライトされた領域があります。')
+            promptParts.push('この色付き領域は、1枚目の画像で編集が必要な部分を正確に示しています。')
+            promptParts.push('')
+            promptParts.push('**実行する編集内容**:')
             promptParts.push(maskPrompt)
             promptParts.push('')
-            promptParts.push('重要: 色が塗られた部分だけ編集し、それ以外は絶対に変更しないでください。')
+            promptParts.push('**厳守事項**:')
+            promptParts.push('1. 2枚目でハイライトされた領域に対応する、1枚目の画像の部分「のみ」を編集してください')
+            promptParts.push('2. ハイライトされていない部分は、ピクセル単位で一切変更しないでください')
+            promptParts.push('3. 編集領域と非編集領域の境界は、自然に馴染むように処理してください')
+            promptParts.push('4. 元画像の解像度、画質、全体的なスタイルを維持してください')
+            promptParts.push('')
+            promptParts.push('='.repeat(50))
         }
 
         // マスク編集がない場合のみ品質要件を追加
