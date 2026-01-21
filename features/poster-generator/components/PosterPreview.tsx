@@ -132,28 +132,40 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         if (!displayImageUrl) return
         setIsUpscaling(true)
         try {
-            const response = await fetch('/api/upscale', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageData: displayImageUrl, scale: 2 })
+            // クライアントサイドでCanvas APIを使ってアップスケール
+            const img = new Image()
+            img.crossOrigin = 'anonymous'
+
+            await new Promise<void>((resolve, reject) => {
+                img.onload = () => resolve()
+                img.onerror = () => reject(new Error('画像の読み込みに失敗しました'))
+                img.src = displayImageUrl
             })
 
-            if (response.ok) {
-                const data = await response.json()
-                if (data.imageUrl) {
-                    const link = document.createElement("a")
-                    link.href = data.imageUrl
-                    link.download = `poster-hq-${Date.now()}.png`
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                } else {
-                    alert('アップスケールに失敗しました')
-                }
-            } else {
-                const errorData = await response.json()
-                alert(`アップスケールに失敗しました: ${errorData.error || 'Unknown error'}`)
-            }
+            const scale = 2
+            const canvas = document.createElement('canvas')
+            canvas.width = img.width * scale
+            canvas.height = img.height * scale
+
+            const ctx = canvas.getContext('2d')
+            if (!ctx) throw new Error('Canvas context not available')
+
+            // 高品質なリサイズ設定
+            ctx.imageSmoothingEnabled = true
+            ctx.imageSmoothingQuality = 'high'
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+            // PNG形式で高画質ダウンロード
+            const upscaledUrl = canvas.toDataURL('image/png', 1.0)
+
+            const link = document.createElement("a")
+            link.href = upscaledUrl
+            link.download = `poster-hq-${Date.now()}.png`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+
+            console.log(`[Upscale] 完了: ${img.width}x${img.height} → ${canvas.width}x${canvas.height}`)
         } catch (error) {
             console.error('Upscale error:', error)
             alert('アップスケール中にエラーが発生しました')
