@@ -725,7 +725,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                         )}
 
                         {/* 通常時のボタン群 */}
-                        {currentMode === 'none' && !isTextEditMode && (
+                        {currentMode === 'none' && (
                             <div className="flex gap-2 flex-wrap">
                                 <Button
                                     onClick={() => switchMode('general')}
@@ -737,7 +737,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     プロンプト
                                 </Button>
                                 <Button
-                                    onClick={() => setIsTextEditMode(true)}
+                                    onClick={() => switchMode('text')}
                                     variant="outline"
                                     size="sm"
                                     className="flex-1 border-green-300 text-green-600 hover:bg-green-50"
