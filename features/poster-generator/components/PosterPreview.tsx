@@ -766,7 +766,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             </div>
                         )}
 
-                        {currentMode === 'none' && !isTextEditMode && (
+                        {currentMode === 'none' && (
                             <div className="flex gap-2">
                                 <Button onClick={onRegenerate} variant="outline" size="sm" className="flex-1">
                                     <RefreshCw className="h-4 w-4 mr-1" />
