@@ -8,6 +8,7 @@ interface TextEdit {
     newContent: string
     color?: string
     fontSize?: string
+    isDelete?: boolean  // 削除フラグ
 }
 
 interface RegionEdit {
@@ -77,23 +78,65 @@ export async function POST(request: NextRequest) {
 
         // テキスト編集の指示
         if (textEdits && textEdits.length > 0) {
-            promptParts.push('【テキスト変更】')
-            textEdits.forEach((edit, i) => {
-                let instruction = `${i + 1}. 「${edit.original}」を「${edit.newContent}」に変更`
-                if (edit.color) instruction += `、色を${edit.color}に変更`
-                if (edit.fontSize) instruction += `、サイズを${edit.fontSize}に変更`
-                promptParts.push(instruction)
-            })
-            promptParts.push('')
+            const deletions = textEdits.filter(e => e.isDelete)
+            const changes = textEdits.filter(e => !e.isDelete)
+
+            // テキスト変更
+            if (changes.length > 0) {
+                promptParts.push('【テキスト変更】')
+                changes.forEach((edit, i) => {
+                    let instruction = `${i + 1}. 「${edit.original}」を「${edit.newContent}」に変更`
+                    if (edit.color) instruction += `、色を${edit.color}に変更`
+                    if (edit.fontSize) instruction += `、サイズを${edit.fontSize}に変更`
+                    promptParts.push(instruction)
+                })
+                promptParts.push('')
+            }
+
+            // テキスト削除
+            if (deletions.length > 0) {
+                promptParts.push('')
+                promptParts.push('='.repeat(50))
+                promptParts.push('【重要: テキストの削除】')
+                promptParts.push('='.repeat(50))
+                promptParts.push('')
+                promptParts.push('以下のテキストを画像から完全に削除してください。')
+                promptParts.push('**削除後は、背景と周囲のデザインに自然に馴染むように補正してください。**')
+                promptParts.push('')
+                deletions.forEach((edit, i) => {
+                    promptParts.push(`${i + 1}. 「${edit.original}」を削除`)
+                })
+                promptParts.push('')
+                promptParts.push('**厳守事項**:')
+                promptParts.push('1. テキストを完全に削除してください')
+                promptParts.push('2. 削除した箇所は周囲の背景・デザインに馴染むように塗りつぶしてください')
+                promptParts.push('3. 空白を残さず、自然な見た目にしてください')
+                promptParts.push('')
+                promptParts.push('='.repeat(50))
+            }
         }
 
         // 画像挿入の指示
         if (insertImages && insertImages.length > 0) {
-            promptParts.push('【画像挿入】')
-            insertImages.forEach((img, i) => {
-                promptParts.push(`${i + 1}. ${img.usage}`)
-            })
             promptParts.push('')
+            promptParts.push('='.repeat(50))
+            promptParts.push('【重要: 画像の挿入・差し替え】')
+            promptParts.push('='.repeat(50))
+            promptParts.push('')
+            promptParts.push(`以下に${insertImages.length}枚の画像を添付しています。`)
+            promptParts.push('**これらの画像を必ず元画像に合成・挿入してください。**')
+            promptParts.push('')
+            insertImages.forEach((img, i) => {
+                promptParts.push(`【画像${i + 1}番の使用方法】`)
+                promptParts.push(`${img.usage}`)
+                promptParts.push('')
+            })
+            promptParts.push('**厳守事項**:')
+            promptParts.push('1. 上記の指示通りに画像を配置・合成してください')
+            promptParts.push('2. 画像のサイズは指示に合わせて適切に調整してください')
+            promptParts.push('3. 画像の品質を保ちながら、元画像と自然に馴染むように処理してください')
+            promptParts.push('')
+            promptParts.push('='.repeat(50))
         }
 
         // 矩形領域編集の指示
@@ -169,6 +212,24 @@ export async function POST(request: NextRequest) {
         const result = await model.generateContent(parts)
         const response = result.response
 
+        // 詳細なレスポンスログ
+        console.log('=== Gemini API Response Details ===')
+        console.log('Candidates count:', response.candidates?.length || 0)
+        console.log('Finish reason:', response.candidates?.[0]?.finishReason)
+        console.log('Safety ratings:', JSON.stringify(response.candidates?.[0]?.safetyRatings))
+        console.log('Parts count:', response.candidates?.[0]?.content?.parts?.length || 0)
+
+        // 各パートの型を確認
+        if (response.candidates?.[0]?.content?.parts) {
+            response.candidates[0].content.parts.forEach((part: any, idx: number) => {
+                console.log(`Part ${idx}:`, {
+                    hasText: !!part.text,
+                    hasInlineData: !!part.inlineData,
+                    textPreview: part.text?.substring(0, 100)
+                })
+            })
+        }
+
         // 画像データを探す
         let imageBlob = null
         if (response.candidates && response.candidates.length > 0) {
@@ -183,7 +244,9 @@ export async function POST(request: NextRequest) {
 
         if (!imageBlob) {
             const textResponse = response.candidates?.[0]?.content?.parts?.[0]?.text
-            console.error('No image in response. Text:', textResponse?.substring(0, 200))
+            console.error('❌ No image in response!')
+            console.error('Full response:', JSON.stringify(response, null, 2))
+            console.error('Text response:', textResponse?.substring(0, 500))
             return NextResponse.json(
                 { error: '画像生成に失敗しました。AIが画像を返しませんでした。' },
                 { status: 500 }

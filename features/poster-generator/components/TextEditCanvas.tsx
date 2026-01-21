@@ -6,6 +6,7 @@ import { X, Save, Type, Loader2, ChevronDown, ChevronUp } from "lucide-react"
 
 interface TextLayer {
     content: string
+    originalContent: string  // 元のテキストを保持
     bbox: {
         x: number
         y: number
@@ -19,6 +20,13 @@ interface TextLayer {
         color: string
         textAlign: 'left' | 'center' | 'right'
     }
+    originalStyle: {
+        fontFamily: 'serif' | 'sans-serif' | 'display'
+        fontWeight: 'normal' | 'bold'
+        fontSize: 'small' | 'medium' | 'large' | 'xlarge'
+        color: string
+        textAlign: 'left' | 'center' | 'right'
+    }  // 元のスタイルを保持
 }
 
 export interface TextEditData {
@@ -26,6 +34,7 @@ export interface TextEditData {
     newContent: string
     color?: string
     fontSize?: string
+    isDelete?: boolean  // 削除フラグ
 }
 
 interface TextEditCanvasProps {
@@ -41,6 +50,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
     const [textLayers, setTextLayers] = useState<TextLayer[]>([])
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [markedForDeletion, setMarkedForDeletion] = useState<Set<number>>(new Set())  // 削除対象のインデックス
 
     // テキスト抽出API呼び出し
     const extractTextLayers = useCallback(async () => {
@@ -58,7 +68,13 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
             }
 
             const data = await response.json()
-            setTextLayers(data.texts || [])
+            // 元のテキストとスタイルを保持
+            const layersWithOriginal = (data.texts || []).map((layer: TextLayer) => ({
+                ...layer,
+                originalContent: layer.content,
+                originalStyle: { ...layer.style }
+            }))
+            setTextLayers(layersWithOriginal)
         } catch (err) {
             console.error('Extract error:', err)
             setError('テキストの抽出に失敗しました')
@@ -88,23 +104,51 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
         ))
     }
 
+    // 削除チェックボックスのトグル
+    const toggleDeletion = (index: number) => {
+        setMarkedForDeletion(prev => {
+            const newSet = new Set(prev)
+            if (newSet.has(index)) {
+                newSet.delete(index)
+            } else {
+                newSet.add(index)
+            }
+            return newSet
+        })
+    }
+
     // 保存処理（編集データを返す）
     const handleSave = () => {
-        // 元のテキストと変更後のテキストを比較して、変更があったものだけ抽出
         const edits: TextEditData[] = []
 
         textLayers.forEach((layer, index) => {
-            const originalContent = layer.content  // TODO: 本来は元のテキストを保持する必要がある
+            // 削除対象の場合
+            if (markedForDeletion.has(index)) {
+                edits.push({
+                    original: layer.originalContent,
+                    newContent: '',  // 空にする
+                    isDelete: true
+                })
+                return
+            }
 
-            // 仮実装: すべてのテキストを編集として追加
-            edits.push({
-                original: `テキスト${index + 1}`,  // 仮の元テキスト
-                newContent: layer.content,
-                color: layer.style.color,
-                fontSize: layer.style.fontSize
-            })
+            // コンテンツまたはスタイルに変更があるかチェック
+            const contentChanged = layer.content !== layer.originalContent
+            const colorChanged = layer.style.color !== layer.originalStyle.color
+            const sizeChanged = layer.style.fontSize !== layer.originalStyle.fontSize
+
+            // 変更があった場合のみ追加
+            if (contentChanged || colorChanged || sizeChanged) {
+                edits.push({
+                    original: layer.originalContent,
+                    newContent: layer.content,
+                    color: colorChanged ? layer.style.color : undefined,
+                    fontSize: sizeChanged ? layer.style.fontSize : undefined
+                })
+            }
         })
 
+        console.log(`📝 Text edits: ${edits.length} changes (${markedForDeletion.size} deletions)`)
         onSave(edits)
     }
 
@@ -158,24 +202,34 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
                         >
                             {/* テキスト行 */}
                             <div
-                                className="p-3 cursor-pointer flex items-center justify-between gap-2"
-                                onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                                className={`p-3 flex items-center justify-between gap-2 ${markedForDeletion.has(index) ? 'bg-red-50' : ''}`}
                             >
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <span className="text-xs text-white bg-green-600 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                                {/* 削除チェックボックス */}
+                                <input
+                                    type="checkbox"
+                                    checked={markedForDeletion.has(index)}
+                                    onChange={() => toggleDeletion(index)}
+                                    className="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500 flex-shrink-0"
+                                    title="チェックで削除"
+                                />
+                                <div
+                                    className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                                    onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                                >
+                                    <span className={`text-xs text-white rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 ${markedForDeletion.has(index) ? 'bg-red-500' : 'bg-green-600'}`}>
                                         {index + 1}
                                     </span>
                                     <span
-                                        className="text-sm truncate"
-                                        style={{ color: layer.style.color }}
+                                        className={`text-sm truncate ${markedForDeletion.has(index) ? 'line-through text-red-400' : ''}`}
+                                        style={{ color: markedForDeletion.has(index) ? undefined : layer.style.color }}
                                     >
                                         {layer.content}
                                     </span>
                                 </div>
                                 {expandedIndex === index ? (
-                                    <ChevronUp className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                    <ChevronUp className="h-4 w-4 text-gray-400 flex-shrink-0 cursor-pointer" onClick={() => setExpandedIndex(null)} />
                                 ) : (
-                                    <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                    <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0 cursor-pointer" onClick={() => setExpandedIndex(index)} />
                                 )}
                             </div>
 
