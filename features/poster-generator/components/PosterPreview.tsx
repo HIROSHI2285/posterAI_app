@@ -736,22 +736,39 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         </div>
                                     ))}
 
-                                    {pendingRegionEdits.map((item, idx) => (
-                                        <div key={item.id} className="flex items-start gap-2 p-2 bg-white rounded border">
-                                            <Wand2 className="h-3 w-3 mt-0.5 text-pink-500 flex-shrink-0" />
-                                            <span className="flex-1 break-words">
-                                                <span className="font-bold">領域{idx + 1}:</span> {item.prompt}
-                                            </span>
-                                            <Button
-                                                onClick={() => removePendingRegionEdit(item.id)}
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-5 w-5 p-0 text-red-500"
-                                            >
-                                                <Trash2 className="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    ))}
+                                    {pendingRegionEdits.map((item, idx) => {
+                                        const colors = ['#ff0000', '#0000ff', '#00ff00', '#ffff00', '#ff00ff']
+                                        const colorNames = ['赤', '青', '緑', '黄', 'マゼンタ']
+                                        const color = colors[idx % colors.length]
+                                        const colorName = colorNames[idx % colorNames.length]
+                                        return (
+                                            <div key={item.id} className="flex items-start gap-2 p-2 bg-white rounded border">
+                                                <div
+                                                    style={{
+                                                        width: 12,
+                                                        height: 12,
+                                                        backgroundColor: color,
+                                                        borderRadius: '50%',
+                                                        marginTop: 2,
+                                                        flexShrink: 0,
+                                                        border: '1px solid rgba(0,0,0,0.2)'
+                                                    }}
+                                                    title={`${colorName}色の領域`}
+                                                />
+                                                <span className="flex-1 break-words">
+                                                    <span className="font-bold">領域{idx + 1}:</span> {item.prompt}
+                                                </span>
+                                                <Button
+                                                    onClick={() => removePendingRegionEdit(item.id)}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-5 w-5 p-0 text-red-500"
+                                                >
+                                                    <Trash2 className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        )
+                                    })}
 
                                     {pendingTextEdits.map((item) => (
                                         <div key={item.id} className="flex items-start gap-2 p-2 bg-white rounded border">

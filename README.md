@@ -108,7 +108,16 @@ PosterAIは、テキスト入力やサンプル画像から、AIが自動的に�
 
 ---
 
-## 📁 プロジェクト構造
+
+<div align="center">
+  <img src="public/assets/demo/demo-1.jpg" width="45%" alt="Demo 1" />
+  <img src="public/assets/demo/demo-2.jpg" width="45%" alt="Demo 2" />
+  <br/>
+  <img src="public/assets/demo/demo-3.png" width="45%" alt="Demo 3" />
+  <img src="public/assets/demo/demo-4.png" width="45%" alt="Demo 4" />
+</div>
+
+## 🚀 プロジェクト概要構造
 
 ```
 posterai-app/

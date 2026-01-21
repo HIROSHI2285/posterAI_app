@@ -110,8 +110,10 @@ export async function POST(request: NextRequest) {
             promptParts.push('**指定領域以外は絶対に変更しないでください。1ピクセルも変更禁止です。**')
             promptParts.push('')
 
+            const colorNames = ['赤', '青', '緑', '黄', 'マゼンタ']
             regionEdits.forEach((edit, idx) => {
-                promptParts.push(`【領域${idx + 1}】`)
+                const colorName = colorNames[idx % colorNames.length]
+                promptParts.push(`【${colorName}色の領域${idx + 1}】`)
                 promptParts.push(`位置: ${edit.position.description}`)
                 promptParts.push(`  - 上端から ${edit.position.top.toFixed(1)}%`)
                 promptParts.push(`  - 左端から ${edit.position.left.toFixed(1)}%`)
