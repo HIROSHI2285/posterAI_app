@@ -64,6 +64,9 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+
+  // sharpをサーバーサイドでバンドルしない（Turbopackパニック防止）
+  serverExternalPackages: ['sharp'],
 };
 
 export default nextConfig;
