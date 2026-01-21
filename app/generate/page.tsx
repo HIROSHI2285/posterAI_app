@@ -87,7 +87,7 @@ export default function GeneratePage() {
 
                 console.log(`[Resize] リサイズ実行: ${img.width}×${img.height}px → ${targetWidth}×${targetHeight}px`)
 
-                // Canvasでリサイズ
+                // Canvasでリサイズ（アスペクト比を維持してカバーフィット）
                 const canvas = document.createElement('canvas')
                 canvas.width = targetWidth
                 canvas.height = targetHeight
@@ -98,14 +98,32 @@ export default function GeneratePage() {
                     return
                 }
 
+                // アスペクト比を計算
+                const srcRatio = img.width / img.height
+                const dstRatio = targetWidth / targetHeight
+
+                let sx = 0, sy = 0, sw = img.width, sh = img.height
+
+                if (srcRatio > dstRatio) {
+                    // 元画像が横長 → 左右をクロップ
+                    sw = img.height * dstRatio
+                    sx = (img.width - sw) / 2
+                } else {
+                    // 元画像が縦長 → 上下をクロップ
+                    sh = img.width / dstRatio
+                    sy = (img.height - sh) / 2
+                }
+
                 // 高品質リサイズ設定
                 ctx.imageSmoothingEnabled = true
                 ctx.imageSmoothingQuality = 'high'
-                ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
+
+                // 中心クロップしながらリサイズ
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight)
 
                 // 高画質PNGで出力
                 const resizedUrl = canvas.toDataURL('image/png', 1.0)
-                console.log(`[Resize] 完了: ${targetWidth}×${targetHeight}px`)
+                console.log(`[Resize] 完了: ${targetWidth}×${targetHeight}px（アスペクト比維持）`)
                 resolve(resizedUrl)
             }
 
