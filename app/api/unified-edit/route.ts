@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-thinking-exp-01-21'
+        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp'
         console.log('🤖 Using Model:', modelName)
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
