@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-exp'
+        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image'
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName,
@@ -67,11 +67,35 @@ export async function POST(request: NextRequest) {
         })
         // 統合プロンプトを構築（画像生成を明示的に要求）
         const promptParts: string[] = [
+            '【画像編集タスク】',
             'この画像を以下の指示に従って編集し、編集後の画像を生成してください。',
             '**重要: 元画像と全く同じサイズ・解像度で出力してください。画像サイズを変更しないでください。**',
-            '必ず編集後の画像を出力してください。テキストでの説明は不要です。',
+            '**重要: 必ず編集後の画像を出力してください。テキストでの説明は不要です。**',
             ''
         ]
+
+        // 画像挿入を最優先で処理（gemini-2.5-flash-imageで確実に反映させるため）
+        if (insertImages && insertImages.length > 0) {
+            promptParts.push('')
+            promptParts.push('='.repeat(50))
+            promptParts.push('【最優先タスク: 画像の挿入・差し替え】')
+            promptParts.push('='.repeat(50))
+            promptParts.push('')
+            promptParts.push(`🔴 **重要**: 元画像の後に${insertImages.length}枚の画像を添付しています。`)
+            promptParts.push('これらの添付画像を使って、以下の指示通りに元画像を編集してください。')
+            promptParts.push('')
+            insertImages.forEach((img, i) => {
+                promptParts.push(`📷 **添付画像${i + 1}**: ${img.usage}`)
+            })
+            promptParts.push('')
+            promptParts.push('**処理手順**:')
+            promptParts.push('ステップ1: 上記の配置指示を読み、どこをどう編集するか理解する')
+            promptParts.push('ステップ2: 「差し替え」の場合は元画像から該当オブジェクトを削除する')
+            promptParts.push('ステップ3: 添付画像を適切な位置・サイズで配置する')
+            promptParts.push('ステップ4: 元画像のスタイルに自然に馴染ませる')
+            promptParts.push('')
+            promptParts.push('='.repeat(50))
+        }
 
         // 全般的なプロンプト
         if (generalPrompt) {
@@ -118,31 +142,6 @@ export async function POST(request: NextRequest) {
                 promptParts.push('')
                 promptParts.push('='.repeat(50))
             }
-        }
-
-        // 画像挿入の指示
-        if (insertImages && insertImages.length > 0) {
-            promptParts.push('')
-            promptParts.push('='.repeat(50))
-            promptParts.push('【重要: 画像の挿入・差し替え】')
-            promptParts.push('='.repeat(50))
-            promptParts.push('')
-            promptParts.push(`以下に${insertImages.length}枚の画像を添付しています。`)
-            promptParts.push('**これらの添付画像を使って、元画像を編集してください。**')
-            promptParts.push('')
-            insertImages.forEach((img, i) => {
-                promptParts.push(`【添付画像${i + 1}番の配置指示】`)
-                promptParts.push(`${img.usage}`)
-                promptParts.push('')
-            })
-            promptParts.push('**厳守事項**:')
-            promptParts.push('1. 「差し替え」と指示された場合: 元画像の該当オブジェクトを削除し、添付画像で完全に置き換えてください')
-            promptParts.push('2. 「追加」「配置」と指示された場合: 元画像の上に添付画像を重ねて配置してください')
-            promptParts.push('3. 添付画像のサイズは、元画像の該当オブジェクトと同じサイズに調整してください')
-            promptParts.push('4. 添付画像を元画像のスタイル・色調に自然に馴染むように処理してください')
-            promptParts.push('5. 配置位置や対象が不明確な場合は、文脈から最も適切な場所を推測して配置してください')
-            promptParts.push('')
-            promptParts.push('='.repeat(50))
         }
 
         // 矩形領域編集の指示
