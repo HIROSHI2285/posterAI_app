@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { X, Save, Type, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { X, Save, Type, Loader2, ChevronDown, ChevronUp, Edit3, ImagePlus, Square } from "lucide-react"
 
 interface TextLayer {
     content: string
@@ -42,9 +42,10 @@ interface TextEditCanvasProps {
     originalTexts?: string[]  // 元のテキスト一覧
     onSave: (edits: TextEditData[]) => void
     onCancel: () => void
+    onModeChange?: (mode: 'general' | 'insert' | 'region') => void  // 他のモードへの切り替え
 }
 
-export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasProps) {
+export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: TextEditCanvasProps) {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [textLayers, setTextLayers] = useState<TextLayer[]>([])
@@ -182,6 +183,39 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel }: TextEditCanvasPro
                     {textLayers.length}個のテキストを検出
                 </span>
             </div>
+
+            {/* モード切り替えボタン */}
+            {onModeChange && (
+                <div className="flex gap-1 flex-wrap">
+                    <Button
+                        onClick={() => onModeChange('general')}
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                    >
+                        <Edit3 className="h-3 w-3 mr-1" />
+                        プロンプト編集
+                    </Button>
+                    <Button
+                        onClick={() => onModeChange('insert')}
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                    >
+                        <ImagePlus className="h-3 w-3 mr-1" />
+                        画像挿入
+                    </Button>
+                    <Button
+                        onClick={() => onModeChange('region')}
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                    >
+                        <Square className="h-3 w-3 mr-1" />
+                        矩形選択
+                    </Button>
+                </div>
+            )}
 
             {/* テキストリスト（編集可能） */}
             <div className="border rounded bg-white overflow-hidden">

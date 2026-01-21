@@ -42,6 +42,7 @@ interface TextEditItem {
     newContent: string
     color?: string
     fontSize?: string
+    isDelete?: boolean  // 削除フラグ
 }
 
 export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPreviewProps) {
@@ -362,7 +363,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                         original: e.original,
                         newContent: e.newContent,
                         color: e.color,
-                        fontSize: e.fontSize
+                        fontSize: e.fontSize,
+                        isDelete: e.isDelete  // 削除フラグを追加
                     })) : undefined,
                     insertImages: pendingInsertImages.length > 0 ? pendingInsertImages.map(e => ({
                         data: e.data,
@@ -712,12 +714,17 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                             original: edit.original,
                                             newContent: edit.newContent,
                                             color: edit.color,
-                                            fontSize: edit.fontSize
+                                            fontSize: edit.fontSize,
+                                            isDelete: edit.isDelete  // 削除フラグを追加
                                         }])
                                     })
-                                    setIsTextEditMode(false)
+                                    // モードは閉じずに保持（ユーザーが手動で閉じる）
                                 }}
                                 onCancel={() => setIsTextEditMode(false)}
+                                onModeChange={(mode) => {
+                                    setIsTextEditMode(false)
+                                    switchMode(mode)
+                                }}
                             />
                         )}
 
