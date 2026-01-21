@@ -396,10 +396,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     }
 
     const switchMode = (mode: 'none' | 'general' | 'insert' | 'text' | 'region') => {
-        setTempGeneralPrompt("")
-        setTempInsertImages([])
-        setTempRegionPrompt("")
-        handleClearCurrentRect()
+        // 一時入力は保持したまま、モードのみ切り替え
+        handleClearCurrentRect()  // 矩形選択中の描画のみクリア
         setCurrentMode(mode)
     }
 
@@ -468,6 +466,38 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </div>
+
+                                {/* モード切り替えボタン */}
+                                <div className="flex gap-1 flex-wrap">
+                                    <Button
+                                        onClick={() => switchMode('insert')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <ImagePlus className="h-3 w-3 mr-1" />
+                                        画像挿入
+                                    </Button>
+                                    <Button
+                                        onClick={() => switchMode('text')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Type className="h-3 w-3 mr-1" />
+                                        テキスト編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => switchMode('region')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Square className="h-3 w-3 mr-1" />
+                                        矩形選択
+                                    </Button>
+                                </div>
+
                                 <Textarea
                                     value={tempGeneralPrompt}
                                     onChange={(e) => setTempGeneralPrompt(e.target.value)}
@@ -497,6 +527,37 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     </div>
                                     <Button onClick={() => switchMode('none')} variant="ghost" size="sm" className="h-6 w-6 p-0">
                                         <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+
+                                {/* モード切り替えボタン */}
+                                <div className="flex gap-1 flex-wrap">
+                                    <Button
+                                        onClick={() => switchMode('general')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Edit3 className="h-3 w-3 mr-1" />
+                                        プロンプト編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => switchMode('text')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Type className="h-3 w-3 mr-1" />
+                                        テキスト編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => switchMode('region')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Square className="h-3 w-3 mr-1" />
+                                        矩形選択
                                     </Button>
                                 </div>
                                 <input
@@ -563,11 +624,42 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             <div className="space-y-3 p-3 bg-pink-50 rounded-lg border border-pink-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-pink-700">
-                                        <Wand2 className="h-4 w-4" />
-                                        <span className="text-sm font-medium">範囲選択編集</span>
+                                        <Square className="h-4 w-4" />
+                                        <span className="text-sm font-medium">矩形選択編集</span>
                                     </div>
                                     <Button onClick={() => switchMode('none')} variant="ghost" size="sm" className="h-6 w-6 p-0">
                                         <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+
+                                {/* モード切り替えボタン */}
+                                <div className="flex gap-1 flex-wrap">
+                                    <Button
+                                        onClick={() => switchMode('general')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Edit3 className="h-3 w-3 mr-1" />
+                                        プロンプト編集
+                                    </Button>
+                                    <Button
+                                        onClick={() => switchMode('insert')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <ImagePlus className="h-3 w-3 mr-1" />
+                                        画像挿入
+                                    </Button>
+                                    <Button
+                                        onClick={() => switchMode('text')}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                    >
+                                        <Type className="h-3 w-3 mr-1" />
+                                        テキスト編集
                                     </Button>
                                 </div>
 
