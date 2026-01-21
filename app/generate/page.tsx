@@ -237,19 +237,10 @@ export default function GeneratePage() {
             // 2. ポーリングで完了を待つ
             const imageUrl = await pollJobStatus(jobId)
 
-            // 3. サイズプリセットに合わせてリサイズ
-            const resizedImage = await resizeImageToPreset(
-                imageUrl,
-                formData.outputSize || 'a4',
-                formData.orientation || 'portrait',
-                formData.customWidth,
-                formData.customHeight,
-                formData.customUnit
-            )
-
-            // 4. 画像を表示
-            setGeneratedImage(resizedImage)
-            console.log("生成完了（サイズ調整済み）")
+            // 3. 画像を表示（リサイズ無効化 - AIが生成したサイズをそのまま使用）
+            // 正確なサイズが必要な場合は gemini-3-pro-image-preview を使用してください
+            setGeneratedImage(imageUrl)
+            console.log("生成完了")
 
         } catch (error) {
             console.error("生成エラー:", error)
