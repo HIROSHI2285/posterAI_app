@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview'
+        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image' // 開発テスト用（画像挿入は gemini-3-pro-image-preview 推奨）
         console.log('🤖 Using Model:', modelName)
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
