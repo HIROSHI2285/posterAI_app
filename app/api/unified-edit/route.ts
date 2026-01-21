@@ -195,6 +195,12 @@ export async function POST(request: NextRequest) {
 
         const fullPrompt = promptParts.join('\n')
 
+        // 🔍 デバッグ: プロンプト内容を確認
+        console.log('=== UNIFIED EDIT DEBUG ===')
+        console.log('📝 Full Prompt:')
+        console.log(fullPrompt)
+        console.log('')
+
         // 画像データを準備（1枚のみ）
         const parts: any[] = [
             { text: fullPrompt },
@@ -206,17 +212,30 @@ export async function POST(request: NextRequest) {
             }
         ]
 
+        console.log('🖼️ Base Image:')
+        console.log('  - MIME:', imageData.match(/data:([^;]+);/)?.[1])
+        console.log('  - Data Length:', imageData.split(',')[1]?.length || 0)
+
         // 挿入画像を追加
         if (insertImages && insertImages.length > 0) {
-            insertImages.forEach((img) => {
+            console.log(`📷 Insert Images: ${insertImages.length} image(s)`)
+            insertImages.forEach((img, idx) => {
+                const mimeType = img.data.match(/data:([^;]+);/)?.[1] || 'image/png'
+                const dataLength = img.data.split(',')[1]?.length || 0
+                console.log(`  [${idx + 1}] Usage: "${img.usage}"`)
+                console.log(`      MIME: ${mimeType}, Data Length: ${dataLength}`)
+
                 parts.push({
                     inlineData: {
-                        mimeType: img.data.match(/data:([^;]+);/)?.[1] || 'image/png',
+                        mimeType: mimeType,
                         data: img.data.split(',')[1]
                     }
                 })
             })
         }
+
+        console.log(`✅ Total Parts: ${parts.length} (1 text + ${parts.length - 1} images)`)
+        console.log('=========================')
 
         console.log('Unified edit prompt:', fullPrompt.substring(0, 500))
 
