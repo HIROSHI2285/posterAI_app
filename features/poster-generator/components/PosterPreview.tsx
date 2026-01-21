@@ -13,11 +13,20 @@ interface PosterPreviewProps {
     onRegenerate?: () => void
 }
 
-interface MaskEditItem {
+interface RegionEditItem {
     id: string
-    maskData: string
+    region: {
+        x: number
+        y: number
+        width: number
+        height: number
+        top: number      // %
+        left: number     // %
+        widthPercent: number   // %
+        heightPercent: number  // %
+        description: string
+    }
     prompt: string
-    color: string
 }
 
 interface InsertImageItem {
@@ -42,22 +51,26 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const [isUpscaling, setIsUpscaling] = useState(false)
 
     // 現在の編集モード
-    const [currentMode, setCurrentMode] = useState<'none' | 'general' | 'insert' | 'text' | 'mask'>('none')
+    const [currentMode, setCurrentMode] = useState<'none' | 'general' | 'insert' | 'text' | 'region'>('none')
 
     // 各モードの一時入力状態
     const [tempGeneralPrompt, setTempGeneralPrompt] = useState("")
     const [tempInsertImages, setTempInsertImages] = useState<{ data: string, name: string, usage: string }[]>([])
     const insertFileInputRef = useRef<HTMLInputElement>(null)
 
-    // マスク編集用
-    const [tempMaskPrompt, setTempMaskPrompt] = useState("")
-    const [brushSize, setBrushSize] = useState(10)
-    const [isDrawing, setIsDrawing] = useState(false)
-    const [isEraser, setIsEraser] = useState(false)
-    const maskCanvasRef = useRef<HTMLCanvasElement>(null)
-    const committedMaskCanvasRef = useRef<HTMLCanvasElement>(null)
+    // 矩形選択用
+    interface RectRegion {
+        x: number
+        y: number
+        width: number
+        height: number
+    }
+    const [tempRegionPrompt, setTempRegionPrompt] = useState("")
+    const [currentRect, setCurrentRect] = useState<RectRegion | null>(null)
+    const [isDragging, setIsDragging] = useState(false)
+    const [startPoint, setStartPoint] = useState<{ x: number, y: number } | null>(null)
+    const regionCanvasRef = useRef<HTMLCanvasElement>(null)
     const bgImageRef = useRef<HTMLImageElement | null>(null)
-    const regionColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF']
 
     // テキスト編集モード
     const [isTextEditMode, setIsTextEditMode] = useState(false)
@@ -66,19 +79,15 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const [pendingGeneralPrompt, setPendingGeneralPrompt] = useState("")
     const [pendingInsertImages, setPendingInsertImages] = useState<InsertImageItem[]>([])
     const [pendingTextEdits, setPendingTextEdits] = useState<TextEditItem[]>([])
-    const [pendingMaskEdits, setPendingMaskEdits] = useState<MaskEditItem[]>([])
+    const [pendingRegionEdits, setPendingRegionEdits] = useState<RegionEditItem[]>([])
 
     const [isApplyingAll, setIsApplyingAll] = useState(false)
 
-    const hasPendingEdits = pendingGeneralPrompt || pendingInsertImages.length > 0 || pendingTextEdits.length > 0 || pendingMaskEdits.length > 0
+    const hasPendingEdits = pendingGeneralPrompt || pendingInsertImages.length > 0 || pendingTextEdits.length > 0 || pendingRegionEdits.length > 0
 
-    const getCurrentColor = useCallback(() => {
-        return regionColors[pendingMaskEdits.length % regionColors.length]
-    }, [pendingMaskEdits.length])
-
-    // 確定済みマスクの表示更新
+    // 矩形領域の表示更新
     useEffect(() => {
-        const canvas = committedMaskCanvasRef.current
+        const canvas = regionCanvasRef.current
         if (!canvas || !bgImageRef.current) return
 
         const ctx = canvas.getContext('2d')
@@ -86,22 +95,27 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        const loadPromises = pendingMaskEdits.map(edit => {
-            return new Promise<void>((resolve) => {
-                const img = new Image()
-                img.onload = () => {
-                    ctx.globalAlpha = 0.5
-                    ctx.drawImage(img, 0, 0)
-                    ctx.globalAlpha = 1.0
-                    resolve()
-                }
-                img.onerror = () => resolve()
-                img.src = edit.maskData
-            })
+        // 確定済みの矩形を表示
+        pendingRegionEdits.forEach((edit, idx) => {
+            const colors = ['rgba(255,0,0,0.3)', 'rgba(0,0,255,0.3)', 'rgba(0,255,0,0.3)', 'rgba(255,255,0,0.3)', 'rgba(255,0,255,0.3)']
+            ctx.fillStyle = colors[idx % colors.length]
+            ctx.fillRect(edit.region.x, edit.region.y, edit.region.width, edit.region.height)
+            ctx.strokeStyle = colors[idx % colors.length].replace('0.3', '1')
+            ctx.lineWidth = 2
+            ctx.strokeRect(edit.region.x, edit.region.y, edit.region.width, edit.region.height)
         })
 
-        Promise.all(loadPromises)
-    }, [pendingMaskEdits])
+        // 現在描画中の矩形
+        if (currentRect) {
+            ctx.fillStyle = 'rgba(255,165,0,0.3)'
+            ctx.fillRect(currentRect.x, currentRect.y, currentRect.width, currentRect.height)
+            ctx.strokeStyle = 'orange'
+            ctx.lineWidth = 2
+            ctx.setLineDash([5, 5])
+            ctx.strokeRect(currentRect.x, currentRect.y, currentRect.width, currentRect.height)
+            ctx.setLineDash([])
+        }
+    }, [pendingRegionEdits, currentRect])
 
     // ========== ダウンロード ==========
     const handleDownload = () => {
@@ -196,65 +210,93 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setCurrentMode('none')
     }
 
-    // ========== マスク描画 ==========
-    const handleMaskDraw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDrawing || !maskCanvasRef.current) return
-
-        const canvas = maskCanvasRef.current
+    // ========== 矩形選択 ==========
+    const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        const canvas = regionCanvasRef.current
+        if (!canvas) return { x: 0, y: 0 }
         const rect = canvas.getBoundingClientRect()
-
         const scaleX = canvas.width / rect.width
         const scaleY = canvas.height / rect.height
-        const x = (e.clientX - rect.left) * scaleX
-        const y = (e.clientY - rect.top) * scaleY
-
-        const ctx = canvas.getContext('2d')!
-
-        if (isEraser) {
-            ctx.globalCompositeOperation = 'destination-out'
-            ctx.beginPath()
-            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2)
-            ctx.fill()
-            ctx.globalCompositeOperation = 'source-over'
-        } else {
-            ctx.fillStyle = getCurrentColor()
-            ctx.globalAlpha = 1.0
-            ctx.beginPath()
-            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2)
-            ctx.fill()
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
         }
     }
 
-    const handleClearCurrentMask = () => {
-        if (!maskCanvasRef.current) return
-        const ctx = maskCanvasRef.current.getContext('2d')!
-        ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
+    const handleRegionMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        const coords = getCanvasCoordinates(e)
+        setStartPoint(coords)
+        setIsDragging(true)
+        setCurrentRect({ x: coords.x, y: coords.y, width: 0, height: 0 })
     }
 
-    const handleAddMaskToQueue = () => {
-        if (!maskCanvasRef.current || !tempMaskPrompt.trim()) return
+    const handleRegionMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!isDragging || !startPoint) return
+        const coords = getCanvasCoordinates(e)
+        const x = Math.min(startPoint.x, coords.x)
+        const y = Math.min(startPoint.y, coords.y)
+        const width = Math.abs(coords.x - startPoint.x)
+        const height = Math.abs(coords.y - startPoint.y)
+        setCurrentRect({ x, y, width, height })
+    }
 
-        const ctx = maskCanvasRef.current.getContext('2d')!
-        const imageData = ctx.getImageData(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
-        const hasContent = imageData.data.some((val, i) => i % 4 === 3 && val > 0)
+    const handleRegionMouseUp = () => {
+        setIsDragging(false)
+        setStartPoint(null)
+        // currentRectはそのままにして確定用ボタンで追加
+    }
 
-        if (!hasContent) {
-            alert('マスク領域を描画してください')
+    const handleClearCurrentRect = () => {
+        setCurrentRect(null)
+    }
+
+    const handleAddRegionToQueue = () => {
+        if (!currentRect || !tempRegionPrompt.trim()) {
+            alert('矩形領域を選択してプロンプトを入力してください')
+            return
+        }
+        if (currentRect.width < 10 || currentRect.height < 10) {
+            alert('矩形領域が小さすぎます。もう少し大きく選択してください')
             return
         }
 
-        const maskData = maskCanvasRef.current.toDataURL('image/png')
-        const color = getCurrentColor()
+        const canvas = regionCanvasRef.current
+        if (!canvas) return
 
-        setPendingMaskEdits(prev => [...prev, {
+        // 座標を相対位置に変換
+        const top = (currentRect.y / canvas.height) * 100
+        const left = (currentRect.x / canvas.width) * 100
+        const widthPercent = (currentRect.width / canvas.width) * 100
+        const heightPercent = (currentRect.height / canvas.height) * 100
+
+        // 位置の説明を生成
+        let description = `画像の`
+        if (top < 33) description += '上部'
+        else if (top < 66) description += '中央'
+        else description += '下部'
+        if (left < 33) description += '左側'
+        else if (left < 66) description += '中央'
+        else description += '右側'
+        description += `（上から${top.toFixed(0)}%、左から${left.toFixed(0)}%の位置、幅${widthPercent.toFixed(0)}%、高さ${heightPercent.toFixed(0)}%の矩形領域）`
+
+        setPendingRegionEdits(prev => [...prev, {
             id: Date.now().toString(),
-            maskData,
-            prompt: tempMaskPrompt.trim(),
-            color
+            region: {
+                x: currentRect.x,
+                y: currentRect.y,
+                width: currentRect.width,
+                height: currentRect.height,
+                top,
+                left,
+                widthPercent,
+                heightPercent,
+                description
+            },
+            prompt: tempRegionPrompt.trim()
         }])
 
-        setTempMaskPrompt("")
-        handleClearCurrentMask()
+        setTempRegionPrompt("")
+        setCurrentRect(null)
     }
 
     // ========== 一般プロンプト ==========
@@ -270,8 +312,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setPendingInsertImages(prev => prev.filter(item => item.id !== id))
     }
 
-    const removePendingMaskEdit = (id: string) => {
-        setPendingMaskEdits(prev => prev.filter(item => item.id !== id))
+    const removePendingRegionEdit = (id: string) => {
+        setPendingRegionEdits(prev => prev.filter(item => item.id !== id))
     }
 
     const removePendingTextEdit = (id: string) => {
@@ -282,75 +324,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setPendingGeneralPrompt("")
         setPendingInsertImages([])
         setPendingTextEdits([])
-        setPendingMaskEdits([])
-
-        if (committedMaskCanvasRef.current) {
-            const ctx = committedMaskCanvasRef.current.getContext('2d')
-            if (ctx) ctx.clearRect(0, 0, committedMaskCanvasRef.current.width, committedMaskCanvasRef.current.height)
-        }
-    }
-
-    // ========== マスク合成 ==========
-    const createCombinedMaskData = async (): Promise<{ maskOverlay: string, maskPrompt: string } | null> => {
-        if (!bgImageRef.current || pendingMaskEdits.length === 0) return null
-
-        const imgElement = bgImageRef.current
-
-        // HTMLImageElementとして有効か確認
-        if (!(imgElement instanceof HTMLImageElement)) {
-            console.error('❌ bgImageRef is not an HTMLImageElement')
-            alert('画像の参照が無効です。ページを再読み込みしてください。')
-            return null
-        }
-
-        // 画像が完全に読み込まれているか確認
-        if (!imgElement.complete || !imgElement.naturalWidth) {
-            console.error('❌ Image not fully loaded')
-            alert('画像が読み込まれていません。少し待ってから再度お試しください。')
-            return null
-        }
-
-        // 画像の幅と高さを取得
-        const imgWidth = imgElement.naturalWidth
-        const imgHeight = imgElement.naturalHeight
-
-        const maskOnlyCanvas = document.createElement('canvas')
-        maskOnlyCanvas.width = imgWidth
-        maskOnlyCanvas.height = imgHeight
-        const maskCtx = maskOnlyCanvas.getContext('2d')!
-
-        for (const edit of pendingMaskEdits) {
-            await new Promise<void>((resolve) => {
-                const img = new Image()
-                img.onload = () => {
-                    maskCtx.drawImage(img, 0, 0)
-                    resolve()
-                }
-                img.onerror = () => resolve()
-                img.src = edit.maskData
-            })
-        }
-
-        const overlayCanvas = document.createElement('canvas')
-        overlayCanvas.width = imgWidth
-        overlayCanvas.height = imgHeight
-        const overlayCtx = overlayCanvas.getContext('2d')!
-
-        overlayCtx.drawImage(imgElement, 0, 0)
-        overlayCtx.globalAlpha = 0.7
-        overlayCtx.drawImage(maskOnlyCanvas, 0, 0)
-        overlayCtx.globalAlpha = 1.0
-
-        const maskOverlay = overlayCanvas.toDataURL('image/png')
-
-        const colorNames = ['赤', '青', '緑', '黄', 'マゼンタ']
-        const maskPrompt = pendingMaskEdits.map((edit) => {
-            const colorIndex = regionColors.indexOf(edit.color)
-            const colorName = colorIndex >= 0 ? colorNames[colorIndex] : '指定色'
-            return `【${colorName}色の領域】${edit.prompt}`
-        }).join('\n')
-
-        return { maskOverlay, maskPrompt }
+        setPendingRegionEdits([])
+        setCurrentRect(null)
     }
 
     // ========== すべての編集を一括適用 ==========
@@ -359,19 +334,20 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         setIsApplyingAll(true)
 
         try {
-            let maskData: string | undefined
-            let maskPrompt: string | undefined
-
-            if (pendingMaskEdits.length > 0) {
-                const result = await createCombinedMaskData()
-                if (result) {
-                    maskData = result.maskOverlay
-                    maskPrompt = result.maskPrompt
-                }
-            }
+            // 矩形領域編集のデータを構築
+            const regionEditsData = pendingRegionEdits.length > 0 ? pendingRegionEdits.map(edit => ({
+                position: {
+                    top: edit.region.top,
+                    left: edit.region.left,
+                    width: edit.region.widthPercent,
+                    height: edit.region.heightPercent,
+                    description: edit.region.description
+                },
+                prompt: edit.prompt
+            })) : undefined
 
             console.log('🚀 Unified Edit Request:', {
-                hasMaskEdits: !!maskData,
+                hasRegionEdits: !!regionEditsData,
                 hasInsertImages: pendingInsertImages.length,
                 hasTextEdits: pendingTextEdits.length,
                 hasGeneralPrompt: !!pendingGeneralPrompt
@@ -392,8 +368,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                         data: e.data,
                         usage: e.usage
                     })) : undefined,
-                    maskData: maskData,
-                    maskPrompt: maskPrompt,
+                    regionEdits: regionEditsData,
                     generalPrompt: pendingGeneralPrompt || undefined
                 })
             })
@@ -404,10 +379,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                     setEditedImageUrl(data.imageUrl)
                     handleClearPendingEdits()
                     setCurrentMode('none')
-                    if (maskCanvasRef.current) {
-                        const ctx = maskCanvasRef.current.getContext('2d')
-                        if (ctx) ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
-                    }
                 } else {
                     alert('編集に失敗しました: 画像が生成されませんでした')
                 }
@@ -424,11 +395,11 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
         }
     }
 
-    const switchMode = (mode: 'none' | 'general' | 'insert' | 'text' | 'mask') => {
+    const switchMode = (mode: 'none' | 'general' | 'insert' | 'text' | 'region') => {
         setTempGeneralPrompt("")
         setTempInsertImages([])
-        setTempMaskPrompt("")
-        handleClearCurrentMask()
+        setTempRegionPrompt("")
+        handleClearCurrentRect()
         setCurrentMode(mode)
     }
 
@@ -455,12 +426,11 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 className="w-full h-auto block"
                                 onLoad={(e) => {
                                     const img = e.target as HTMLImageElement
-                                        ;[maskCanvasRef.current, committedMaskCanvasRef.current].forEach(canvas => {
-                                            if (canvas) {
-                                                canvas.width = img.naturalWidth
-                                                canvas.height = img.naturalHeight
-                                            }
-                                        })
+                                    const canvas = regionCanvasRef.current
+                                    if (canvas) {
+                                        canvas.width = img.naturalWidth
+                                        canvas.height = img.naturalHeight
+                                    }
                                 }}
                             />
                             {editedImageUrl && (
@@ -469,26 +439,21 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                 </div>
                             )}
 
+                            {/* 矩形選択用Canvas */}
                             <canvas
-                                ref={committedMaskCanvasRef}
-                                className="absolute top-0 left-0 pointer-events-none"
-                                style={{ width: '100%', height: '100%' }}
+                                ref={regionCanvasRef}
+                                className="absolute top-0 left-0"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    cursor: currentMode === 'region' ? 'crosshair' : 'default',
+                                    pointerEvents: currentMode === 'region' ? 'auto' : 'none'
+                                }}
+                                onMouseDown={handleRegionMouseDown}
+                                onMouseMove={handleRegionMouseMove}
+                                onMouseUp={handleRegionMouseUp}
+                                onMouseLeave={handleRegionMouseUp}
                             />
-
-                            {currentMode === 'mask' && (
-                                <canvas
-                                    ref={maskCanvasRef}
-                                    className="absolute top-0 left-0"
-                                    style={{ width: '100%', height: '100%', cursor: isEraser ? 'cell' : 'crosshair' }}
-                                    onMouseDown={(e) => {
-                                        setIsDrawing(true)
-                                        handleMaskDraw(e)
-                                    }}
-                                    onMouseMove={handleMaskDraw}
-                                    onMouseUp={() => setIsDrawing(false)}
-                                    onMouseLeave={() => setIsDrawing(false)}
-                                />
-                            )}
                         </div>
 
                         {/* プロンプト編集モード */}
@@ -593,67 +558,53 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             </div>
                         )}
 
-                        {/* マスク編集モード */}
-                        {currentMode === 'mask' && (
+                        {/* 矩形選択モード */}
+                        {currentMode === 'region' && (
                             <div className="space-y-3 p-3 bg-pink-50 rounded-lg border border-pink-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-pink-700">
                                         <Wand2 className="h-4 w-4" />
-                                        <span className="text-sm font-medium">マスク編集</span>
+                                        <span className="text-sm font-medium">範囲選択編集</span>
                                     </div>
                                     <Button onClick={() => switchMode('none')} variant="ghost" size="sm" className="h-6 w-6 p-0">
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </div>
 
-                                <div className="flex items-center gap-2 flex-wrap text-xs">
-                                    <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white">
-                                        <div style={{ width: 14, height: 14, backgroundColor: getCurrentColor(), borderRadius: '50%' }} />
-                                        <span>現在の色</span>
+                                <p className="text-xs text-pink-600">
+                                    画像上をドラッグして編集したい領域を選択してください
+                                </p>
+
+                                {currentRect && (
+                                    <div className="p-2 bg-white rounded border text-xs">
+                                        <span className="text-pink-700">
+                                            選択中: 幅{((currentRect.width / (regionCanvasRef.current?.width || 1)) * 100).toFixed(0)}% × 高さ{((currentRect.height / (regionCanvasRef.current?.height || 1)) * 100).toFixed(0)}%
+                                        </span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <span>サイズ:</span>
-                                        <input
-                                            type="range"
-                                            min="5"
-                                            max="80"
-                                            value={brushSize}
-                                            onChange={(e) => setBrushSize(Number(e.target.value))}
-                                            className="w-20"
-                                        />
-                                        <span>{brushSize}px</span>
-                                    </div>
-                                    <Button
-                                        variant={isEraser ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => setIsEraser(!isEraser)}
-                                        className="h-7 text-xs"
-                                    >
-                                        <Eraser className="h-3 w-3 mr-1" />
-                                        消しゴム
-                                    </Button>
-                                    <Button onClick={handleClearCurrentMask} size="sm" variant="outline" className="h-7 text-xs">
-                                        クリア
-                                    </Button>
-                                </div>
+                                )}
 
                                 <Textarea
-                                    value={tempMaskPrompt}
-                                    onChange={(e) => setTempMaskPrompt(e.target.value)}
-                                    placeholder="塗りつぶした領域をどう変更しますか？&#10;例: 背景を青空に変更"
+                                    value={tempRegionPrompt}
+                                    onChange={(e) => setTempRegionPrompt(e.target.value)}
+                                    placeholder="選択した領域をどう変更しますか？&#10;例: この部分を削除する、背景を青空に変更"
                                     rows={2}
                                     className="bg-white text-sm"
                                 />
 
-                                <Button
-                                    onClick={handleAddMaskToQueue}
-                                    disabled={!tempMaskPrompt.trim()}
-                                    className="w-full"
-                                    style={{ backgroundColor: '#ec4899', color: 'white' }}
-                                >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    保留リストに追加（あと{Math.max(0, 5 - pendingMaskEdits.length)}つ可能）
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button onClick={handleClearCurrentRect} size="sm" variant="outline" className="flex-1 text-xs">
+                                        選択クリア
+                                    </Button>
+                                    <Button
+                                        onClick={handleAddRegionToQueue}
+                                        disabled={!currentRect || !tempRegionPrompt.trim()}
+                                        className="flex-1"
+                                        style={{ backgroundColor: '#ec4899', color: 'white' }}
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        追加（あと{Math.max(0, 5 - pendingRegionEdits.length)}可能）
+                                    </Button>
+                                </div>
                             </div>
                         )}
 
@@ -700,13 +651,13 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     テキスト
                                 </Button>
                                 <Button
-                                    onClick={() => switchMode('mask')}
+                                    onClick={() => switchMode('region')}
                                     variant="outline"
                                     size="sm"
                                     className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50"
                                 >
                                     <Wand2 className="h-4 w-4 mr-1" />
-                                    マスク
+                                    範囲選択
                                 </Button>
                                 <Button
                                     onClick={() => switchMode('insert')}
@@ -785,14 +736,14 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         </div>
                                     ))}
 
-                                    {pendingMaskEdits.map((item, idx) => (
+                                    {pendingRegionEdits.map((item, idx) => (
                                         <div key={item.id} className="flex items-start gap-2 p-2 bg-white rounded border">
-                                            <div style={{ width: 12, height: 12, backgroundColor: item.color, borderRadius: '50%', marginTop: 2, flexShrink: 0 }} />
+                                            <Wand2 className="h-3 w-3 mt-0.5 text-pink-500 flex-shrink-0" />
                                             <span className="flex-1 break-words">
                                                 <span className="font-bold">領域{idx + 1}:</span> {item.prompt}
                                             </span>
                                             <Button
-                                                onClick={() => removePendingMaskEdit(item.id)}
+                                                onClick={() => removePendingRegionEdit(item.id)}
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-5 w-5 p-0 text-red-500"

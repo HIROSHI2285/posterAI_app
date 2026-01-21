@@ -10,12 +10,22 @@ interface TextEdit {
     fontSize?: string
 }
 
+interface RegionEdit {
+    position: {
+        top: number
+        left: number
+        width: number
+        height: number
+        description: string
+    }
+    prompt: string
+}
+
 interface UnifiedEditRequest {
     imageData: string
     textEdits?: TextEdit[]
     insertImages?: { data: string, usage: string }[]
-    maskData?: string
-    maskPrompt?: string
+    regionEdits?: RegionEdit[]
     generalPrompt?: string
 }
 
@@ -28,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt } = body
+        const { imageData, textEdits, insertImages, regionEdits, generalPrompt } = body
 
         if (!imageData) {
             return NextResponse.json(
@@ -86,49 +96,50 @@ export async function POST(request: NextRequest) {
             promptParts.push('')
         }
 
-        // マスク編集の指示（詳細説明版）
-        if (maskData && maskPrompt) {
-            console.log('🎨 Mask Edit Detected:')
-            console.log('  - Mask Prompt:', maskPrompt)
+        // 矩形領域編集の指示
+        if (regionEdits && regionEdits.length > 0) {
+            console.log('🎯 Region Edit Detected:')
+            console.log('  - Region count:', regionEdits.length)
 
             promptParts.push('')
             promptParts.push('='.repeat(50))
-            promptParts.push('【重要: 領域限定編集指示】')
+            promptParts.push('【重要: 矩形領域限定編集】')
             promptParts.push('='.repeat(50))
             promptParts.push('')
-            promptParts.push('あなたには2枚の画像を提供します:')
+            promptParts.push('以下の指定された矩形領域のみを編集してください。')
+            promptParts.push('**指定領域以外は絶対に変更しないでください。1ピクセルも変更禁止です。**')
             promptParts.push('')
-            promptParts.push('■ 1枚目: 編集対象の元画像')
-            promptParts.push('■ 2枚目: マスク画像（編集領域をハイライトした画像）')
-            promptParts.push('')
-            promptParts.push('**2枚目の画像の役割**:')
-            promptParts.push('2枚目の画像では、色（赤、青、緑など）でハイライトされた領域があります。')
-            promptParts.push('この色付き領域は、1枚目の画像で編集が必要な部分を正確に示しています。')
-            promptParts.push('')
-            promptParts.push('**実行する編集内容**:')
-            promptParts.push(maskPrompt)
-            promptParts.push('')
+
+            regionEdits.forEach((edit, idx) => {
+                promptParts.push(`【領域${idx + 1}】`)
+                promptParts.push(`位置: ${edit.position.description}`)
+                promptParts.push(`  - 上端から ${edit.position.top.toFixed(1)}%`)
+                promptParts.push(`  - 左端から ${edit.position.left.toFixed(1)}%`)
+                promptParts.push(`  - 幅: ${edit.position.width.toFixed(1)}%`)
+                promptParts.push(`  - 高さ: ${edit.position.height.toFixed(1)}%`)
+                promptParts.push(`編集内容: ${edit.prompt}`)
+                promptParts.push('')
+            })
+
             promptParts.push('**厳守事項**:')
-            promptParts.push('1. 2枚目でハイライトされた領域に対応する、1枚目の画像の部分「のみ」を編集してください')
-            promptParts.push('2. ハイライトされていない部分は、ピクセル単位で一切変更しないでください')
-            promptParts.push('3. 編集領域と非編集領域の境界は、自然に馴染むように処理してください')
+            promptParts.push('1. 上記の矩形領域「のみ」を編集してください')
+            promptParts.push('2. 指定領域外は1ピクセルも変更しないでください')
+            promptParts.push('3. 編集領域と非編集領域の境界は自然に馴染むように処理してください')
             promptParts.push('4. 元画像の解像度、画質、全体的なスタイルを維持してください')
             promptParts.push('')
             promptParts.push('='.repeat(50))
         }
 
-        // マスク編集がない場合のみ品質要件を追加
-        if (!maskData) {
-            promptParts.push('')
-            promptParts.push('【品質要件】')
-            promptParts.push('- 元画像の画質・スタイル・雰囲気を維持')
-            promptParts.push('- 文字やロゴは読みやすさを維持')
-        }
+        // 品質要件を追加
+        promptParts.push('')
+        promptParts.push('【品質要件】')
+        promptParts.push('- 元画像の画質・スタイル・雰囲気を維持')
+        promptParts.push('- 文字やロゴは読みやすさを維持')
 
 
         const fullPrompt = promptParts.join('\n')
 
-        // 画像データを準備
+        // 画像データを準備（1枚のみ）
         const parts: any[] = [
             { text: fullPrompt },
             {
@@ -138,16 +149,6 @@ export async function POST(request: NextRequest) {
                 }
             }
         ]
-
-        // マスク画像を追加
-        if (maskData) {
-            parts.push({
-                inlineData: {
-                    mimeType: maskData.match(/data:([^;]+);/)?.[1] || 'image/png',
-                    data: maskData.split(',')[1]
-                }
-            })
-        }
 
         // 挿入画像を追加
         if (insertImages && insertImages.length > 0) {
