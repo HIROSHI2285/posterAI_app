@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
         // 統合プロンプトを構築（画像生成を明示的に要求）
         const promptParts: string[] = [
             'この画像を以下の指示に従って編集し、編集後の画像を生成してください。',
+            '**重要: 元画像と全く同じサイズ・解像度で出力してください。画像サイズを変更しないでください。**',
             '必ず編集後の画像を出力してください。テキストでの説明は不要です。',
             ''
         ]
@@ -181,11 +182,13 @@ export async function POST(request: NextRequest) {
         // 品質要件を追加
         promptParts.push('')
         promptParts.push('【品質要件】')
+        promptParts.push('- **元画像と全く同じサイズ・解像度で出力（幅・高さを変更しない）**')
         promptParts.push('- 元画像の画質・スタイル・雰囲気を維持')
         promptParts.push('- 文字やロゴは読みやすさを維持')
         promptParts.push('')
         promptParts.push('【最終指示】')
         promptParts.push('上記の編集内容をすべて反映した画像を1枚生成してください。')
+        promptParts.push('**元画像と全く同じサイズ・解像度で出力してください。**')
         promptParts.push('テキストでの説明は不要です。編集後の画像のみを出力してください。')
 
 
