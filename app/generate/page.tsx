@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { PosterForm } from "@/features/poster-generator/components/PosterForm"
 import { PosterPreview } from "@/features/poster-generator/components/PosterPreview"
 import type { PosterFormData } from "@/types/poster"
+import { OUTPUT_SIZES } from "@/types/poster"
 import { notifyPosterComplete, requestNotificationPermission } from "@/lib/notifications"
 
 export default function GeneratePage() {
@@ -39,6 +40,79 @@ export default function GeneratePage() {
     useEffect(() => {
         requestNotificationPermission()
     }, [])
+
+    /**
+     * 生成された画像をサイズプリセットに合わせてリサイズ
+     */
+    const resizeImageToPreset = async (
+        imageUrl: string,
+        outputSize: string,
+        orientation: string,
+        customWidth?: number,
+        customHeight?: number,
+        customUnit?: string
+    ): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image()
+            img.crossOrigin = 'anonymous'
+
+            img.onload = () => {
+                // ターゲットサイズを取得
+                let targetWidth: number
+                let targetHeight: number
+
+                if (outputSize === 'custom' && customWidth && customHeight) {
+                    // カスタムサイズの場合
+                    const mmToPx = (mm: number) => Math.round(mm * 6.89)
+                    targetWidth = customUnit === 'mm' ? mmToPx(customWidth) : customWidth
+                    targetHeight = customUnit === 'mm' ? mmToPx(customHeight) : customHeight
+                } else {
+                    // プリセットサイズの場合
+                    const sizeConfig = OUTPUT_SIZES[outputSize as keyof typeof OUTPUT_SIZES]
+                    if (!sizeConfig) {
+                        resolve(imageUrl) // サイズ不明の場合はそのまま返す
+                        return
+                    }
+                    const dims = sizeConfig[orientation as 'portrait' | 'landscape']
+                    targetWidth = dims.width
+                    targetHeight = dims.height
+                }
+
+                // 既に正しいサイズなら変換不要
+                if (img.width === targetWidth && img.height === targetHeight) {
+                    console.log(`[Resize] サイズ一致: ${img.width}×${img.height}px`)
+                    resolve(imageUrl)
+                    return
+                }
+
+                console.log(`[Resize] リサイズ実行: ${img.width}×${img.height}px → ${targetWidth}×${targetHeight}px`)
+
+                // Canvasでリサイズ
+                const canvas = document.createElement('canvas')
+                canvas.width = targetWidth
+                canvas.height = targetHeight
+
+                const ctx = canvas.getContext('2d')
+                if (!ctx) {
+                    reject(new Error('Canvas context not available'))
+                    return
+                }
+
+                // 高品質リサイズ設定
+                ctx.imageSmoothingEnabled = true
+                ctx.imageSmoothingQuality = 'high'
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
+
+                // 高画質PNGで出力
+                const resizedUrl = canvas.toDataURL('image/png', 1.0)
+                console.log(`[Resize] 完了: ${targetWidth}×${targetHeight}px`)
+                resolve(resizedUrl)
+            }
+
+            img.onerror = () => reject(new Error('画像の読み込みに失敗しました'))
+            img.src = imageUrl
+        })
+    }
 
     /**
      * ジョブのステータスをポーリング
@@ -145,9 +219,19 @@ export default function GeneratePage() {
             // 2. ポーリングで完了を待つ
             const imageUrl = await pollJobStatus(jobId)
 
-            // 3. 画像を表示
-            setGeneratedImage(imageUrl)
-            console.log("生成完了")
+            // 3. サイズプリセットに合わせてリサイズ
+            const resizedImage = await resizeImageToPreset(
+                imageUrl,
+                formData.outputSize || 'a4',
+                formData.orientation || 'portrait',
+                formData.customWidth,
+                formData.customHeight,
+                formData.customUnit
+            )
+
+            // 4. 画像を表示
+            setGeneratedImage(resizedImage)
+            console.log("生成完了（サイズ調整済み）")
 
         } catch (error) {
             console.error("生成エラー:", error)
