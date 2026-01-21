@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { X, Save, Type, Loader2, ChevronDown, ChevronUp, Edit3, ImagePlus, Square } from "lucide-react"
+import { Loader2, X, Save, Type, Palette, Trash2, Plus, Sparkles, ImageIcon, RectangleHorizontal, ListPlus, ChevronDown, ChevronUp, Edit3, ImagePlus, Square } from 'lucide-react'
 
 interface TextLayer {
     content: string
@@ -353,9 +353,9 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                 <ol className="text-yellow-700 space-y-1 list-decimal list-inside">
                     <li>編集したいテキストをクリックして展開</li>
                     <li>内容・色・サイズなどを変更</li>
-                    <li><strong>すべての編集が終わったら</strong>「すべての変更を反映」ボタンを押す</li>
+                    <li><strong>すべての編集が終わったら</strong>「保留リストに追加」ボタンを押す</li>
                 </ol>
-                <div className="mt-2 text-yellow-600">※ 保存は最後に1回だけ押してください</div>
+                <div className="mt-2 text-yellow-600">※ 複数の編集をまとめて実行できます</div>
             </div>
 
             {/* ボタンエリア */}
@@ -373,8 +373,8 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                         </>
                     ) : (
                         <>
-                            <Save className="h-4 w-4 mr-2" />
-                            すべての変更を反映
+                            <ListPlus className="h-4 w-4 mr-2" />
+                            保留リストに追加
                         </>
                     )}
                 </Button>

@@ -510,7 +510,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     onClick={handleAddGeneralPromptToQueue}
                                     disabled={!tempGeneralPrompt.trim()}
                                     className="w-full"
-                                    style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                                    style={{ backgroundColor: '#48a772', color: 'white' }}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
                                     保留リストに追加
@@ -611,7 +611,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     <Button
                                         onClick={handleAddImagesToQueue}
                                         className="w-full"
-                                        style={{ backgroundColor: '#9333ea', color: 'white' }}
+                                        style={{ backgroundColor: '#48a772', color: 'white' }}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
                                         保留リストに追加（{tempInsertImages.filter(i => i.usage.trim()).length}/{tempInsertImages.length}件）
@@ -692,7 +692,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         onClick={handleAddRegionToQueue}
                                         disabled={!currentRect || !tempRegionPrompt.trim()}
                                         className="flex-1"
-                                        style={{ backgroundColor: '#ec4899', color: 'white' }}
+                                        style={{ backgroundColor: '#48a772', color: 'white' }}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
                                         追加（あと{Math.max(0, 5 - pendingRegionEdits.length)}可能）
