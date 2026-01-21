@@ -85,6 +85,11 @@ PosterAIは、テキスト入力やサンプル画像から、AIが自動的に�
    # Google Gemini API
    GEMINI_API_KEY=your_gemini_api_key_here
    
+   # 画像編集モデル（オプション）
+   # gemini-2.0-flash-exp: 画像編集に最適（推奨、やや高コスト）
+   # gemini-2.5-flash-image: コスト削減用（テスト開発向け、画像合成の精度が低い可能性あり）
+   GEMINI_IMAGE_MODEL=gemini-2.0-flash-exp
+   
    # NextAuth.js
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your_nextauth_secret_here
