@@ -206,8 +206,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
             }])
         })
 
+        // 入力フィールドをクリアするが、モードは維持
         setTempInsertImages([])
-        setCurrentMode('none')
     }
 
     // ========== 矩形選択 ==========
@@ -303,8 +303,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const handleAddGeneralPromptToQueue = () => {
         if (!tempGeneralPrompt.trim()) return
         setPendingGeneralPrompt(prev => prev ? prev + '\n' + tempGeneralPrompt.trim() : tempGeneralPrompt.trim())
+        // 入力をクリアするが、モードは維持
         setTempGeneralPrompt("")
-        setCurrentMode('none')
     }
 
     // ========== 保留編集の削除 ==========
