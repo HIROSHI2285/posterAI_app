@@ -73,8 +73,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
     const regionCanvasRef = useRef<HTMLCanvasElement>(null)
     const bgImageRef = useRef<HTMLImageElement | null>(null)
 
-    // テキスト編集モード
-    const [isTextEditMode, setIsTextEditMode] = useState(false)
+    // テキスト編集は currentMode: 'text' で管理
 
     // ========== 保留中の編集内容 ==========
     const [pendingGeneralPrompt, setPendingGeneralPrompt] = useState("")
@@ -703,7 +702,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                         )}
 
                         {/* テキスト編集モード */}
-                        {isTextEditMode && (
+                        {currentMode === 'text' && (
                             <TextEditCanvas
                                 imageUrl={displayImageUrl!}
                                 onSave={(edits) => {
@@ -720,11 +719,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     })
                                     // モードは閉じずに保持（ユーザーが手動で閉じる）
                                 }}
-                                onCancel={() => setIsTextEditMode(false)}
-                                onModeChange={(mode) => {
-                                    setIsTextEditMode(false)
-                                    switchMode(mode)
-                                }}
+                                onCancel={() => switchMode('none')}
+                                onModeChange={(mode) => switchMode(mode)}
                             />
                         )}
 
