@@ -120,6 +120,13 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
 
     // 保存処理（編集データを返す）
     const handleSave = () => {
+        const edits = getEditData()
+        console.log(`📝 Text edits: ${edits.length} changes (${markedForDeletion.size} deletions)`)
+        onSave(edits)
+    }
+
+    // 編集データを取得する共通関数
+    const getEditData = (): TextEditData[] => {
         const edits: TextEditData[] = []
 
         textLayers.forEach((layer, index) => {
@@ -149,8 +156,17 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
             }
         })
 
-        console.log(`📝 Text edits: ${edits.length} changes (${markedForDeletion.size} deletions)`)
-        onSave(edits)
+        return edits
+    }
+
+    // モード切替時に自動保存して切り替え
+    const handleModeChangeWithSave = (mode: 'general' | 'insert' | 'region') => {
+        const edits = getEditData()
+        if (edits.length > 0) {
+            console.log(`📝 Auto-saving ${edits.length} text edits before mode switch`)
+            onSave(edits)
+        }
+        onModeChange?.(mode)
     }
 
     // エラー表示
@@ -188,7 +204,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
             {onModeChange && (
                 <div className="flex gap-1 flex-wrap">
                     <Button
-                        onClick={() => onModeChange('general')}
+                        onClick={() => handleModeChangeWithSave('general')}
                         size="sm"
                         className="h-7 text-xs"
                         style={{ backgroundColor: '#3b82f6', color: 'white' }}
@@ -197,7 +213,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                         プロンプト編集
                     </Button>
                     <Button
-                        onClick={() => onModeChange('insert')}
+                        onClick={() => handleModeChangeWithSave('insert')}
                         size="sm"
                         className="h-7 text-xs"
                         style={{ backgroundColor: '#9333ea', color: 'white' }}
@@ -206,7 +222,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                         画像挿入
                     </Button>
                     <Button
-                        onClick={() => onModeChange('region')}
+                        onClick={() => handleModeChangeWithSave('region')}
                         size="sm"
                         className="h-7 text-xs"
                         style={{ backgroundColor: '#ec4899', color: 'white' }}
