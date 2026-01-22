@@ -312,7 +312,7 @@ function buildImagePrompt(params: {
     if (generationMode === 'image-reference' && hasSampleImage) {
         // 強度に応じた比率設定
         const ratios = {
-            strong: { image: 80, detail: 20 },
+            strong: { image: 90, detail: 10 },
             normal: { image: 75, detail: 25 },
             weak: { image: 70, detail: 30 }
         }
