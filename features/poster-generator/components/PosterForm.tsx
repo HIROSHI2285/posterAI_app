@@ -792,6 +792,14 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                 </Card>
             )}
 
+            {/* 現在の設定表示 */}
+            <div className={`p-2.5 rounded text-sm text-center border font-medium mb-3 ${modelMode === 'production'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
+                現在の設定：{modelMode === 'production' ? '本番モデル（高精度）' : '開発モデル（低コスト）'}
+            </div>
+
             {/* ボタン */}
             <div className="flex gap-3">
                 <Button
