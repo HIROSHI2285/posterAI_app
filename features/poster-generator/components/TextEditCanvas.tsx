@@ -364,7 +364,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                     onClick={handleSave}
                     disabled={isLoading || isSaving}
                     className="flex-1"
-                    style={{ backgroundColor: '#48a772', color: 'white' }}
+                    style={{ backgroundColor: '#f97316', color: 'white' }}
                 >
                     {isSaving ? (
                         <>

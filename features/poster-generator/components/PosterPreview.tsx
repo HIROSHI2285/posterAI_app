@@ -475,36 +475,33 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         <Edit3 className="h-4 w-4" />
                                         <span className="text-sm font-medium">プロンプト編集</span>
                                     </div>
-                                    <Button onClick={() => switchMode('none')} variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                        <X className="h-4 w-4" />
-                                    </Button>
                                 </div>
 
                                 {/* モード切り替えボタン */}
                                 <div className="flex gap-1 flex-wrap">
                                     <Button
                                         onClick={() => switchMode('insert')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#9333ea', color: 'white' }}
                                     >
                                         <ImagePlus className="h-3 w-3 mr-1" />
                                         画像挿入
                                     </Button>
                                     <Button
                                         onClick={() => switchMode('text')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#16a34a', color: 'white' }}
                                     >
                                         <Type className="h-3 w-3 mr-1" />
                                         テキスト編集
                                     </Button>
                                     <Button
                                         onClick={() => switchMode('region')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#ec4899', color: 'white' }}
                                     >
                                         <Square className="h-3 w-3 mr-1" />
                                         矩形選択
@@ -522,7 +519,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     onClick={handleAddGeneralPromptToQueue}
                                     disabled={!tempGeneralPrompt.trim()}
                                     className="w-full"
-                                    style={{ backgroundColor: '#48a772', color: 'white' }}
+                                    style={{ backgroundColor: '#f97316', color: 'white' }}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
                                     保留リストに追加
@@ -538,36 +535,33 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         <ImagePlus className="h-4 w-4" />
                                         <span className="text-sm font-medium">画像挿入</span>
                                     </div>
-                                    <Button onClick={() => switchMode('none')} variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                        <X className="h-4 w-4" />
-                                    </Button>
                                 </div>
 
                                 {/* モード切り替えボタン */}
                                 <div className="flex gap-1 flex-wrap">
                                     <Button
                                         onClick={() => switchMode('general')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#3b82f6', color: 'white' }}
                                     >
                                         <Edit3 className="h-3 w-3 mr-1" />
                                         プロンプト編集
                                     </Button>
                                     <Button
                                         onClick={() => switchMode('text')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#16a34a', color: 'white' }}
                                     >
                                         <Type className="h-3 w-3 mr-1" />
                                         テキスト編集
                                     </Button>
                                     <Button
                                         onClick={() => switchMode('region')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#ec4899', color: 'white' }}
                                     >
                                         <Square className="h-3 w-3 mr-1" />
                                         矩形選択
@@ -623,7 +617,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     <Button
                                         onClick={handleAddImagesToQueue}
                                         className="w-full"
-                                        style={{ backgroundColor: '#48a772', color: 'white' }}
+                                        style={{ backgroundColor: '#f97316', color: 'white' }}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
                                         保留リストに追加（{tempInsertImages.filter(i => i.usage.trim()).length}/{tempInsertImages.length}件）
@@ -640,36 +634,33 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         <Square className="h-4 w-4" />
                                         <span className="text-sm font-medium">矩形選択編集</span>
                                     </div>
-                                    <Button onClick={() => switchMode('none')} variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                        <X className="h-4 w-4" />
-                                    </Button>
                                 </div>
 
                                 {/* モード切り替えボタン */}
                                 <div className="flex gap-1 flex-wrap">
                                     <Button
                                         onClick={() => switchMode('general')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#3b82f6', color: 'white' }}
                                     >
                                         <Edit3 className="h-3 w-3 mr-1" />
                                         プロンプト編集
                                     </Button>
                                     <Button
                                         onClick={() => switchMode('insert')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#9333ea', color: 'white' }}
                                     >
                                         <ImagePlus className="h-3 w-3 mr-1" />
                                         画像挿入
                                     </Button>
                                     <Button
                                         onClick={() => switchMode('text')}
-                                        variant="outline"
                                         size="sm"
                                         className="h-7 text-xs"
+                                        style={{ backgroundColor: '#16a34a', color: 'white' }}
                                     >
                                         <Type className="h-3 w-3 mr-1" />
                                         テキスト編集
@@ -704,7 +695,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                         onClick={handleAddRegionToQueue}
                                         disabled={!currentRect || !tempRegionPrompt.trim()}
                                         className="flex-1"
-                                        style={{ backgroundColor: '#48a772', color: 'white' }}
+                                        style={{ backgroundColor: '#f97316', color: 'white' }}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
                                         追加（あと{Math.max(0, 5 - pendingRegionEdits.length)}可能）
@@ -897,7 +888,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                                     onClick={handleApplyAllEdits}
                                     disabled={isApplyingAll}
                                     className="w-full mt-3"
-                                    style={{ backgroundColor: '#f97316', color: 'white' }}
+                                    style={{ backgroundColor: '#48a772', color: 'white' }}
                                 >
                                     {isApplyingAll ? (
                                         <>
