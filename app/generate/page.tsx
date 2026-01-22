@@ -367,6 +367,7 @@ export default function GeneratePage() {
                             imageUrl={generatedImage}
                             isGenerating={isGenerating}
                             onRegenerate={handleRegenerate}
+                            modelMode={currentFormData?.modelMode}
                         />
                     </div>
                 </div>

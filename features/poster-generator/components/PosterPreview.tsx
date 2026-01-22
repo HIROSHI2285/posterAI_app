@@ -11,6 +11,7 @@ interface PosterPreviewProps {
     imageUrl?: string
     isGenerating: boolean
     onRegenerate?: () => void
+    modelMode?: 'production' | 'development'
 }
 
 interface RegionEditItem {
@@ -45,7 +46,7 @@ interface TextEditItem {
     isDelete?: boolean  // 削除フラグ
 }
 
-export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPreviewProps) {
+export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode = 'production' }: PosterPreviewProps) {
     const [editedImageUrl, setEditedImageUrl] = useState<string | null>(null)
     const displayImageUrl = editedImageUrl || imageUrl
 
@@ -382,7 +383,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                         usage: e.usage
                     })) : undefined,
                     regionEdits: regionEditsData,
-                    generalPrompt: pendingGeneralPrompt || undefined
+                    generalPrompt: pendingGeneralPrompt || undefined,
+                    modelMode
                 })
             })
 

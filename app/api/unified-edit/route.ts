@@ -28,6 +28,7 @@ interface UnifiedEditRequest {
     insertImages?: { data: string, usage: string }[]
     regionEdits?: RegionEdit[]
     generalPrompt?: string
+    modelMode?: 'production' | 'development'
 }
 
 export async function POST(request: NextRequest) {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, regionEdits, generalPrompt } = body
+        const { imageData, textEdits, insertImages, regionEdits, generalPrompt, modelMode = 'production' } = body
 
         if (!imageData) {
             return NextResponse.json(
@@ -57,8 +58,11 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview' // 本番用
-        console.log('🤖 Using Model:', modelName)
+        const modelName = modelMode === 'development'
+            ? 'gemini-2.5-flash-image'
+            : (process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview')
+
+        console.log('🤖 Using Model:', modelName, `(Mode: ${modelMode})`)
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName,
