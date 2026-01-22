@@ -57,6 +57,7 @@ export interface PosterFormData {
     detailedPrompt?: string
     generationMode?: 'text-only' | 'image-reference'
     imageReferenceStrength?: 'strong' | 'normal' | 'weak'
+    modelMode?: 'production' | 'development'  // AIモデル選択
 }
 
 // 出力サイズの定義（向き対応）- 175dpi設定

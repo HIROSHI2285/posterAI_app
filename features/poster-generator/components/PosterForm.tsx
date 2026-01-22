@@ -47,6 +47,7 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [generationMode, setGenerationMode] = useState<'text-only' | 'image-reference'>('text-only')
     const [imageReferenceStrength, setImageReferenceStrength] = useState<'strong' | 'normal' | 'weak'>('normal')
+    const [modelMode, setModelMode] = useState<'production' | 'development'>('production')  // モデル選択
 
     // 素材画像（ロゴ、商品写真等）- 最大5枚、各画像に用途を設定可能
     const [materialImages, setMaterialImages] = useState<{ file: File; data: string; name: string; usage: string }[]>([])
@@ -82,6 +83,7 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                 ...formData,
                 generationMode,
                 imageReferenceStrength,
+                modelMode,  // モデル選択を追加
                 // 素材画像データと用途を追加
                 materialsData: materialImages.map(img => img.data),
                 materialsNames: materialImages.map(img => img.name),
@@ -119,6 +121,25 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                 </option>
                             ))}
                         </Select>
+                    </div>
+
+                    {/* モデル選択 */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="modelMode" className="text-sm font-medium">AIモデル</Label>
+                        <Select
+                            id="modelMode"
+                            value={modelMode}
+                            onChange={(e) => setModelMode(e.target.value as 'production' | 'development')}
+                            className="w-full"
+                        >
+                            <option value="production">本番モデル（高精度・コスト高）</option>
+                            <option value="development">開発モデル（低コスト・テスト用）</option>
+                        </Select>
+                        <p className="text-xs text-gray-500">
+                            {modelMode === 'production'
+                                ? 'gemini-3-pro-image-preview: サイズ指示を正確に守る高精度モデル'
+                                : 'gemini-2.5-flash-image: 低コストだがサイズ精度が低い開発用モデル'}
+                        </p>
                     </div>
 
                     <div className="space-y-1.5">

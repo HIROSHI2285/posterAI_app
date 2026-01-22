@@ -36,6 +36,7 @@ export async function generatePosterAsync(
             customWidth,
             customHeight,
             customUnit,
+            modelMode = 'production',  // モデル選択を追加
         } = formData
 
         // detailedPromptはユーザー入力のカスタム指示、またはサンプル画像解析結果
@@ -126,8 +127,13 @@ ${imagePrompt}`
 
         await jobStore.update(jobId, { progress: 30 })
 
-        // モデル名を環境変数から取得（正式版リリース時に変更可能）
-        const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"  // 本番用
+        // モデル名をmodelModeに基づいて選択
+        // production: gemini-3-pro-image-preview（安定、高品質）
+        // development: gemini-2.5-flash-image（高速、テスト用）
+        const modelName = modelMode === 'development'
+            ? "gemini-2.5-flash-image"
+            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview")
+        console.log(`[Job ${jobId}] 使用モデル: ${modelName} (モード: ${modelMode})`)
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName
