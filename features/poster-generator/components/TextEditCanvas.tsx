@@ -189,27 +189,27 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                 <div className="flex gap-1 flex-wrap">
                     <Button
                         onClick={() => onModeChange('general')}
-                        variant="outline"
                         size="sm"
                         className="h-7 text-xs"
+                        style={{ backgroundColor: '#3b82f6', color: 'white' }}
                     >
                         <Edit3 className="h-3 w-3 mr-1" />
                         プロンプト編集
                     </Button>
                     <Button
                         onClick={() => onModeChange('insert')}
-                        variant="outline"
                         size="sm"
                         className="h-7 text-xs"
+                        style={{ backgroundColor: '#9333ea', color: 'white' }}
                     >
                         <ImagePlus className="h-3 w-3 mr-1" />
                         画像挿入
                     </Button>
                     <Button
                         onClick={() => onModeChange('region')}
-                        variant="outline"
                         size="sm"
                         className="h-7 text-xs"
+                        style={{ backgroundColor: '#ec4899', color: 'white' }}
                     >
                         <Square className="h-3 w-3 mr-1" />
                         矩形選択

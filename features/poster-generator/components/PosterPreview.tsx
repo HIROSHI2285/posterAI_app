@@ -732,36 +732,36 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate }: PosterPr
                             <div className="flex gap-2 flex-wrap">
                                 <Button
                                     onClick={() => switchMode('general')}
-                                    variant="outline"
                                     size="sm"
-                                    className="flex-1 border-blue-300 text-blue-600 hover:bg-blue-50"
+                                    className="flex-1"
+                                    style={{ backgroundColor: '#3b82f6', color: 'white' }}
                                 >
                                     <Edit3 className="h-4 w-4 mr-1" />
                                     プロンプト
                                 </Button>
                                 <Button
                                     onClick={() => switchMode('text')}
-                                    variant="outline"
                                     size="sm"
-                                    className="flex-1 border-green-300 text-green-600 hover:bg-green-50"
+                                    className="flex-1"
+                                    style={{ backgroundColor: '#16a34a', color: 'white' }}
                                 >
                                     <Type className="h-4 w-4 mr-1" />
                                     テキスト
                                 </Button>
                                 <Button
                                     onClick={() => switchMode('region')}
-                                    variant="outline"
                                     size="sm"
-                                    className="flex-1 border-pink-300 text-pink-600 hover:bg-pink-50"
+                                    className="flex-1"
+                                    style={{ backgroundColor: '#ec4899', color: 'white' }}
                                 >
                                     <Wand2 className="h-4 w-4 mr-1" />
                                     範囲選択
                                 </Button>
                                 <Button
                                     onClick={() => switchMode('insert')}
-                                    variant="outline"
                                     size="sm"
-                                    className="flex-1 border-purple-300 text-purple-600 hover:bg-purple-50"
+                                    className="flex-1"
+                                    style={{ backgroundColor: '#9333ea', color: 'white' }}
                                 >
                                     <ImagePlus className="h-4 w-4 mr-1" />
                                     画像挿入
