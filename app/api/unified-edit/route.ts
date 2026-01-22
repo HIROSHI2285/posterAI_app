@@ -188,6 +188,17 @@ export async function POST(request: NextRequest) {
         promptParts.push('- 元画像の画質・スタイル・雰囲気を維持')
         promptParts.push('- 文字やロゴは読みやすさを維持')
         promptParts.push('')
+
+        // 日本語文字化け対策を追加
+        promptParts.push('【日本語テキスト品質（厳守）】')
+        promptParts.push('⚠️ 日本語の文字化けは絶対に許容されません：')
+        promptParts.push('- 日本語テキストには必ず日本語対応フォント（Noto Sans JP、游ゴシック、ヒラギノ角ゴ等）のみを使用')
+        promptParts.push('- 欧文フォント（Arial、Helvetica等）を日本語に適用しないでください')
+        promptParts.push('- 「□」「？」「●」などの代替文字が表示される場合は不可です')
+        promptParts.push('- 漢字・ひらがな・カタカナが正しく表示されることを確認してください')
+        promptParts.push('- 文字が切れたり、重なったり、歪んだりしないようにしてください')
+        promptParts.push('')
+
         promptParts.push('【最終指示】')
         promptParts.push('上記の編集内容をすべて反映した画像を1枚生成してください。')
         promptParts.push('**元画像と全く同じサイズ・解像度で出力してください。**')
