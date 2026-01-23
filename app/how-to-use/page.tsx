@@ -495,11 +495,19 @@ export default function HowToUsePage() {
                         </p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
-                        <h3 className="text-lg font-bold text-white mb-2">Q: 生成したポスターの著作権は？</h3>
-                        <p className="text-green-100">
-                            A: 生成されたポスターは商用利用可能です。ただし、サンプル画像に第三者の著作物が含まれる場合は、
-                            その著作権に注意してご利用ください。
-                        </p>
+                        <h3 className="text-lg font-bold text-white mb-2">Q: 生成された画像の著作権と免責事項は？</h3>
+                        <div className="text-green-100 space-y-2">
+                            <p>
+                                A: 生成されたポスターの権利はユーザーに帰属し、商用利用も可能です。
+                            </p>
+                            <p>
+                                ただし、<strong>当サービスの利用により生成された画像によって生じたいかなる損害やトラブル（著作権侵害等を含む）についても、運営者は一切の責任を負いません。</strong>
+                            </p>
+                            <p className="text-sm text-green-200">
+                                ※AI生成物の性質上、既存の著作物と類似する可能性が完全には否定できないため、公開・商用利用の際はご自身の責任と判断においてご利用ください。
+                                特に他者の著作物をサンプル画像として使用する場合は権利関係に十分ご注意ください。
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
