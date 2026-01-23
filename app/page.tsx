@@ -21,22 +21,20 @@ export default function HomePage() {
     >
       {/* ヘッダー */}
       <header className="border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-6">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-6">
             <img
               src="/posterai-logo.svg"
               alt="PosterAI"
-              className="h-8 md:h-12"
+              className="h-12"
               style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
             />
-            <nav className="flex items-center gap-4">
+            <nav className="hidden md:flex items-center gap-4">
               <a
                 href="/how-to-use"
-                className="text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium px-2 py-2 rounded-lg flex items-center gap-2"
-                title="PosterAIの使い方"
+                className="text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium px-4 py-2 rounded-lg"
               >
-                <HelpCircle className="w-6 h-6 md:hidden" />
-                <span className="hidden md:inline">PosterAIの使い方</span>
+                PosterAIの使い方
               </a>
             </nav>
           </div>
@@ -76,7 +74,7 @@ export default function HomePage() {
           ) : (
             <Button
               onClick={() => signIn('google')}
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold shadow-lg px-4 md:px-6 flex items-center gap-2"
+              className="bg-green-500 hover:bg-green-600 text-white font-semibold shadow-lg px-6 flex items-center gap-2"
             >
               <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center p-1">
                 <svg className="w-full h-full" viewBox="0 0 24 24">
@@ -86,8 +84,7 @@ export default function HomePage() {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
               </span>
-              <span className="hidden md:inline">ログイン</span>
-              <span className="md:hidden">Login</span>
+              ログイン
             </Button>
           )}
         </div>
@@ -98,6 +95,16 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* 左側: テキストコンテンツ */}
           <div className="space-y-8">
+            {/* スマホ用使い方ボタン */}
+            <div className="md:hidden">
+              <Button variant="outline" className="w-full text-white border-white/30 bg-white/10 hover:bg-white/20" asChild>
+                <a href="/how-to-use" className="flex items-center justify-center gap-2">
+                  <HelpCircle className="w-4 h-4" />
+                  PosterAIの使い方
+                </a>
+              </Button>
+            </div>
+
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-green-200 text-sm font-medium">
               <Wand2 className="w-4 h-4" />
               AI搭載のポスター生成ツール
