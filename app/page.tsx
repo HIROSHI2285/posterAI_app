@@ -2,7 +2,7 @@
 
 import { signIn, signOut, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { Wand2, Palette, ImageIcon, LogOut } from 'lucide-react'
+import { Wand2, Palette, ImageIcon, LogOut, HelpCircle } from 'lucide-react'
 
 export default function HomePage() {
   const { data: session, status } = useSession()
@@ -29,12 +29,14 @@ export default function HomePage() {
               className="h-12"
               style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
             />
-            <nav className="hidden md:flex items-center gap-4">
+            <nav className="flex items-center gap-4">
               <a
                 href="/how-to-use"
-                className="text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium px-4 py-2 rounded-lg"
+                className="text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium px-3 py-2 rounded-lg flex items-center gap-2"
+                title="PosterAIの使い方"
               >
-                PosterAIの使い方
+                <HelpCircle className="w-5 h-5 md:hidden" />
+                <span className="hidden md:inline">PosterAIの使い方</span>
               </a>
             </nav>
           </div>
