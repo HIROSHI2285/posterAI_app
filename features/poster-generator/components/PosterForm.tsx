@@ -748,7 +748,7 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                             />
                                             <div>
                                                 <span className="text-sm font-medium">強い</span>
-                                                <span className="text-xs text-muted-foreground ml-1">(80:20)</span>
+                                                <span className="text-xs text-muted-foreground ml-1">(90:10)</span>
                                             </div>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer">
@@ -794,8 +794,8 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
 
             {/* 現在の設定表示 */}
             <div className={`p-2.5 rounded text-sm text-center border font-medium mb-3 ${modelMode === 'production'
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
                 }`}>
                 現在の設定：{modelMode === 'production' ? '本番モデル（高精度）' : '開発モデル（低コスト）'}
             </div>
