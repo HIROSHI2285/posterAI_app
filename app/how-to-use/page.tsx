@@ -24,7 +24,7 @@ export default function HowToUsePage() {
             {/* ヘッダー - TOPページと同じ */}
             <header className="border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4 md:gap-6">
+                    <div className="flex items-center gap-2 md:gap-6">
                         <a href="/" className="cursor-pointer">
                             <img
                                 src="/posterai-logo.svg"
@@ -36,10 +36,10 @@ export default function HowToUsePage() {
                         <nav className="flex items-center gap-4">
                             <a
                                 href="/how-to-use"
-                                className="text-white bg-white/10 transition-all duration-200 font-medium px-3 py-2 rounded-lg flex items-center gap-2"
+                                className="text-white bg-white/10 transition-all duration-200 font-medium px-2 py-2 rounded-lg flex items-center gap-2"
                                 title="PosterAIの使い方"
                             >
-                                <HelpCircle className="w-5 h-5 md:hidden" />
+                                <HelpCircle className="w-6 h-6 md:hidden" />
                                 <span className="hidden md:inline">PosterAIの使い方</span>
                             </a>
                         </nav>
@@ -65,7 +65,8 @@ export default function HowToUsePage() {
                                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
                             </span>
-                            ログイン
+                            <span className="hidden md:inline">ログイン</span>
+                            <span className="md:hidden">Login</span>
                         </Button>
                     )}
                 </div>
