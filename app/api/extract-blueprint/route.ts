@@ -75,9 +75,9 @@ export async function POST(req: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use Gemini 1.5 Flash for cost efficiency (Multimodal Vision model)
+    // Use Gemini 1.5 Pro for high reasoning capabilities and accuracy (User requested higher accuracy)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-1.5-pro',
       generationConfig: {
         responseMimeType: "application/json",
       }
