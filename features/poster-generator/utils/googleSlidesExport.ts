@@ -4,6 +4,65 @@ import { DesignBlueprint, Layer, TextLayer, ImageLayer, ShapeLayer } from "./blu
  * Creates a Google Slide presentation from the DesignBlueprint.
  * Requires a valid Google Access Token with 'https://www.googleapis.com/auth/presentations' scope.
  */
+/**
+ * Uploads a base64 image to Google Drive and returns a usable URL.
+ */
+async function uploadImageToDrive(base64Data: string, accessToken: string): Promise<string> {
+    const metadata = {
+        name: 'PosterAI_Asset_' + Date.now() + '.png',
+        mimeType: 'image/png',
+        parents: [] // Upload to root or specific folder
+    };
+
+    const boundary = '-------314159265358979323846';
+    const delimiter = "\r\n--" + boundary + "\r\n";
+    const close_delim = "\r\n--" + boundary + "--";
+
+    // Strip header if present
+    const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, "");
+
+    const multipartRequestBody =
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: image/png\r\n' +
+        'Content-Transfer-Encoding: base64\r\n' +
+        '\r\n' +
+        cleanBase64 +
+        close_delim;
+
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+        },
+        body: multipartRequestBody
+    });
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(`Failed to upload image to Drive: ${err.error?.message || 'Unknown error'}`);
+    }
+
+    const file = await res.json();
+
+    // We need the webContentLink or thumbnailLink or similar that is accessible.
+    // However, for Slides API to access it, usually the file needs to be shared or the efficient way is actually using the ID?
+    // The Slides API can use a Drive ID format sometimes, but URL is standard.
+    // Let's get the 'webContentLink' via a get call if not returned, usually creation returns id.
+
+    // We need to fetch file fields to get the link
+    const getRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?fields=webContentLink,thumbnailLink`, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    });
+    const fileData = await getRes.json();
+    return fileData.webContentLink; // This link is usually downloadable.
+}
+
 export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken: string) {
     if (!accessToken) {
         throw new Error("Access token is required for Google Slides export");
@@ -30,32 +89,12 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
     const presentationId = presentation.presentationId;
     const pageId = presentation.slides[0].objectId; // Use the first slide
 
-    // 2. Prepare Batch Update Requests
     const requests: any[] = [];
-
-    // Set Page Size (Custom page size is limited in API, typically we assume standard)
-    // If we want custom size, we might need to set it on create or update. 
-    // Usually standard 16:9 or 4:3 is default.
-    // For simplicity, we'll fit content into the default slide for now, 
-    // or we assume user sets page setup separately.
-    // (Changing page size is 'updatePageElementTransform' logic effectively or 'updatePageProperties' but limited support)
-
-    // Clear existing elements on first slide (optional but clean)
-    // We skip this for simplicity to avoid complexities with 'deleteObject' of unknown IDs.
-
-    // Add Layers
-    // Reverse layer order because we append to page (last added is on top)? 
-    // Actually typically 'create' adds to Z-order top. 
-    // So layers[0] (bottom) should be added first.
     const layers = [...blueprint.layers].sort((a, b) => (a.position.z || 0) - (b.position.z || 0));
 
     for (const layer of layers) {
         const elementId = `gen_${Math.random().toString(36).substr(2, 9)}`;
-
-        // Scaling factor: Google Slides uses PT (points). 
-        // 1 px (96dpi) = 0.75 pt. 
-        // We assume blueprint dimensions are in PX.
-        const scale = 0.75;
+        const scale = 0.75; // PX to PT
 
         const x_pt = { magnitude: layer.position.x * scale, unit: 'PT' };
         const y_pt = { magnitude: layer.position.y * scale, unit: 'PT' };
@@ -81,7 +120,6 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
                 }
             });
 
-            // Insert Text
             requests.push({
                 insertText: {
                     objectId: elementId,
@@ -90,7 +128,6 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
                 }
             });
 
-            // Style Text
             requests.push({
                 updateTextStyle: {
                     objectId: elementId,
@@ -109,7 +146,6 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
                 }
             });
 
-            // Remove border/fill of text box
             requests.push({
                 updateShapeProperties: {
                     objectId: elementId,
@@ -123,15 +159,24 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
 
         } else if (layer.type === 'image') {
             const imageLayer = layer as ImageLayer;
-            // Image requires a public URL. 
-            // If it's base64, we CANNOT use Google Slides API directly without uploading to Drive first or having a public URL.
-            // This is a major limitation for purely client-side or base64 flow.
-            // WORKAROUND: For Phase 3 initial specific, we skip image unless it is a URL.
-            if (imageLayer.src.startsWith('http')) {
+            let imageUrl = imageLayer.src;
+
+            // Handle Base64: Upload to Drive
+            if (imageUrl.startsWith('data:image')) {
+                try {
+                    // console.log("Uploading image to Drive...", layer.id);
+                    imageUrl = await uploadImageToDrive(imageUrl, accessToken);
+                } catch (upErr) {
+                    console.error("Failed to upload image layer:", upErr);
+                    // Fallback to placeholder handled below if url is still data:
+                }
+            }
+
+            if (imageUrl.startsWith('http')) {
                 requests.push({
                     createImage: {
                         objectId: elementId,
-                        url: imageLayer.src,
+                        url: imageUrl,
                         elementProperties: {
                             pageObjectId: pageId,
                             size: { width: w_pt, height: h_pt },
@@ -145,8 +190,7 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
                     }
                 });
             } else {
-                console.warn("Skipping image layer (Base64 not supported in direct Slides API call without Drive upload):", layer.id);
-                // Placeholder
+                console.warn("Skipping image layer (Upload failed or invalid URL):", layer.id);
                 requests.push({
                     createShape: {
                         objectId: elementId,
@@ -166,7 +210,7 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
                 requests.push({
                     insertText: {
                         objectId: elementId,
-                        text: "[Image Placeholder]",
+                        text: "[Image Placeholder - Upload Failed]",
                     }
                 });
             }
@@ -185,6 +229,7 @@ export async function createGoogleSlide(blueprint: DesignBlueprint, accessToken:
 
         if (!updateRes.ok) {
             const err = await updateRes.json();
+            // console.error("Batch update failed:", err);
             throw new Error(`Failed to update presentation: ${err.error?.message || 'Unknown error'}`);
         }
     }
