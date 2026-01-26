@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com",
+              "connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com https://slides.googleapis.com https://www.googleapis.com",
               "frame-src 'self' https://accounts.google.com",
               "object-src 'none'",
               "base-uri 'self'",

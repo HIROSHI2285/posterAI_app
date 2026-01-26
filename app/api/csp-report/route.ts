@@ -33,6 +33,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true }, { status: 204 })
     } catch {
         // エラーでも204を返す（攻撃者に情報を与えない）
-        return NextResponse.json({ received: true }, { status: 204 })
+        return NextResponse.json({ received: true }, { status: 200 })
     }
 }
