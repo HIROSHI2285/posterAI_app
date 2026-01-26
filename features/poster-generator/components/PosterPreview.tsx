@@ -711,18 +711,35 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                             <TextEditCanvas
                                 imageUrl={displayImageUrl!}
                                 onSave={(edits) => {
-                                    // 編集データを保留リストに追加
-                                    edits.forEach(edit => {
-                                        setPendingTextEdits(prev => [...prev, {
-                                            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                                            original: edit.original,
-                                            newContent: edit.newContent,
-                                            color: edit.color,
-                                            fontSize: edit.fontSize,
-                                            isDelete: edit.isDelete  // 削除フラグを追加
-                                        }])
+                                    // 編集データを保留リストにマージ（重複回避）
+                                    setPendingTextEdits(prev => {
+                                        const next = [...prev]
+                                        edits.forEach(newEdit => {
+                                            const existingIndex = next.findIndex(e => e.original === newEdit.original)
+                                            if (existingIndex !== -1) {
+                                                // 既存の編集があれば更新
+                                                next[existingIndex] = {
+                                                    ...next[existingIndex],
+                                                    newContent: newEdit.newContent,
+                                                    color: newEdit.color,
+                                                    fontSize: newEdit.fontSize,
+                                                    isDelete: newEdit.isDelete
+                                                }
+                                            } else {
+                                                // 新規追加
+                                                next.push({
+                                                    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                                                    original: newEdit.original,
+                                                    newContent: newEdit.newContent,
+                                                    color: newEdit.color,
+                                                    fontSize: newEdit.fontSize,
+                                                    isDelete: newEdit.isDelete
+                                                })
+                                            }
+                                        })
+                                        return next
                                     })
-                                    // モードは閉じずに保持（ユーザーが手動で閉じる）
+                                    alert('編集内容を保留リストに更新しました')
                                 }}
                                 onCancel={() => switchMode('none')}
                                 onModeChange={(mode) => switchMode(mode)}

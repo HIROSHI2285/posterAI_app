@@ -69,7 +69,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { imageData } = await request.json()
+        const { imageData, modelMode = 'production' } = await request.json()
+
 
         if (!imageData) {
             return NextResponse.json({ error: 'Image data is required' }, { status: 400 })
@@ -83,9 +84,15 @@ export async function POST(request: NextRequest) {
         }
 
         // Gemini Vision APIを使用してテキストを抽出
+        // 開発モードの場合はFlashモデルを使用（コスト削減）
+        // コスト最適化のため、テキスト抽出は常にFlashモデルを使用
+        const modelName = 'gemini-2.5-flash-image'
+
+        console.log(`🔍 Extracting text using model: ${modelName} (Mode: ${modelMode})`)
+
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
-            model: process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview'
+            model: modelName
         })
 
         // Base64データの準備
