@@ -75,9 +75,9 @@ export async function POST(req: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use Gemini 2.5 Flash for cost efficiency as requested
+    // Use Gemini 1.5 Flash for cost efficiency (Multimodal Vision model)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-1.5-flash',
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -139,10 +139,13 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Blueprint Extraction Error:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: error.message || 'Internal Server Error',
+        details: error.toString()
+      },
       { status: 500 }
     );
   }
