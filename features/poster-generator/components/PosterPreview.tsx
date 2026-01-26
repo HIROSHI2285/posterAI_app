@@ -1,11 +1,13 @@
 "use client"
 import { useState, useRef, useEffect, useCallback } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus, Trash2, Check, Eraser, Square } from "lucide-react"
+import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus, Trash2, Check, Eraser, Square, FileText } from "lucide-react"
 import { TextEditCanvas } from "./TextEditCanvas"
+import { useExport } from "../utils/useExport"
 
 interface PosterPreviewProps {
     imageUrl?: string
@@ -47,10 +49,12 @@ interface TextEditItem {
 }
 
 export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode = 'production' }: PosterPreviewProps) {
+    const { data: session } = useSession()
     const [editedImageUrl, setEditedImageUrl] = useState<string | null>(null)
     const displayImageUrl = editedImageUrl || imageUrl
 
     const [isUpscaling, setIsUpscaling] = useState(false)
+    const { isExtracting, isExportingPptx, isExportingSlides, handleExtractBlueprint, handleExportPptx, handleExportSlides } = useExport()
 
     // 現在の編集モード
     const [currentMode, setCurrentMode] = useState<'none' | 'general' | 'insert' | 'text' | 'region'>('none')
@@ -73,6 +77,12 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
     const [startPoint, setStartPoint] = useState<{ x: number, y: number } | null>(null)
     const regionCanvasRef = useRef<HTMLCanvasElement>(null)
     const bgImageRef = useRef<HTMLImageElement | null>(null)
+
+
+
+
+
+
 
     // テキスト編集は currentMode: 'text' で管理
 
@@ -803,6 +813,36 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                 >
                                     {isUpscaling ? <RefreshCw className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}
                                     {isUpscaling ? '処理中...' : 'ダウンロード'}
+                                </Button>
+                                <Button
+                                    onClick={() => handleExtractBlueprint(displayImageUrl)}
+                                    disabled={isExtracting}
+                                    size="sm"
+                                    className="px-3"
+                                    style={{ backgroundColor: '#8b5cf6', color: 'white' }}
+                                    title="設計図を抽出(Debug)"
+                                >
+                                    {isExtracting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                                </Button>
+                                <Button
+                                    onClick={() => handleExportPptx(displayImageUrl)}
+                                    disabled={isExportingPptx}
+                                    size="sm"
+                                    className="px-3"
+                                    style={{ backgroundColor: '#ea580c', color: 'white' }}
+                                    title="PowerPoint形式で保存"
+                                >
+                                    {isExportingPptx ? <RefreshCw className="h-4 w-4 animate-spin" /> : <span className="text-xs font-bold">PPTX</span>}
+                                </Button>
+                                <Button
+                                    onClick={() => handleExportSlides(displayImageUrl)}
+                                    disabled={isExportingSlides}
+                                    size="sm"
+                                    className="px-3"
+                                    style={{ backgroundColor: '#facc15', color: 'black' }}
+                                    title="Google Slidesに保存"
+                                >
+                                    {isExportingSlides ? <RefreshCw className="h-4 w-4 animate-spin" /> : <span className="text-xs font-bold">Slides</span>}
                                 </Button>
                             </div>
                         )}

@@ -9,6 +9,14 @@ export const authOptions: NextAuthOptions = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            authorization: {
+                params: {
+                    scope: 'openid email profile https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive.file',
+                    prompt: "consent",
+                    access_type: "offline",
+                    response_type: "code"
+                }
+            }
         }),
     ],
     pages: {
@@ -52,10 +60,17 @@ export const authOptions: NextAuthOptions = {
             })
             return true
         },
+        async jwt({ token, account }) {
+            if (account && account.access_token) {
+                token.accessToken = account.access_token
+            }
+            return token
+        },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.sub!;
             }
+            session.accessToken = token.accessToken
             return session;
         },
     },
