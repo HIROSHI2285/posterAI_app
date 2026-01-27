@@ -483,8 +483,8 @@ export default function HowToUsePage() {
                     <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
                         <h3 className="text-lg font-bold text-white mb-2">Q: 1日に何回まで使用できますか？</h3>
                         <p className="text-green-100">
-                            A: デフォルトで<strong className="text-green-400">30回/日</strong>まで画像生成が可能です。
-                            画像解析は100回/日、編集・挿入機能は無制限でご利用いただけます。
+                            A: 画像生成・画像解析それぞれ<strong className="text-green-400">30回/日</strong>ずつ可能です。
+                            編集・挿入機能は無制限でご利用いただけます。
                         </p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">

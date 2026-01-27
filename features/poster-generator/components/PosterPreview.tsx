@@ -1116,7 +1116,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                                         flexShrink: 0,
                                                         border: '1px solid rgba(0,0,0,0.2)'
                                                     }}
-                                                    title={`${colorName}色の領域`}
+                                                    title={`${colorName} 色の領域`}
                                                 />
                                                 <span className="flex-1 break-words">
                                                     <span className="font-bold">領域{idx + 1}:</span> {item.prompt}

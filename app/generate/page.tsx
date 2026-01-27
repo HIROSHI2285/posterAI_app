@@ -230,8 +230,13 @@ export default function GeneratePage() {
             console.log(`Job created: ${jobId} (${remaining} remaining today)`)
 
             // 残り回数が少ない場合は警告表示
-            if (remaining !== undefined && remaining < 10) {
-                console.warn(`⚠️ 残り生成回数: ${remaining}回`)
+            if (remaining !== undefined && remaining <= 5) {
+                import('sonner').then(({ toast }) => {
+                    toast.warning(`本日の残り生成回数: ${remaining}回`, {
+                        description: "上限に近づいています",
+                        duration: 5000,
+                    });
+                });
             }
 
             // 2. ポーリングで完了を待つ

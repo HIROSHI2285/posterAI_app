@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // レート制限チェック（100回/日）
-        const { allowed, remaining, resetAt } = rateLimiter.check(session.user.email, 100);
+        // レート制限チェック（30回/日）- 画像生成とは別カウント
+        const rateLimitKey = `${session.user.email}:analyze`;
+        const { allowed, remaining, resetAt } = rateLimiter.check(rateLimitKey, 30);
         if (!allowed) {
             return NextResponse.json(
                 {
@@ -217,6 +218,12 @@ AI画像生成ツール（Imagen）で高精度に再現できるように、デ
                 success: true,
                 analysis: analysisData,
                 message: "画像を解析しました"
+            }, {
+                headers: {
+                    'X-RateLimit-Limit': '30',
+                    'X-RateLimit-Remaining': remaining.toString(),
+                    'X-RateLimit-Reset': resetAt.toString()
+                }
             });
 
         } catch (apiError: any) {

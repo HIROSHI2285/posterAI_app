@@ -31,7 +31,8 @@ export async function POST(request: Request) {
 
         // レート制限チェック（ユーザーのdaily_limitを取得）
         const userLimit = await getUserDailyLimit(session.user.email)
-        const { allowed, remaining, resetAt } = rateLimiter.check(session.user.email, userLimit)
+        const rateLimitKey = `${session.user.email}:generate`;
+        const { allowed, remaining, resetAt } = rateLimiter.check(rateLimitKey, userLimit)
 
         if (!allowed) {
             const resetDate = new Date(resetAt)

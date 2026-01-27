@@ -17,7 +17,7 @@ class RateLimiter {
      * @param limit 制限回数（デフォルト: 100回/日）
      * @returns { allowed: boolean, remaining: number, resetAt: number }
      */
-    check(identifier: string, limit: number = 100): {
+    check(identifier: string, limit: number = 30): {
         allowed: boolean
         remaining: number
         resetAt: number

@@ -507,6 +507,20 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                                     })
 
                                                     if (response.ok) {
+                                                        // レート制限の警告チェック
+                                                        const remaining = response.headers.get('X-RateLimit-Remaining');
+                                                        if (remaining) {
+                                                            const count = parseInt(remaining, 10);
+                                                            if (!isNaN(count) && count <= 5) {
+                                                                import('sonner').then(({ toast }) => {
+                                                                    toast.warning(`本日の残り利用回数: ${count}回`, {
+                                                                        description: "上限に近づいています",
+                                                                        duration: 5000,
+                                                                    });
+                                                                });
+                                                            }
+                                                        }
+
                                                         const data = await response.json()
                                                         if (data.success && data.analysis) {
                                                             setFormData(prev => {

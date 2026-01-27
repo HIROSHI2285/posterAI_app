@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Outfit, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from 'sonner';
 
-const inter = Inter({
-  variable: "--font-inter",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
   display: "swap",
 });
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -38,17 +38,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <body
-        className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}
-        suppressHydrationWarning
-      >
+    <html lang="ja" suppressHydrationWarning>
+      <body className={`${outfit.variable} ${dmSans.variable} font-sans bg-[#1a3d2e] text-green-100 min-h-screen antialiased selection:bg-brand-acid selection:text-brand-black`}>
+        <div className="grain-overlay opacity-20 mix-blend-overlay" />
         <Providers>
           {children}
-          <Toaster position="top-center" richColors />
+          <Toaster />
         </Providers>
       </body>
     </html>
-  );
-}
+  )
+};
 

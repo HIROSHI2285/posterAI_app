@@ -1,9 +1,34 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { rateLimiter } from "@/lib/rate-limiter";
 import { OUTPUT_SIZES } from "@/types/poster";
 
 export async function POST(request: NextRequest) {
   try {
+    // 認証チェック
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "認証が必要です" },
+        { status: 401 }
+      );
+    }
+
+    // レート制限チェック（30回/日）
+    const rateLimitKey = `${session.user.email}:generate`;
+    const { allowed, remaining, resetAt } = rateLimiter.check(rateLimitKey, 30);
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: "本日の画像生成回数上限に達しました",
+          message: `制限は ${new Date(resetAt).toLocaleString('ja-JP')} にリセットされます`
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const {
       purpose,
@@ -186,6 +211,12 @@ export async function POST(request: NextRequest) {
         imageData: imageData,
         formData: body,
         message: "Gemini 3 Pro Image Preview で画像を生成しました",
+      }, {
+        headers: {
+          'X-RateLimit-Limit': '30',
+          'X-RateLimit-Remaining': remaining.toString(),
+          'X-RateLimit-Reset': resetAt.toString()
+        }
       });
 
     } catch (apiError: any) {
