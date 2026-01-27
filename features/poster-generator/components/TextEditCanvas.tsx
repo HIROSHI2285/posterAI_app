@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Loader2, X, Save, Type, Palette, Trash2, Plus, Sparkles, ImageIcon, RectangleHorizontal, ListPlus, ChevronDown, ChevronUp, Edit3, ImagePlus, Square } from 'lucide-react'
+import { Loader2, X, Save, Type, Palette, Trash2, Plus, Sparkles, ImageIcon, RectangleHorizontal, ListPlus, ChevronDown, ChevronUp, Edit3, ImagePlus, Square, ChevronLeft } from 'lucide-react'
 import { PosterProject, ProjectLayer } from "../types/poster"
 import { exportProject } from "../utils/projectStorage"
 
@@ -206,6 +206,15 @@ export function TextEditCanvas({ imageUrl, initialLayers, layers, onLayersChange
             {/* ヘッダー */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-700">
+                    <Button
+                        onClick={onCancel}
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 -ml-2 text-green-700 hover:text-green-900 hover:bg-green-100"
+                        title="戻る"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
                     <Type className="h-4 w-4" />
                     <span className="text-sm font-medium">テキスト編集モード</span>
                     {isLoading && (
@@ -248,7 +257,7 @@ export function TextEditCanvas({ imageUrl, initialLayers, layers, onLayersChange
                         style={{ backgroundColor: '#ec4899', color: 'white' }}
                     >
                         <Square className="h-3 w-3 mr-1" />
-                        矩形選択
+                        矩形選択編集
                     </Button>
 
                 </div>

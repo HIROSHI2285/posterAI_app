@@ -336,8 +336,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
 
                 setInitialTextLayers(restoredLayers)
 
-                // 3. 編集モードへ遷移
-                setCurrentMode('text')
+                // 3. 編集モードへ遷移せず、プレビュー状態で待機
+                setCurrentMode('none')
                 alert("プロジェクトを読み込みました")
             }
         } catch (error) {
@@ -967,7 +967,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                             style={{ backgroundColor: '#ec4899', color: 'white' }}
                                         >
                                             <Square className="h-4 w-4 mr-2" />
-                                            範囲選択
+                                            矩形選択編集
                                         </Button>
                                         <Button
                                             onClick={() => switchMode('insert')}
