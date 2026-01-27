@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus, Trash2, Check, Eraser, Square, FileText } from "lucide-react"
-import { TextEditCanvas } from "./TextEditCanvas"
+import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus, Trash2, Check, Eraser, Square, FileText, Save } from "lucide-react"
+import { TextEditCanvas, TextLayer } from "./TextEditCanvas"
 import { useExport } from "../utils/useExport"
+import { importProject, denormalizePosition, normalizePosition } from "../utils/projectStorage"
+import { toast } from 'sonner'
 
 interface PosterPreviewProps {
     imageUrl?: string
@@ -59,6 +61,10 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
     // 現在の編集モード
     const [currentMode, setCurrentMode] = useState<'none' | 'general' | 'insert' | 'text' | 'region'>('none')
 
+    // プロジェクト復元用の初期レイヤーデータ
+    const [initialTextLayers, setInitialTextLayers] = useState<TextLayer[]>([])
+    const projectFileInputRef = useRef<HTMLInputElement>(null)
+
     // 各モードの一時入力状態
     const [tempGeneralPrompt, setTempGeneralPrompt] = useState("")
     const [tempInsertImages, setTempInsertImages] = useState<{ data: string, name: string, usage: string }[]>([])
@@ -85,16 +91,109 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
 
 
     // テキスト編集は currentMode: 'text' で管理
+    // State Lift: テキストレイヤーをここで管理
+    const [textLayers, setTextLayers] = useState<TextLayer[]>([])
 
     // ========== 保留中の編集内容 ==========
     const [pendingGeneralPrompt, setPendingGeneralPrompt] = useState("")
     const [pendingInsertImages, setPendingInsertImages] = useState<InsertImageItem[]>([])
+    // TextEditCanvasからリフトアップしたため、pendingTextEditsは直接textLayersを操作するか、
+    // あるいは「保留中」として扱うか。
+    // 今回の要件「AI編集とアクションの分離」では、TextEditCanvasは「AI編集」の一部となる。
+    // よって、TextEditCanvasでの変更は即座に textLayers に反映させる（Controlled Component化）のが自然。
+    // ただし、既存の「保留リストに追加」フローを維持する場合、TextEditCanvas内での変更はローカルで、
+    // 「追加」ボタンで親に通知する形になる。
+    // User要件は「ボタン配置の整理」。
+    // 保存ボタンを外に出すには、現在の最新の状態を常に親が知っている必要がある。
+    // よって、TextEditCanvasは Controlled Mode をサポートすべき。
+
     const [pendingTextEdits, setPendingTextEdits] = useState<TextEditItem[]>([])
     const [pendingRegionEdits, setPendingRegionEdits] = useState<RegionEditItem[]>([])
 
     const [isApplyingAll, setIsApplyingAll] = useState(false)
+    const [isProjectSaving, setIsProjectSaving] = useState(false) // 保存中ステート
 
     const hasPendingEdits = pendingGeneralPrompt || pendingInsertImages.length > 0 || pendingTextEdits.length > 0 || pendingRegionEdits.length > 0
+
+    // プロジェクト保存処理 (TextEditCanvasから移動)
+    const handleSaveProject = async () => {
+        if (!displayImageUrl) return;
+        setIsProjectSaving(true);
+        try {
+            // 画像サイズを取得するための非同期処理
+            const img = new Image();
+            img.src = displayImageUrl;
+            await new Promise((resolve) => { img.onload = resolve });
+
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+
+            // ProjectLayerへの変換
+            // Note: normalizePositionなどはimportが必要
+            const layers: any[] = textLayers.map((layer, index) => ({
+                id: `layer_${index}_${Date.now()}`,
+                type: 'text',
+                name: `Text ${index + 1}`,
+                visible: true,
+                locked: false,
+                position: {
+                    x: normalizePosition(layer.bbox.x, width),
+                    y: normalizePosition(layer.bbox.y, height),
+                    z: index
+                },
+                size: {
+                    width: normalizePosition(layer.bbox.width, width),
+                    height: normalizePosition(layer.bbox.height, height)
+                },
+                rotation: 0,
+                opacity: 1,
+                text: {
+                    content: layer.content,
+                    style: {
+                        fontFamily: layer.style.fontFamily,
+                        fontSize: layer.style.fontSize === 'small' ? 24 :
+                            layer.style.fontSize === 'medium' ? 48 :
+                                layer.style.fontSize === 'large' ? 72 : 96,
+                        color: layer.style.color,
+                        fontWeight: layer.style.fontWeight,
+                        textAlign: layer.style.textAlign
+                    }
+                }
+            }));
+
+            const project: any = {
+                version: "1.0.0",
+                meta: {
+                    title: "Poster Project",
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                },
+                canvas: {
+                    width: width,
+                    height: height,
+                    backgroundImage: {
+                        type: 'url',
+                        src: displayImageUrl
+                    }
+                },
+                layers: layers
+            };
+
+            const { exportProject } = await import('../utils/projectStorage');
+            await exportProject(project);
+
+            // ToastはLayoutで設定済みなのでここでは不要、またはsonnerをimportして呼ぶ
+            // import { toast } from 'sonner' が必要
+            toast.success("プロジェクトを保存しました", {
+                description: "ダウンロードフォルダを確認してください"
+            });
+        } catch (error) {
+            console.error('Save failed:', error);
+            toast.error("保存に失敗しました");
+        } finally {
+            setIsProjectSaving(false);
+        }
+    };
 
     // 矩形領域の表示更新
     useEffect(() => {
@@ -182,6 +281,72 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
             alert('アップスケール中にエラーが発生しました')
         } finally {
             setIsUpscaling(false)
+        }
+    }
+
+
+    // ========== プロジェクト復元 (JSON Import) ==========
+    const handleProjectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        try {
+            if (confirm("現在の作業内容は失われますが、プロジェクトを開きますか？")) {
+                const project = await importProject(file)
+
+                // 1. 画像の復元
+                if (project.canvas.backgroundImage?.src) {
+                    setEditedImageUrl(project.canvas.backgroundImage.src)
+                }
+
+                // 2. レイヤーの復元 & 座標のデノーマライズ
+                const width = project.canvas.width
+                const height = project.canvas.height
+
+                const restoredLayers = project.layers
+                    .filter(l => l.type === 'text' && l.text)
+                    .map(l => ({
+                        content: l.text!.content,
+                        originalContent: l.text!.content,
+                        bbox: {
+                            x: denormalizePosition(l.position.x, width),
+                            y: denormalizePosition(l.position.y, height),
+                            width: denormalizePosition(l.size.width, width),
+                            height: denormalizePosition(l.size.height, height)
+                        },
+                        style: {
+                            fontFamily: l.text!.style.fontFamily as any,
+                            fontSize: l.text!.style.fontSize > 80 ? 'xlarge' :
+                                l.text!.style.fontSize > 60 ? 'large' :
+                                    l.text!.style.fontSize > 36 ? 'medium' : 'small', // Simple mapping back to UI options
+                            color: l.text!.style.color,
+                            fontWeight: l.text!.style.fontWeight as any,
+                            textAlign: l.text!.style.textAlign as any
+                        },
+                        originalStyle: {
+                            fontFamily: l.text!.style.fontFamily as any,
+                            fontSize: l.text!.style.fontSize > 80 ? 'xlarge' :
+                                l.text!.style.fontSize > 60 ? 'large' :
+                                    l.text!.style.fontSize > 36 ? 'medium' : 'small',
+                            color: l.text!.style.color,
+                            fontWeight: l.text!.style.fontWeight as any,
+                            textAlign: l.text!.style.textAlign as any
+                        }
+                    } as TextLayer))
+
+                setInitialTextLayers(restoredLayers)
+
+                // 3. 編集モードへ遷移
+                setCurrentMode('text')
+                alert("プロジェクトを読み込みました")
+            }
+        } catch (error) {
+            console.error("Project load failed:", error)
+            alert("プロジェクトファイルの読み込みに失敗しました")
+        } finally {
+            if (projectFileInputRef.current) {
+                projectFileInputRef.current.value = ''
+            }
         }
     }
 
@@ -429,7 +594,28 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
     return (
         <Card className="border border-gray-300 bg-white">
             <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
-                <CardTitle className="text-base font-semibold">プレビュー</CardTitle>
+                <CardTitle className="text-base font-semibold flex justify-between items-center w-full">
+                    <span>プレビュー</span>
+                    <div className="flex gap-2">
+                        <input
+                            ref={projectFileInputRef}
+                            type="file"
+                            accept=".json,.posterai"
+                            onChange={handleProjectUpload}
+                            className="hidden"
+                        />
+                        <Button
+                            onClick={() => projectFileInputRef.current?.click()}
+                            size="sm"
+                            variant="secondary"
+                            className="h-7 text-xs bg-white/20 hover:bg-white/30 text-white border-none"
+                            title="プロジェクトを開く"
+                        >
+                            <Upload className="h-3 w-3 mr-1" />
+                            開く
+                        </Button>
+                    </div>
+                </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
                 {isGenerating || isApplyingAll ? (
@@ -720,6 +906,9 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                         {currentMode === 'text' && (
                             <TextEditCanvas
                                 imageUrl={displayImageUrl!}
+                                initialLayers={initialTextLayers.length > 0 ? initialTextLayers : undefined}
+                                layers={textLayers}
+                                onLayersChange={setTextLayers}
                                 onSave={(edits) => {
                                     // 編集データを保留リストにマージ（重複回避）
                                     setPendingTextEdits(prev => {
@@ -727,123 +916,110 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         edits.forEach(newEdit => {
                                             const existingIndex = next.findIndex(e => e.original === newEdit.original)
                                             if (existingIndex !== -1) {
-                                                // 既存の編集があれば更新
-                                                next[existingIndex] = {
-                                                    ...next[existingIndex],
-                                                    newContent: newEdit.newContent,
-                                                    color: newEdit.color,
-                                                    fontSize: newEdit.fontSize,
-                                                    isDelete: newEdit.isDelete
-                                                }
+                                                next[existingIndex] = { ...next[existingIndex], ...newEdit }
                                             } else {
-                                                // 新規追加
                                                 next.push({
                                                     id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                                                    original: newEdit.original,
-                                                    newContent: newEdit.newContent,
-                                                    color: newEdit.color,
-                                                    fontSize: newEdit.fontSize,
-                                                    isDelete: newEdit.isDelete
+                                                    ...newEdit
                                                 })
                                             }
                                         })
                                         return next
                                     })
-                                    alert('編集内容を保留リストに更新しました')
+                                    // Alert削除: UI上で分かるようにするか、Toastにする
                                 }}
                                 onCancel={() => switchMode('none')}
                                 onModeChange={(mode) => switchMode(mode)}
                             />
                         )}
 
-                        {/* 通常時のボタン群 */}
+                        {/* 通常時のボタン群 (新レイアウト：横並び＆カラー復元) */}
                         {currentMode === 'none' && (
-                            <div className="flex gap-2 flex-wrap">
-                                <Button
-                                    onClick={() => switchMode('general')}
-                                    size="sm"
-                                    className="flex-1"
-                                    style={{ backgroundColor: '#3b82f6', color: 'white' }}
-                                >
-                                    <Edit3 className="h-4 w-4 mr-1" />
-                                    プロンプト
-                                </Button>
-                                <Button
-                                    onClick={() => switchMode('text')}
-                                    size="sm"
-                                    className="flex-1"
-                                    style={{ backgroundColor: '#16a34a', color: 'white' }}
-                                >
-                                    <Type className="h-4 w-4 mr-1" />
-                                    テキスト
-                                </Button>
-                                <Button
-                                    onClick={() => switchMode('region')}
-                                    size="sm"
-                                    className="flex-1"
-                                    style={{ backgroundColor: '#ec4899', color: 'white' }}
-                                >
-                                    <Wand2 className="h-4 w-4 mr-1" />
-                                    範囲選択
-                                </Button>
-                                <Button
-                                    onClick={() => switchMode('insert')}
-                                    size="sm"
-                                    className="flex-1"
-                                    style={{ backgroundColor: '#9333ea', color: 'white' }}
-                                >
-                                    <ImagePlus className="h-4 w-4 mr-1" />
-                                    画像挿入
-                                </Button>
-                            </div>
-                        )}
+                            <div className="space-y-4">
+                                {/* Group 1: AI編集ツール */}
+                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <h3 className="text-xs font-bold text-gray-500 mb-2 flex items-center">
+                                        <Wand2 className="h-3 w-3 mr-1" /> AI編集
+                                    </h3>
+                                    <div className="flex gap-2 flex-wrap">
+                                        <Button
+                                            onClick={() => switchMode('general')}
+                                            size="sm"
+                                            className="flex-1"
+                                            style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                                        >
+                                            <Edit3 className="h-4 w-4 mr-2" />
+                                            プロンプト
+                                        </Button>
+                                        <Button
+                                            onClick={() => switchMode('text')}
+                                            size="sm"
+                                            className="flex-1"
+                                            style={{ backgroundColor: '#16a34a', color: 'white' }}
+                                        >
+                                            <Type className="h-4 w-4 mr-2" />
+                                            テキスト
+                                        </Button>
+                                        <Button
+                                            onClick={() => switchMode('region')}
+                                            size="sm"
+                                            className="flex-1"
+                                            style={{ backgroundColor: '#ec4899', color: 'white' }}
+                                        >
+                                            <Square className="h-4 w-4 mr-2" />
+                                            範囲選択
+                                        </Button>
+                                        <Button
+                                            onClick={() => switchMode('insert')}
+                                            size="sm"
+                                            className="flex-1"
+                                            style={{ backgroundColor: '#9333ea', color: 'white' }}
+                                        >
+                                            <ImagePlus className="h-4 w-4 mr-2" />
+                                            画像挿入
+                                        </Button>
+                                    </div>
+                                </div>
 
-                        {currentMode === 'none' && (
-                            <div className="flex gap-2">
-                                <Button onClick={onRegenerate} variant="outline" size="sm" className="flex-1">
-                                    <RefreshCw className="h-4 w-4 mr-1" />
-                                    再生成
-                                </Button>
-                                <Button
-                                    onClick={handleDownloadHQ}
-                                    disabled={isUpscaling}
-                                    size="sm"
-                                    className="flex-1"
-                                    style={{ backgroundColor: '#48a772', color: 'white' }}
-                                >
-                                    {isUpscaling ? <RefreshCw className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}
-                                    {isUpscaling ? '処理中...' : 'ダウンロード'}
-                                </Button>
-                                <Button
-                                    onClick={() => handleExtractBlueprint(displayImageUrl)}
-                                    disabled={isExtracting}
-                                    size="sm"
-                                    className="px-3"
-                                    style={{ backgroundColor: '#8b5cf6', color: 'white' }}
-                                    title="設計図を抽出(Debug)"
-                                >
-                                    {isExtracting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-                                </Button>
-                                <Button
-                                    onClick={() => handleExportPptx(displayImageUrl)}
-                                    disabled={isExportingPptx}
-                                    size="sm"
-                                    className="px-3"
-                                    style={{ backgroundColor: '#ea580c', color: 'white' }}
-                                    title="PowerPoint形式で保存"
-                                >
-                                    {isExportingPptx ? <RefreshCw className="h-4 w-4 animate-spin" /> : <span className="text-xs font-bold">PPTX</span>}
-                                </Button>
-                                <Button
-                                    onClick={() => handleExportSlides(displayImageUrl)}
-                                    disabled={isExportingSlides}
-                                    size="sm"
-                                    className="px-3"
-                                    style={{ backgroundColor: '#facc15', color: 'black' }}
-                                    title="Google Slidesに保存"
-                                >
-                                    {isExportingSlides ? <RefreshCw className="h-4 w-4 animate-spin" /> : <span className="text-xs font-bold">Slides</span>}
-                                </Button>
+                                {/* Group 2: アクション */}
+                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <h3 className="text-xs font-bold text-gray-500 mb-2 flex items-center">
+                                        <Check className="h-3 w-3 mr-1" /> アクション
+                                    </h3>
+                                    <div className="flex gap-2 flex-wrap">
+                                        <Button
+                                            onClick={onRegenerate}
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1 bg-white"
+                                        >
+                                            <RefreshCw className="h-4 w-4 mr-2" />
+                                            再生成
+                                        </Button>
+
+                                        <Button
+                                            onClick={handleDownloadHQ}
+                                            disabled={isUpscaling}
+                                            size="sm"
+                                            className="flex-1"
+                                            style={{ backgroundColor: '#48a772', color: 'white' }}
+                                        >
+                                            {isUpscaling ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                                            ダウンロード
+                                        </Button>
+
+                                        <Button
+                                            onClick={handleSaveProject}
+                                            disabled={isProjectSaving}
+                                            size="sm"
+                                            className="flex-1"
+                                            style={{ backgroundColor: '#f97316', color: 'white' }}
+                                        >
+                                            {isProjectSaving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                                            プロジェクト保存
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -966,8 +1142,20 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center min-h-[550px] bg-gray-50 rounded-lg">
-                        <ImageIcon className="h-16 w-16 text-muted-foreground mb-4" />
-                        <p className="text-sm text-muted-foreground">プレビューはここに表示されます</p>
+                        <ImageIcon className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
+                        <p className="text-sm text-muted-foreground mb-6">プレビューはここに表示されます</p>
+
+                        <div className="flex flex-col items-center gap-2">
+                            <p className="text-xs text-muted-foreground">保存したプロジェクトを開く</p>
+                            <Button
+                                onClick={() => projectFileInputRef.current?.click()}
+                                variant="outline"
+                                className="bg-white hover:bg-gray-100 border-dashed border-2 border-gray-300"
+                            >
+                                <Upload className="h-4 w-4 mr-2" />
+                                プロジェクト(.json)を読み込む
+                            </Button>
+                        </div>
                     </div>
                 )}
             </CardContent>

@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Loader2, X, Save, Type, Palette, Trash2, Plus, Sparkles, ImageIcon, RectangleHorizontal, ListPlus, ChevronDown, ChevronUp, Edit3, ImagePlus, Square } from 'lucide-react'
+import { PosterProject, ProjectLayer } from "../types/poster"
+import { exportProject } from "../utils/projectStorage"
 
-interface TextLayer {
+export interface TextLayer {
     content: string
     originalContent: string  // 元のテキストを保持
     bbox: {
@@ -40,21 +42,30 @@ export interface TextEditData {
 interface TextEditCanvasProps {
     imageUrl: string
     originalTexts?: string[]  // 元のテキスト一覧
+    initialLayers?: TextLayer[] // 復元用 (互換性のため残すが、実質使わないかも)
+    layers: TextLayer[] // Controlled State
+    onLayersChange: (layers: TextLayer[]) => void
     onSave: (edits: TextEditData[]) => void
     onCancel: () => void
-    onModeChange?: (mode: 'general' | 'insert' | 'region') => void  // 他のモードへの切り替え
+    onModeChange?: (mode: 'general' | 'insert' | 'region') => void
 }
 
-export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: TextEditCanvasProps) {
+export function TextEditCanvas({ imageUrl, initialLayers, layers, onLayersChange, onSave, onCancel, onModeChange }: TextEditCanvasProps) {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [textLayers, setTextLayers] = useState<TextLayer[]>([])
+    // const [textLayers, setTextLayers] = useState<TextLayer[]>([]) // Removed: Controlled by parent
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-    const [markedForDeletion, setMarkedForDeletion] = useState<Set<number>>(new Set())  // 削除対象のインデックス
+    const [markedForDeletion, setMarkedForDeletion] = useState<Set<number>>(new Set())
 
     // テキスト抽出API呼び出し
     const extractTextLayers = useCallback(async () => {
+        // すでに親からレイヤーが渡されている場合は抽出しない
+        if (layers.length > 0) {
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true)
         setError(null)
         try {
@@ -75,34 +86,43 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                 originalContent: layer.content,
                 originalStyle: { ...layer.style }
             }))
-            setTextLayers(layersWithOriginal)
+            // 親のStateを更新
+            onLayersChange(layersWithOriginal)
         } catch (err) {
             console.error('Extract error:', err)
             setError('テキストの抽出に失敗しました')
         } finally {
             setIsLoading(false)
         }
-    }, [imageUrl])
+    }, [imageUrl, layers.length, onLayersChange])
 
-    // テキスト抽出の実行
+    // テキスト抽出の実行または初期データのロード
     useEffect(() => {
-        if (imageUrl) {
+        if (initialLayers && initialLayers.length > 0) {
+            console.log("Loading initial layers for project restore (Prop)...");
+            onLayersChange(initialLayers);
+            setIsLoading(false);
+        } else if (imageUrl && layers.length === 0) {
             extractTextLayers()
+        } else {
+            setIsLoading(false);
         }
-    }, [imageUrl, extractTextLayers])
+    }, [imageUrl, extractTextLayers, initialLayers]) // layers removed from dependency to avoid loop if careful, but logic checks length=0
 
     // テキスト内容の更新
     const updateTextContent = (index: number, newContent: string) => {
-        setTextLayers(prev => prev.map((layer, i) =>
+        const newLayers = layers.map((layer, i) =>
             i === index ? { ...layer, content: newContent } : layer
-        ))
+        )
+        onLayersChange(newLayers)
     }
 
     // スタイルの更新
     const updateTextStyle = (index: number, styleKey: string, value: string) => {
-        setTextLayers(prev => prev.map((layer, i) =>
+        const newLayers = layers.map((layer, i) =>
             i === index ? { ...layer, style: { ...layer.style, [styleKey]: value } } : layer
-        ))
+        )
+        onLayersChange(newLayers)
     }
 
     // 削除チェックボックスのトグル
@@ -129,7 +149,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
     const getEditData = (): TextEditData[] => {
         const edits: TextEditData[] = []
 
-        textLayers.forEach((layer, index) => {
+        layers.forEach((layer, index) => {
             // 削除対象の場合
             if (markedForDeletion.has(index)) {
                 edits.push({
@@ -196,7 +216,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                     )}
                 </div>
                 <span className="text-xs text-gray-500">
-                    {textLayers.length}個のテキストを検出
+                    {layers.length}個のテキストを検出
                 </span>
             </div>
 
@@ -230,6 +250,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                         <Square className="h-3 w-3 mr-1" />
                         矩形選択
                     </Button>
+
                 </div>
             )}
 
@@ -237,15 +258,15 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
             <div className="border rounded bg-white overflow-hidden">
                 <div className="text-xs text-gray-500 p-2 bg-gray-100 border-b flex justify-between">
                     <span>検出されたテキスト（クリックで編集）</span>
-                    <span>{textLayers.length}個</span>
+                    <span>{layers.length}個</span>
                 </div>
                 <div className="max-h-[500px] overflow-y-auto">
-                    {textLayers.length === 0 && !isLoading && (
+                    {layers.length === 0 && !isLoading && (
                         <div className="p-4 text-center text-gray-500 text-sm">
                             テキストが検出されませんでした
                         </div>
                     )}
-                    {textLayers.map((layer, index) => (
+                    {layers.map((layer, index) => (
                         <div
                             key={index}
                             className={`border-b last:border-b-0 ${expandedIndex === index ? 'bg-green-50' : 'hover:bg-gray-50'}`}
@@ -394,6 +415,7 @@ export function TextEditCanvas({ imageUrl, onSave, onCancel, onModeChange }: Tex
                         </>
                     )}
                 </Button>
+
                 <Button
                     onClick={onCancel}
                     variant="outline"
