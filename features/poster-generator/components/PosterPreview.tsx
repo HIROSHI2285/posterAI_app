@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus, Trash2, Check, Eraser, Square, FileText, Save } from "lucide-react"
+import { Download, RefreshCw, ImageIcon, Edit3, X, Wand2, ImagePlus, Upload, Type, Plus, Trash2, Check, Eraser, Square, FileText, Save, ChevronLeft } from "lucide-react"
 import { TextEditCanvas, TextLayer } from "./TextEditCanvas"
 import { useExport } from "../utils/useExport"
 import { importProject, denormalizePosition, normalizePosition } from "../utils/projectStorage"
@@ -670,6 +670,15 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                             <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-blue-700">
+                                        <Button
+                                            onClick={() => switchMode('none')}
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 -ml-2 text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                                            title="戻る"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
                                         <Edit3 className="h-4 w-4" />
                                         <span className="text-sm font-medium">プロンプト編集</span>
                                     </div>
@@ -702,7 +711,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         style={{ backgroundColor: '#ec4899', color: 'white' }}
                                     >
                                         <Square className="h-3 w-3 mr-1" />
-                                        矩形選択
+                                        矩形編集
                                     </Button>
                                 </div>
 
@@ -730,6 +739,15 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                             <div className="space-y-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-purple-700">
+                                        <Button
+                                            onClick={() => switchMode('none')}
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 -ml-2 text-purple-700 hover:text-purple-900 hover:bg-purple-100"
+                                            title="戻る"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
                                         <ImagePlus className="h-4 w-4" />
                                         <span className="text-sm font-medium">画像挿入</span>
                                     </div>
@@ -762,7 +780,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         style={{ backgroundColor: '#ec4899', color: 'white' }}
                                     >
                                         <Square className="h-3 w-3 mr-1" />
-                                        矩形選択
+                                        矩形編集
                                     </Button>
                                 </div>
                                 <input
@@ -829,8 +847,17 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                             <div className="space-y-3 p-3 bg-pink-50 rounded-lg border border-pink-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-pink-700">
+                                        <Button
+                                            onClick={() => switchMode('none')}
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 -ml-2 text-pink-700 hover:text-pink-900 hover:bg-pink-100"
+                                            title="戻る"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
                                         <Square className="h-4 w-4" />
-                                        <span className="text-sm font-medium">矩形選択編集</span>
+                                        <span className="text-sm font-medium">矩形編集</span>
                                     </div>
                                 </div>
 
@@ -967,7 +994,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                             style={{ backgroundColor: '#ec4899', color: 'white' }}
                                         >
                                             <Square className="h-4 w-4 mr-2" />
-                                            矩形選択編集
+                                            矩形編集
                                         </Button>
                                         <Button
                                             onClick={() => switchMode('insert')}

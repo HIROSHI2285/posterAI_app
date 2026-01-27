@@ -257,7 +257,7 @@ export function TextEditCanvas({ imageUrl, initialLayers, layers, onLayersChange
                         style={{ backgroundColor: '#ec4899', color: 'white' }}
                     >
                         <Square className="h-3 w-3 mr-1" />
-                        矩形選択編集
+                        矩形編集
                     </Button>
 
                 </div>
