@@ -39,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${dmSans.variable} font-sans bg-[#1a3d2e] text-green-100 min-h-screen antialiased selection:bg-brand-acid selection:text-brand-black`}>
+      <body className={`${outfit.variable} ${dmSans.variable} font-sans bg-[#1a3d2e] text-green-100 min-h-screen antialiased selection:bg-brand-acid selection:text-brand-black`} suppressHydrationWarning>
         <div className="grain-overlay opacity-20 mix-blend-overlay" />
         <Providers>
           {children}

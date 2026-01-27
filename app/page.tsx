@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Wand2, Palette, ImageIcon, LogOut, ArrowRight, Zap, Layers } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -24,12 +25,15 @@ export default function HomePage() {
       <header className="border-b border-white/10 bg-black/20 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <img
-              src="/posterai-logo.svg"
-              alt="PosterAI"
-              className="h-10"
-              style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-            />
+            <div className="relative w-48 h-12">
+              <Image
+                src="/posterai-logo.svg"
+                alt="PosterAI"
+                fill
+                style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                priority
+              />
+            </div>
             <nav className="hidden md:flex items-center gap-4">
               <Link
                 href="/how-to-use"
@@ -44,11 +48,15 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 {session.user?.image && (
-                  <img
-                    src={session.user.image}
-                    alt={session.user?.name || 'User'}
-                    className="w-10 h-10 rounded-full border-2 border-white/20 shadow-sm"
-                  />
+                  <div className="relative w-10 h-10 rounded-full border-2 border-white/20 shadow-sm overflow-hidden">
+                    <Image
+                      src={session.user.image}
+                      alt={session.user?.name || 'User'}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
                 )}
                 {session.user?.email && (
                   <span className="text-green-100 font-medium max-w-[150px] truncate hidden md:inline">
@@ -167,10 +175,12 @@ export default function HomePage() {
                 <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 flex items-end justify-center pb-6">
                   <span className="text-white text-sm font-bold tracking-wider translate-y-4 group-hover:translate-y-0 transition-transform duration-300">VIEW DESIGN</span>
                 </div>
-                <img
+                <Image
                   src={`/hero-poster-${i}.jpg`}
                   alt="Poster"
-                  className="w-full h-full object-cover transform group-hover:scale-105 group-hover:rotate-1 transition-all duration-700 ease-out shadow-2xl"
+                  fill
+                  className="object-cover transform group-hover:scale-105 group-hover:rotate-1 transition-all duration-700 ease-out shadow-2xl"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />
               </div>
             ))}
@@ -261,12 +271,14 @@ export default function HomePage() {
       <footer className="py-24 border-t border-white/10 bg-black/20">
         <div className="container mx-auto px-6 text-center">
           <div className="flex items-center justify-center mb-10">
-            <img
-              src="/posterai-logo.svg"
-              alt="PosterAI"
-              className="h-12 opacity-80"
-              style={{ filter: 'brightness(0) invert(1)' }}
-            />
+            <div className="relative h-16 w-60 opacity-80 filter brightness-0 invert">
+              <Image
+                src="/posterai-logo.svg"
+                alt="PosterAI"
+                fill
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
           </div>
           <p className="text-sm text-green-200/80">© 2025 PosterAI. Crafted with Intelligence.</p>
         </div>
