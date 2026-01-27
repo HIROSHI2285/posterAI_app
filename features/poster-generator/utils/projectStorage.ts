@@ -15,9 +15,9 @@ export async function exportProject(project: PosterProject) {
 
     try {
         // @ts-ignore - File System Access API types might not be fully available
-        if (window.showSaveFilePicker) {
+        if ((window as any).showSaveFilePicker) {
             // Use File System Access API
-            const handle = await window.showSaveFilePicker({
+            const handle = await (window as any).showSaveFilePicker({
                 suggestedName: suggestedName,
                 types: [{
                     description: 'Poster Project JSON',
