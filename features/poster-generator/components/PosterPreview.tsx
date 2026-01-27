@@ -673,11 +673,12 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         <Button
                                             onClick={() => switchMode('none')}
                                             variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 -ml-2 text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                                            size="sm"
+                                            className="h-8 -ml-2 text-blue-700 hover:text-blue-900 hover:bg-blue-100 flex items-center gap-1"
                                             title="戻る"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
+                                            戻る
                                         </Button>
                                         <Edit3 className="h-4 w-4" />
                                         <span className="text-sm font-medium">プロンプト編集</span>
@@ -742,11 +743,12 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         <Button
                                             onClick={() => switchMode('none')}
                                             variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 -ml-2 text-purple-700 hover:text-purple-900 hover:bg-purple-100"
+                                            size="sm"
+                                            className="h-8 -ml-2 text-purple-700 hover:text-purple-900 hover:bg-purple-100 flex items-center gap-1"
                                             title="戻る"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
+                                            戻る
                                         </Button>
                                         <ImagePlus className="h-4 w-4" />
                                         <span className="text-sm font-medium">画像挿入</span>
@@ -850,11 +852,12 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         <Button
                                             onClick={() => switchMode('none')}
                                             variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 -ml-2 text-pink-700 hover:text-pink-900 hover:bg-pink-100"
+                                            size="sm"
+                                            className="h-8 -ml-2 text-pink-700 hover:text-pink-900 hover:bg-pink-100 flex items-center gap-1"
                                             title="戻る"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
+                                            戻る
                                         </Button>
                                         <Square className="h-4 w-4" />
                                         <span className="text-sm font-medium">矩形編集</span>
@@ -976,7 +979,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                             style={{ backgroundColor: '#3b82f6', color: 'white' }}
                                         >
                                             <Edit3 className="h-4 w-4 mr-2" />
-                                            プロンプト
+                                            プロンプト編集
                                         </Button>
                                         <Button
                                             onClick={() => switchMode('text')}
@@ -985,7 +988,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                             style={{ backgroundColor: '#16a34a', color: 'white' }}
                                         >
                                             <Type className="h-4 w-4 mr-2" />
-                                            テキスト
+                                            テキスト編集
                                         </Button>
                                         <Button
                                             onClick={() => switchMode('region')}

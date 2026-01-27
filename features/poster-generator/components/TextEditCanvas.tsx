@@ -209,11 +209,12 @@ export function TextEditCanvas({ imageUrl, initialLayers, layers, onLayersChange
                     <Button
                         onClick={onCancel}
                         variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 -ml-2 text-green-700 hover:text-green-900 hover:bg-green-100"
+                        size="sm"
+                        className="h-8 -ml-2 text-green-700 hover:text-green-900 hover:bg-green-100 flex items-center gap-1"
                         title="戻る"
                     >
                         <ChevronLeft className="h-4 w-4" />
+                        戻る
                     </Button>
                     <Type className="h-4 w-4" />
                     <span className="text-sm font-medium">テキスト編集モード</span>
