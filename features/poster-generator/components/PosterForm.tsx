@@ -142,8 +142,11 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                         </p>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                         <Label htmlFor="taste" className="text-sm font-medium">テイスト</Label>
+                        <p className="text-xs text-muted-foreground mb-2">目的に合ったデザインの雰囲気を選択してください</p>
+
+
                         <Select
                             id="taste"
                             value={formData.taste}
@@ -157,6 +160,22 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                                 </option>
                             ))}
                         </Select>
+
+                        {/* 選択中のテイストの説明とおすすめ用途 */}
+                        <div className="mt-3 p-4 bg-muted/30 rounded-lg border border-gray-200 space-y-2">
+                            <div>
+                                <span className="text-xs font-bold text-primary block mb-1">特徴</span>
+                                <p className="text-sm text-foreground">
+                                    {TASTES.find(t => t.value === formData.taste)?.description}
+                                </p>
+                            </div>
+                            <div className="pt-2 border-t border-gray-200/50">
+                                <span className="text-xs font-bold text-primary block mb-1">おすすめ用途</span>
+                                <p className="text-sm text-muted-foreground">
+                                    {TASTES.find(t => t.value === formData.taste)?.recommendedUses}
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-1.5">

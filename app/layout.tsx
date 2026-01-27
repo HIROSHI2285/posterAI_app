@@ -18,7 +18,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: "PosterAI - AI搭載ポスター生成ツール",
-  description: "Google Gemini AIを使用してプロ品質のポスターを自動生成",
+  description: "Nano Banana Proを使用してプロ品質のポスターを自動生成",
   keywords: ["AI", "poster", "generator", "design", "event", "social media"],
   authors: [{ name: "PosterAI" }],
   icons: {

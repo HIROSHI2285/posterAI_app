@@ -107,7 +107,7 @@ export default function HowToUsePage() {
 
                         <p className="text-xl text-green-100/90 leading-relaxed font-light">
                             生成から編集、そして保存まで。<br />
-                            Gemini 3 Proの力を最大限に引き出す、<br />
+                            Nano Banana Proの力を最大限に引き出す、<br />
                             プロフェッショナルなワークフローを解説します。
                         </p>
 
@@ -121,12 +121,12 @@ export default function HowToUsePage() {
                         </Button>
                     </div>
 
-                    <div className="relative animate-float md:mt-0 mt-10">
+                    <div className="relative md:mt-0 mt-10">
                         {/* Using actual dashboard screenshot for Hero */}
-                        <div className="absolute inset-0 bg-brand-acid/5 rounded-3xl blur-2xl transform rotate-6 scale-95" />
+                        <div className="absolute inset-0 bg-brand-acid/5 rounded-3xl blur-2xl scale-95" />
                         <div className="relative w-full rounded-2xl shadow-2xl skew-y-1">
                             <BrowserFrame
-                                src="/samples/real_dashboard.png"
+                                src="/samples/real_dashboard.png?v=5"
                                 alt="PosterAI Dashboard"
                                 priority
                             />
@@ -155,7 +155,7 @@ export default function HowToUsePage() {
                         <div className="order-2 lg:order-1 relative">
                             <div className="absolute inset-0 bg-blue-500/10 blur-3xl opacity-20 -z-10" />
                             <BrowserFrame
-                                src="/samples/real_standard_usage.png"
+                                src="/samples/real_standard_usage.png?v=4"
                                 alt="Standard Text Generation"
                             />
                         </div>
@@ -167,7 +167,7 @@ export default function HowToUsePage() {
                             <h3 className="text-2xl font-bold text-white">テキストから無限のアイデアを</h3>
                             <p className="text-green-100/70 leading-relaxed">
                                 「夏の音楽フェスのポスター」「高級感のあるカフェのメニュー」など、作りたいもののイメージを言葉で入力するだけ。<br />
-                                Gemini 3 Proの高度な文脈理解により、意図を汲み取った高品質なデザインを複数提案します。
+                                Nano Banana Proの高度な文脈理解により、意図を汲み取った高品質なデザインを複数提案します。
                             </p>
                         </div>
                     </div>
@@ -188,7 +188,7 @@ export default function HowToUsePage() {
                         <div className="relative">
                             <div className="absolute inset-0 bg-brand-acid/10 blur-3xl opacity-20 -z-10" />
                             <BrowserFrame
-                                src="/samples/real_ref_usage.png"
+                                src="/samples/real_ref_usage.png?v=4"
                                 alt="Image Reference & Insertion"
                             />
                         </div>
@@ -213,7 +213,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_prompt.png"
+                                src="/samples/real_edit_prompt.png?v=4"
                                 alt="Prompt Editing"
                                 fill
                                 className="object-cover"
@@ -232,7 +232,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_rect.png"
+                                src="/samples/real_edit_rect.png?v=4"
                                 alt="Region Editing"
                                 fill
                                 className="object-cover"
@@ -251,7 +251,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_text.png"
+                                src="/samples/real_edit_text.png?v=4"
                                 alt="Text Editing"
                                 fill
                                 className="object-cover"
@@ -270,7 +270,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_insert.png"
+                                src="/samples/real_edit_insert.png?v=4"
                                 alt="Image Insertion in Editor"
                                 fill
                                 className="object-cover"
@@ -293,7 +293,7 @@ export default function HowToUsePage() {
                     <div className="order-2 lg:order-1 relative">
                         <div className="absolute inset-0 bg-green-500/10 blur-3xl opacity-20 -z-10" />
                         <BrowserFrame
-                            src="/samples/real_save_project.png"
+                            src="/samples/real_save_project.png?v=4"
                             alt="Project Saving"
                         />
                     </div>
@@ -378,15 +378,31 @@ export default function HowToUsePage() {
                     <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
                         <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
                             <span className="text-brand-acid font-display text-2xl">Q.</span>
+                            編集はまとめて行った方が良いですか？
+                        </h3>
+                        <div className="pl-10 space-y-2 text-green-100/80 leading-relaxed">
+                            <p>
+                                はい、**「プロンプト変更」「矩形選択」「テキスト修正」などは、一度にまとめて指示を行う**ことをおすすめします。
+                            </p>
+                            <p>
+                                修正のたびにAIが画像を再生成するため、まとめて指示を出すことで生成回数（クレジット）を節約できます。<br />
+                                さらには、AI（Nano Banana Pro）が全体の変更意図を一度に理解できるため、**より正確で理想に近い結果が出やすくなる**というメリットもあります。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
+                        <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
+                            <span className="text-brand-acid font-display text-2xl">Q.</span>
                             プロジェクトの保存方法がわかりません
                         </h3>
                         <div className="pl-10 space-y-2 text-green-100/80 leading-relaxed">
                             <p>
-                                編集画面の右上にある「保存」アイコンボタンをクリックしてください。
+                                編集画面の右下にある「プロジェクト保存」アイコンボタンをクリックしてください。
                                 <code className="bg-black/30 px-2 py-0.5 rounded mx-1 text-sm border border-white/10">.json</code> 形式のファイルがダウンロードされます。
                             </p>
                             <p>
-                                再開する際は、ダッシュボードの「プロジェクトを読み込む」からそのファイルを選択してください。
+                                再開する際は、プレビュー内の「プロジェクトを読み込む」からそのファイルを選択してください。
                             </p>
                         </div>
                     </div>

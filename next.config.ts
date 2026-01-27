@@ -8,6 +8,24 @@ const nextConfig: NextConfig = {
       : false,
   },
 
+
+  images: {
+    localPatterns: [
+      {
+        pathname: '/samples/**',
+        search: '?v=4',
+      },
+      {
+        pathname: '/samples/**',
+        search: '?v=5',
+      },
+      {
+        pathname: '/**',
+        search: '',
+      },
+    ],
+  },
+
   async headers() {
     return [
       {
