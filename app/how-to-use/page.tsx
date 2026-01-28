@@ -300,7 +300,7 @@ export default function HowToUsePage() {
                     <div className="order-2 lg:order-1 relative">
                         <div className="absolute inset-0 bg-green-500/10 blur-3xl opacity-20 -z-10" />
                         <BrowserFrame
-                            src="/samples/real_save_project_jp.png"
+                            src="/samples/real_save_project_jp_v2.png"
                             alt="Project Saving"
                         />
                     </div>
