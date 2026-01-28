@@ -1,6 +1,6 @@
 # PosterAI - AI搭載ポスター生成ツール
 
-Google Gemini AIを活用した、プロ品質のポスター生成Webアプリケーション。
+Nano Banana Pro (Powered by Google Gemini) を活用した、プロ品質のポスター生成Webアプリケーション。
 
 🔗 **本番URL**: [https://poster-ai-app.onrender.com](https://poster-ai-app.onrender.com)
 
@@ -20,13 +20,13 @@ Google Gemini AIを活用した、プロ品質のポスター生成Webアプリ�
 
 ## 🌟 概要
 
-PosterAIは、テキスト入力やサンプル画像から、AIが自動的に高品質なポスターデザインを生成するツールです。Google Gemini 3 Proの最先端AI技術により、数秒でプロフェッショナルなビジュアルを作成できます。
+PosterAIは、テキスト入力やサンプル画像から、AIが自動的に高品質なポスターデザインを生成するツールです。**Nano Banana Pro** の最先端AI技術により、数秒でプロフェッショナルなビジュアルを作成できます。
 
-v1.4.0では、**「日本ユーザー向けの完全ローカライズ」**と**「高精細UIモックアップによるガイド」**を実装し、より親しみやすく強力なツールへと進化しました。
+v1.5.0では、**「Calmテーマによる洗練されたUI」**、**「Noto Sans JPによる美しい日本語表示」**、そして**「ダークモードに統一された使い方ガイド」**を実装し、より使いやすく美しいツールへと進化しました。
 
 ### 主な機能
 
-- 🎨 **AI画像生成**: Google Gemini 3 Proによる高品質な画像生成
+- 🎨 **AI画像生成**: Nano Banana Proによる高品質な画像生成
 - 🖼️ **高精度画像解析**: アップロードした画像からデザイン要素（配色、構図、スタイル）を詳細抽出
 - 🎯 **2つの生成モード**:
   - **画像 + テキスト**: サンプル画像を参照して高再現性で生成
@@ -81,7 +81,7 @@ posterai-app/
 - **Lucide React**: アイコンセット
 
 ### バックエンド & AI
-- **Google Gemini 3 Pro**: 画像生成・解析・Inpainting
+- **Nano Banana Pro**: 画像生成・解析・Inpainting (Powered by Google Gemini 3)
   - `gemini-3-pro-image-preview`
 - **NextAuth.js**: 認証基盤 (Google OAuth)
 - **Supabase**: データベース (ユーザー管理、設定保存)
@@ -99,11 +99,11 @@ posterai-app/
 4. **編集**: 生成された画像をAIエディタで微調整（文字変更、部分修正）
 5. **保存**: プロジェクトとして保存 (`.json`) または 画像としてダウンロード (`.png`)
 
-詳細は [使い方ページ](/how-to-use) をご覧ください。
+詳細は [使い方ページ](/how-to-use) をご覧ください。（TOPページと同様の没入感あるダークテーマで解説しています）
 
 ---
 
-## 💰 料金体系概要 (v1.4.0)
+## 💰 料金体系概要 (v1.5.0)
 
 **現在: Gemini 3 Pro Image Preview (無料枠/プレビュー版を使用)**
 
