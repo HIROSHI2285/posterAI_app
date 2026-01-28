@@ -304,8 +304,8 @@ export default function HowToUsePage() {
                         </div>
                         <h3 className="text-2xl font-bold text-white">プロジェクト保存機能でいつでも再開</h3>
                         <p className="text-green-100/70 leading-relaxed">
-                            気に入ったデザインや、シリーズ化したい画像は「プロジェクト保存」機能で<br />JSON形式で保存可能。後から読み込んで再編集できます。<br />
-                            完成した画像は、印刷にも耐えうる高解像度（350dpi相当）のPNG/JPGとして<br />ダウンロードできます。
+                            気に入ったデザインや、シリーズ化したい画像は<br />「プロジェクト保存」機能でJSON形式で保存可能。<br />後から読み込んで再編集できます。<br />
+                            完成した画像は、印刷にも耐えうる高解像度（350dpi相当）の<br />PNG/JPGとしてダウンロードできます。
                         </p>
                     </div>
                 </div>

@@ -1,0 +1,41 @@
+{
+    "version": "1.0.0",
+    "meta": {
+        "title": "Mock Project",
+        "createdAt": 1709251200000,
+        "updatedAt": 1709251200000
+    },
+    "canvas": {
+        "width": 800,
+        "height": 600,
+        "backgroundImage": {
+            "type": "url",
+            "src": "/samples/real_dashboard.png"
+        }
+    },
+    "layers": [
+        {
+            "id": "layer1",
+            "type": "text",
+            "text": {
+                "content": "Sample Text",
+                "style": {
+                    "fontFamily": "sans-serif",
+                    "fontSize": 48,
+                    "color": "#000000"
+                }
+            },
+            "position": {
+                "x": 0.5,
+                "y": 0.5,
+                "z": 1
+            },
+            "size": {
+                "width": 0.2,
+                "height": 0.1
+            },
+            "opacity": 1,
+            "visible": true
+        }
+    ]
+}
