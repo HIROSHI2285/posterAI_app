@@ -166,8 +166,8 @@ export default function HowToUsePage() {
                             </div>
                             <h3 className="text-2xl font-bold text-white">テキストから無限のアイデアを</h3>
                             <p className="text-green-100/70 leading-relaxed">
-                                「夏の音楽フェスのポスター」「高級感のあるカフェのメニュー」など、作りたいもののイメージを言葉で入力するだけ。<br />
-                                Nano Banana Proの高度な文脈理解により、意図を汲み取った高品質なデザインを複数提案します。
+                                「夏の音楽フェスのポスター」「高級感のあるカフェのメニュー」など、<br />作りたいもののイメージを言葉で入力するだけ。<br />
+                                Nano Banana Proの高度な文脈理解により、意図を汲み取った<br />高品質なデザインを提案します。
                             </p>
                         </div>
                     </div>
@@ -181,8 +181,8 @@ export default function HowToUsePage() {
                             </div>
                             <h3 className="text-2xl font-bold text-white">ビジュアル指示でより具体的に</h3>
                             <p className="text-green-100/70 leading-relaxed">
-                                <b>参考画像機能:</b> 手書きのラフや、雰囲気の近い既存画像をアップロードして、「このレイアウトで」「この色味で」と指示が可能。<br />
-                                <b>画像挿入機能:</b> ロゴや商品写真など、デザインに必ず含めたい素材をそのまま指定位置に配置して生成できます。
+                                <b>参考画像機能:</b> 参考にしたい画像や雰囲気の近い画像をアップロードして、<br />「解析されたプロンプト」を利用して指示が可能。<br />
+                                <b>画像挿入機能:</b> ロゴや商品写真など、デザインに必ず含めたい素材を<br />そのまま指定位置に配置して生成できます。
                             </p>
                         </div>
                         <div className="relative">
@@ -302,10 +302,10 @@ export default function HowToUsePage() {
                             <Save className="w-3 h-3" />
                             プロジェクト保存 & 出力
                         </div>
-                        <h3 className="text-2xl font-bold text-white">作業をいつでも再開</h3>
+                        <h3 className="text-2xl font-bold text-white">プロジェクト保存機能でいつでも再開</h3>
                         <p className="text-green-100/70 leading-relaxed">
-                            作成したデザインは「プロジェクト」としてJSON形式で保存可能。後から読み込んで再編集できます。<br />
-                            完成した画像は、印刷にも耐えうる高解像度（350dpi相当）のPNG/JPGとしてダウンロードできます。
+                            気に入ったデザインや、シリーズ化したい画像は「プロジェクト保存」機能で<br />JSON形式で保存可能。後から読み込んで再編集できます。<br />
+                            完成した画像は、印刷にも耐えうる高解像度（350dpi相当）のPNG/JPGとして<br />ダウンロードできます。
                         </p>
                     </div>
                 </div>

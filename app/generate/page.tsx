@@ -284,7 +284,7 @@ export default function GeneratePage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.location.href = '/'}
-                                className="flex items-center gap-2 hover:bg-green-50 hover:text-green-700"
+                                className="flex items-center gap-2 text-gray-600 hover:bg-green-50 hover:text-green-700"
                             >
                                 <Home className="h-4 w-4" />
                                 <span className="hidden sm:inline">ホーム</span>

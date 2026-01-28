@@ -858,7 +858,7 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                     type="button"
                     size="lg"
                     variant="outline"
-                    className="flex-1 text-lg py-8 border-2"
+                    className="flex-1 text-lg py-8 border-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                     onClick={onReset}
                     disabled={isGenerating}
                 >
