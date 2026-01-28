@@ -3,26 +3,42 @@
 
 @layer base {
   :root {
-    --color-background: 0 0% 100%;
-    --color-foreground: 0 0% 9%;
+    /* Calm Palette */
+    --color-background: 0 0% 98%;
+    /* #FAFAFA */
+    --color-foreground: 220 10% 20%;
+    /* #2E333D - Softer Charcoal */
+
     --color-card: 0 0% 100%;
-    --color-card-foreground: 0 0% 9%;
+    --color-card-foreground: 220 10% 20%;
+
     --color-popover: 0 0% 100%;
-    --color-popover-foreground: 0 0% 9%;
+    --color-popover-foreground: 220 10% 20%;
+
     --color-primary: 149 38% 46%;
+    /* Brand Green */
     --color-primary-foreground: 0 0% 100%;
-    --color-secondary: 149 20% 95%;
-    --color-secondary-foreground: 149 38% 20%;
+
+    --color-secondary: 0 0% 96%;
+    --color-secondary-foreground: 220 10% 20%;
+
     --color-muted: 0 0% 96%;
-    --color-muted-foreground: 0 0% 45%;
-    --color-accent: 149 30% 90%;
+    --color-muted-foreground: 220 10% 55%;
+    /* Softer muted text */
+
+    --color-accent: 149 38% 95%;
+    /* Subtle green tint */
     --color-accent-foreground: 149 38% 30%;
+
     --color-destructive: 0 84% 60%;
     --color-destructive-foreground: 0 0% 98%;
-    --color-border: 0 0% 90%;
-    --color-input: 0 0% 90%;
+
+    --color-border: 220 10% 90%;
+    --color-input: 220 10% 92%;
     --color-ring: 149 38% 46%;
-    --radius: 0.5rem;
+
+    --radius: 0.75rem;
+    /* More rounded corners */
   }
 
   .dark {

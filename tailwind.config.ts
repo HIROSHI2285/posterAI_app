@@ -68,8 +68,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-dm-sans)", "sans-serif"],
+        sans: ["var(--font-dm-sans)", "var(--font-noto-sans-jp)", "sans-serif"], // Primary sans includes JP
         display: ["var(--font-outfit)", "sans-serif"],
+        jp: ["var(--font-noto-sans-jp)", "sans-serif"], // Dedicated JP font
       },
       keyframes: {
         "accordion-down": {

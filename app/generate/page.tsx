@@ -272,9 +272,9 @@ export default function GeneratePage() {
     }
 
     return (
-        <div className="min-h-screen bg-green-50">
-            {/* ヘッダー */}
-            <header className="sticky top-0 z-50 bg-white border-b">
+        <div className="min-h-screen bg-background text-foreground relative selection:bg-brand-acid selection:text-brand-black">
+            {/* ヘッダー: Glassmorphic & Sticky */}
+            <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/40 supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         {/* 左側：ロゴとナビゲーション */}
@@ -351,13 +351,13 @@ export default function GeneratePage() {
             </header>
 
             {/* メインコンテンツ：左右2列レイアウト */}
-            <div className="container mx-auto px-6 py-8">
-                <div className="grid lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
-                    {/* 左側：フォーム（縦並び） */}
-                    <div>
-                        <div className="mb-4">
-                            <h2 className="text-xl font-bold text-foreground">画像を生成</h2>
-                            <p className="text-sm text-muted-foreground">テンプレートを選んで、テキストを入力すると自動で画像が生成されます</p>
+            <div className="container mx-auto px-6 py-12 animate-fade-in">
+                <div className="grid lg:grid-cols-12 gap-10 max-w-[1600px] mx-auto">
+                    {/* 左側：フォーム（縦並び）- 5 columns */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-display font-bold text-foreground tracking-tight">画像を生成</h2>
+                            <p className="text-muted-foreground mt-2">テンプレートを選んで、テキストを入力すると自動で画像が生成されます</p>
                         </div>
                         <PosterForm
                             onGenerate={handleGenerate}
@@ -366,17 +366,20 @@ export default function GeneratePage() {
                         />
                     </div>
 
-                    {/* 右側：プレビューエリア */}
-                    <div className="mt-16">
-                        <PosterPreview
-                            imageUrl={generatedImage}
-                            isGenerating={isGenerating}
-                            onRegenerate={handleRegenerate}
-                            modelMode={currentFormData?.modelMode}
-                        />
+                    {/* 右側：プレビューエリア - 7 columns */}
+                    <div className="lg:col-span-7 lg:mt-0 mt-8 relative">
+                        <div className="sticky top-24">
+                            <PosterPreview
+                                imageUrl={generatedImage}
+                                isGenerating={isGenerating}
+                                onRegenerate={handleRegenerate}
+                                modelMode={currentFormData?.modelMode}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        </div >
     )
 }
