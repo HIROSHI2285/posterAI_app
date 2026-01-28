@@ -162,7 +162,7 @@ export default function HowToUsePage() {
                         <div className="order-2 lg:order-1 relative">
                             <div className="absolute inset-0 bg-blue-500/10 blur-3xl opacity-20 -z-10" />
                             <BrowserFrame
-                                src="/samples/real_standard_usage.png"
+                                src="/samples/real_standard_usage_jp.png"
                                 alt="Standard Text Generation"
                             />
                         </div>
@@ -195,7 +195,7 @@ export default function HowToUsePage() {
                         <div className="relative">
                             <div className="absolute inset-0 bg-brand-acid/10 blur-3xl opacity-20 -z-10" />
                             <BrowserFrame
-                                src="/samples/real_ref_usage.png"
+                                src="/samples/real_ref_usage_jp.png"
                                 alt="Image Reference & Insertion"
                             />
                         </div>
@@ -220,7 +220,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_prompt.png"
+                                src="/samples/real_edit_prompt_jp.png"
                                 alt="Prompt Editing"
                                 fill
                                 className="object-cover"
@@ -239,7 +239,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_rect.png"
+                                src="/samples/real_edit_rect_jp.png"
                                 alt="Region Editing"
                                 fill
                                 className="object-cover"
@@ -258,7 +258,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_text.png"
+                                src="/samples/real_edit_text_jp.png"
                                 alt="Text Editing"
                                 fill
                                 className="object-cover"
@@ -277,7 +277,7 @@ export default function HowToUsePage() {
                     <div className="bg-[#0f1014] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 transition-colors group">
                         <div className="mb-6 overflow-hidden rounded-lg border border-white/5 relative aspect-video">
                             <Image
-                                src="/samples/real_edit_insert.png"
+                                src="/samples/real_edit_insert_jp.png"
                                 alt="Image Insertion in Editor"
                                 fill
                                 className="object-cover"
@@ -300,7 +300,7 @@ export default function HowToUsePage() {
                     <div className="order-2 lg:order-1 relative">
                         <div className="absolute inset-0 bg-green-500/10 blur-3xl opacity-20 -z-10" />
                         <BrowserFrame
-                            src="/samples/real_save_project.png"
+                            src="/samples/real_save_project_jp.png"
                             alt="Project Saving"
                         />
                     </div>
