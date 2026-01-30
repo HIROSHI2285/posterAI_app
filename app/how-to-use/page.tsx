@@ -98,42 +98,45 @@ export default function HowToUsePage() {
             </header>
 
             {/* ヒーローセクション */}
-            <section className="container mx-auto px-6 py-20 relative overflow-visible">
-                {/* Ambient Glow */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-acid/20 rounded-full blur-[120px] pointer-events-none" />
+            <section className="container mx-auto px-6 py-24 relative overflow-visible">
+                {/* Ambient Glow - Deep & Mysterious */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-acid/10 rounded-full blur-[150px] pointer-events-none mix-blend-screen" />
+                <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen animate-pulse-slow" />
 
-                <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
-                    <div className="space-y-8 animate-fade-in">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-brand-acid text-sm font-medium shadow-lg">
-                            <Sparkles className="w-4 h-4" />
-                            Master Guide
+                <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10">
+                    <div className="space-y-10 animate-fade-in">
+                        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-brand-acid text-sm font-medium shadow-[0_0_20px_rgba(204,255,0,0.1)] hover:border-brand-acid/30 transition-all cursor-default group">
+                            <Sparkles className="w-4 h-4 animate-pulse" />
+                            <span className="tracking-wide">PosterAI Master Guide</span>
                         </div>
 
-                        <h1 className="text-5xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
+                        <h1 className="text-5xl lg:text-7xl font-bold text-white leading-[1.05] tracking-tight drop-shadow-2xl">
                             PosterAI<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-acid to-green-400">完全ガイド</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-acid via-emerald-300 to-green-500 pb-2 inline-block">完全ガイド</span>
                         </h1>
 
-                        <p className="text-xl text-green-100/90 leading-relaxed font-light">
+                        <p className="text-xl text-green-100/80 leading-relaxed font-light border-l-2 border-brand-acid/30 pl-6">
                             生成から編集、そして保存まで。<br />
-                            Nano Banana Proの力を最大限に引き出す、<br />
+                            <span className="text-white font-medium">Nano Banana Pro</span> のポテンシャルを最大限に引き出す、<br />
                             プロフェッショナルなワークフローを解説します。
                         </p>
 
-                        <Button
-                            size="lg"
-                            onClick={() => session ? router.push('/generate') : signIn('google', { callbackUrl: '/generate' })}
-                            className="bg-brand-acid text-brand-black hover:bg-brand-acidHover font-bold text-lg px-8 py-6 shadow-[0_0_30px_-5px_rgba(204,255,0,0.4)] transition-all hover:scale-105"
-                        >
-                            <Sparkles className="w-5 h-5 mr-2" />
-                            今すぐ使ってみる
-                        </Button>
+                        <div className="pt-4">
+                            <Button
+                                size="lg"
+                                onClick={() => session ? router.push('/generate') : signIn('google', { callbackUrl: '/generate' })}
+                                className="bg-brand-acid text-brand-black hover:bg-brand-acidHover font-bold text-lg px-10 py-7 shadow-[0_0_40px_-10px_rgba(204,255,0,0.5)] transition-all hover:scale-105 rounded-full"
+                            >
+                                <Sparkles className="w-5 h-5 mr-2" />
+                                今すぐ使ってみる
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="relative md:mt-0 mt-10">
+                    <div className="relative md:mt-0 mt-12 group perspective-1000">
                         {/* Using actual dashboard screenshot for Hero */}
-                        <div className="absolute inset-0 bg-brand-acid/5 rounded-3xl blur-2xl scale-95" />
-                        <div className="relative w-full rounded-2xl shadow-2xl skew-y-1">
+                        <div className="absolute inset-0 bg-brand-acid/10 rounded-[2rem] blur-3xl scale-90 transition-all duration-700 group-hover:bg-brand-acid/20 group-hover:scale-100" />
+                        <div className="relative w-full rounded-2xl shadow-2xl transform transition-all duration-700 rotate-y-3 group-hover:rotate-y-0 group-hover:scale-[1.02]">
                             <BrowserFrame
                                 src="/samples/real_dashboard.png"
                                 alt="PosterAI Dashboard"
@@ -319,92 +322,109 @@ export default function HowToUsePage() {
             </section>
 
             {/* FAQ (Restored & Enhanced) */}
-            <section className="container mx-auto px-6 py-24 border-t border-white/10 bg-black/10">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-white mb-4">
+            <section className="container mx-auto px-6 py-32 border-t border-white/5 bg-gradient-to-b from-black/10 to-black/30">
+                <div className="text-center mb-20">
+                    <h2 className="text-4xl font-bold text-white mb-6 tracking-tight">
                         よくある質問
                     </h2>
-                    <p className="text-green-100/60">困ったときのQ&Aガイド</p>
+                    <p className="text-green-100/60 font-light">困ったときのQ&Aガイド</p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                    <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
-                            <span className="text-brand-acid font-display text-2xl">Q.</span>
-                            生成された画像の著作権と免責事項は？
+                <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                    <div className="bg-white/5 rounded-[1.5rem] p-10 border border-white/5 hover:border-brand-acid/30 hover:bg-white/[0.07] transition-all group backdrop-blur-sm">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-start gap-5">
+                            <span className="text-brand-acid font-display text-3xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">Q.</span>
+                            <span className="leading-snug pt-1">生成された画像の著作権と免責事項は？</span>
                         </h3>
-                        <div className="pl-10 space-y-4 text-green-100/80 leading-relaxed">
+                        <div className="pl-12 space-y-4 text-green-100/80 leading-relaxed font-light">
                             <p>
                                 生成されたポスターの権利はユーザーに帰属し、商用利用も可能です。
                             </p>
                             <p>
                                 ただし、当サービスの利用により生成された画像によって生じたいかなる損害やトラブル（著作権侵害等を含む）についても、運営者は一切の責任を負いません。
                             </p>
-                            <p className="border-t border-white/10 pt-4 text-sm text-green-100/60">
-                                ※AI生成物の性質上、既存の著作物と類似する可能性が完全には否定できないため、公開・商用利用の際はご自身の責任と判断においてご利用ください。 特に他者の著作物をサンプル画像として使用する場合は権利関係に十分ご注意ください。
+                            <p className="border-t border-white/10 pt-4 text-sm text-green-100/50">
+                                ※AI生成物の性質上、既存の著作物と類似する可能性が完全には否定できないため、公開・商用利用の際はご自身の責任と判断においてご利用ください。
                             </p>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
-                            <span className="text-brand-acid font-display text-2xl">Q.</span>
-                            1日に何回まで使えますか？
+                    <div className="bg-white/5 rounded-[1.5rem] p-10 border border-white/5 hover:border-brand-acid/30 hover:bg-white/[0.07] transition-all group backdrop-blur-sm">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-start gap-5">
+                            <span className="text-brand-acid font-display text-3xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">Q.</span>
+                            <span className="leading-snug pt-1">1日に何回まで使えますか？</span>
                         </h3>
-                        <div className="pl-10 space-y-2 text-green-100/80 leading-relaxed">
+                        <div className="pl-12 space-y-4 text-green-100/80 leading-relaxed font-light">
                             <p>
                                 現在、ベータ版として以下の制限を設けさせていただいています。
                             </p>
-                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                <li>画像生成：<span className="text-white">30回 / 日</span></li>
-                                <li>画像解析：<span className="text-white">30回 / 日</span></li>
+                            <ul className="grid grid-cols-2 gap-4 mt-2">
+                                <li className="bg-black/20 rounded-lg p-3 text-center border border-white/5">
+                                    <div className="text-xs text-green-100/50 mb-1">画像生成</div>
+                                    <div className="text-white font-bold text-lg">30回 / 日</div>
+                                </li>
+                                <li className="bg-black/20 rounded-lg p-3 text-center border border-white/5">
+                                    <div className="text-xs text-green-100/50 mb-1">画像解析</div>
+                                    <div className="text-white font-bold text-lg">30回 / 日</div>
+                                </li>
                             </ul>
-                            <p className="text-sm mt-2 pt-2 border-t border-white/10">
+                            <p className="text-sm pt-2 text-green-100/60">
                                 ※ 編集機能（文字の打ち替え、レイヤー操作など）に制限はありません。
                             </p>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
-                            <span className="text-brand-acid font-display text-2xl">Q.</span>
-                            うまく希望通りの画像が出ないときは？
+                    <div className="bg-white/5 rounded-[1.5rem] p-10 border border-white/5 hover:border-brand-acid/30 hover:bg-white/[0.07] transition-all group backdrop-blur-sm">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-start gap-5">
+                            <span className="text-brand-acid font-display text-3xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">Q.</span>
+                            <span className="leading-snug pt-1">うまく希望通りの画像が出ないときは？</span>
                         </h3>
-                        <div className="pl-10 space-y-2 text-green-100/80 leading-relaxed">
+                        <div className="pl-12 space-y-4 text-green-100/80 leading-relaxed font-light">
                             <p>以下のテクニックをお試しください：</p>
-                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                <li>「画像参照モード」を使い、イメージに近い画像を読み込ませる</li>
-                                <li>「ラフ画」を手書きで書いて読み込ませる（構図の指示に最適）</li>
-                                <li>プロンプトに具体的な色や雰囲気（例：「高級感のある」「ポップな」）を含める</li>
+                            <ul className="space-y-3">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-brand-acid text-xs mt-1.5">●</span>
+                                    <span>「画像参照モード」を使い、イメージに近い画像を読み込ませる</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-brand-acid text-xs mt-1.5">●</span>
+                                    <span>「ラフ画」を手書きで書いて読み込ませる（構図の指示に最適）</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-brand-acid text-xs mt-1.5">●</span>
+                                    <span>プロンプトに具体的な色や雰囲気（例：「高級感のある」「ポップな」）を含める</span>
+                                </li>
                             </ul>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
-                            <span className="text-brand-acid font-display text-2xl">Q.</span>
-                            編集はまとめて行った方が良いですか？
+                    <div className="bg-white/5 rounded-[1.5rem] p-10 border border-white/5 hover:border-brand-acid/30 hover:bg-white/[0.07] transition-all group backdrop-blur-sm">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-start gap-5">
+                            <span className="text-brand-acid font-display text-3xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">Q.</span>
+                            <span className="leading-snug pt-1">編集はまとめて行った方が良いですか？</span>
                         </h3>
-                        <div className="pl-10 space-y-2 text-green-100/80 leading-relaxed">
+                        <div className="pl-12 space-y-4 text-green-100/80 leading-relaxed font-light">
                             <p>
                                 はい。**「プロンプト変更」「矩形選択」「テキスト修正」などは、一度にまとめて指示を行う**ことをおすすめします。
                             </p>
-                            <p>
-                                修正のたびにAIが画像を再生成するため、まとめて指示を出すことで生成回数（クレジット）を節約できます。<br />
-                                さらには、AI（Nano Banana Pro）が全体の変更意図を一度に理解できるため、**より正確で理想に近い結果が出やすくなる**というメリットもあります。
-                            </p>
+                            <div className="bg-brand-acid/10 border border-brand-acid/20 rounded-lg p-4 mt-2">
+                                <p className="text-sm text-green-100/90">
+                                    <Sparkles className="w-3 h-3 inline mr-1 text-brand-acid" />
+                                    AI（Nano Banana Pro）が全体の変更意図を一度に理解できるため、**より正確で理想に近い結果**が出やすくなります。クレジットの節約にもなります。
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 rounded-2xl p-8 border border-white/5 hover:border-brand-acid/20 transition-all group">
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-start gap-4">
-                            <span className="text-brand-acid font-display text-2xl">Q.</span>
-                            プロジェクトの保存方法がわかりません
+                    <div className="md:col-span-2 bg-white/5 rounded-[1.5rem] p-10 border border-white/5 hover:border-brand-acid/30 hover:bg-white/[0.07] transition-all group backdrop-blur-sm">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-start gap-5">
+                            <span className="text-brand-acid font-display text-3xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">Q.</span>
+                            <span className="leading-snug pt-1">プロジェクトの保存方法がわかりません</span>
                         </h3>
-                        <div className="pl-10 space-y-2 text-green-100/80 leading-relaxed">
+                        <div className="pl-12 space-y-4 text-green-100/80 leading-relaxed font-light">
                             <p>
                                 編集画面の右下にある「プロジェクト保存」アイコンボタンをクリックしてください。
-                                <code className="bg-black/30 px-2 py-0.5 rounded mx-1 text-sm border border-white/10">.json</code> 形式のファイルがダウンロードされます。
+                                <code className="bg-black/30 px-2 py-1 rounded mx-1 text-sm border border-white/10 font-mono text-brand-acid">.json</code> 形式のファイルがダウンロードされます。
                             </p>
                             <p>
                                 再開する際は、プレビュー内の「プロジェクトを読み込む」からそのファイルを選択してください。
