@@ -114,7 +114,7 @@ export default function HomePage() {
           </div>
 
           <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.95] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-            ポスター制作を <br />
+            ポスター制作を、 <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-acid via-green-300 to-emerald-400 animate-gradient-x bg-[length:200%_auto]">
               魔法のように。
             </span>
