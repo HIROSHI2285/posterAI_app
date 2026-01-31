@@ -162,6 +162,40 @@ export default function AdminUsersPage() {
     }
 
     // Toggle Active/Admin/Delete
+    const handleToggleAdmin = async (user: AllowedUser) => {
+        const newStatus = !user.is_admin
+        const action = newStatus ? "管理者権限を付与" : "管理者権限を剥奪"
+
+        if (user.email === session?.user?.email) {
+            alert("自分自身の管理者権限は変更できません")
+            return
+        }
+
+        if (!confirm(`${user.email} に${action}しますか？`)) return
+
+        try {
+            const response = await fetch("/api/admin/users", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: user.id,
+                    target_email: user.email,
+                    is_admin: newStatus
+                })
+            })
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || "Failed to update admin status")
+            }
+
+            fetchUsers()
+        } catch (error) {
+            console.error(error)
+            alert(`エラー: ${error instanceof Error ? error.message : String(error)}`)
+        }
+    }
+
     const handleToggleActive = async (user: AllowedUser) => {
         if (user.email === session?.user?.email) {
             alert("自分自身の有効/無効は変更できません")
@@ -446,13 +480,28 @@ export default function AdminUsersPage() {
                                         {user.is_active ? "有効 (Active)" : "停止中 (Suspended)"}
                                     </button>
 
-                                    <button
-                                        onClick={() => handleDeleteUser(user)}
-                                        className="h-8 w-8 flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                                        title="削除"
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleToggleAdmin(user)}
+                                            className={cn(
+                                                "h-8 w-8 flex items-center justify-center rounded-lg transition-all",
+                                                user.is_admin
+                                                    ? "text-[#ccff00] bg-[#ccff00]/10 hover:bg-[#ccff00]/20 border border-[#ccff00]/20"
+                                                    : "text-white/20 hover:text-white hover:bg-white/10 border border-transparent"
+                                            )}
+                                            title={user.is_admin ? "管理者権限を剥奪" : "管理者権限を付与"}
+                                        >
+                                            <Shield className="h-3.5 w-3.5" />
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleDeleteUser(user)}
+                                            className="h-8 w-8 flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all border border-transparent hover:border-red-500/20"
+                                            title="削除"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );
