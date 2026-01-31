@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { jobStore } from '@/lib/job-store-supabase'
 import { rateLimiter } from '@/lib/rate-limiter'
-import { getUserDailyLimit } from '@/lib/supabase'
+import { getUserDailyLimit, decrementUserOneTimeCredit } from '@/lib/supabase'
 import { validatePosterGeneration } from '@/lib/validations/poster'
 import { generatePosterAsync } from '../generate-poster/async'
 import type { PosterFormData } from '@/types/poster'
@@ -35,15 +35,25 @@ export async function POST(request: Request) {
         const { allowed, remaining, resetAt } = rateLimiter.check(rateLimitKey, userLimit)
 
         if (!allowed) {
-            const resetDate = new Date(resetAt)
-            return NextResponse.json(
-                {
-                    error: '本日の生成回数上限に達しました。',
-                    message: `リセット時刻: ${resetDate.toLocaleString('ja-JP')}`,
-                    resetAt
-                },
-                { status: 429 }
-            )
+            // Daily Limit超過時、ワンタイムクレジットを消費するかチェック
+            console.log(`⚠️ Daily limit reached for ${session.user.email}. Checking one-time credits...`)
+            const creditConsumed = await decrementUserOneTimeCredit(session.user.email)
+
+            if (creditConsumed) {
+                console.log(`✅ One-time credit consumed for ${session.user.email}. Job allowed.`)
+                // Proceed with job creation (Success path)
+            } else {
+                // クレジットも無し -> エラー
+                const resetDate = new Date(resetAt)
+                return NextResponse.json(
+                    {
+                        error: '本日の生成回数上限に達しました。',
+                        message: `リセット時刻: ${resetDate.toLocaleString('ja-JP')} (追加クレジットもありません)`,
+                        resetAt
+                    },
+                    { status: 429 }
+                )
+            }
         }
 
         // リクエストボディを取得

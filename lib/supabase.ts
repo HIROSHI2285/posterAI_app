@@ -29,6 +29,7 @@ export interface AllowedUser {
     is_active: boolean
     is_admin: boolean
     daily_limit: number
+    one_time_credit: number
     created_at: string
     updated_at: string
 }
@@ -345,8 +346,8 @@ export async function updateUserDailyLimit(
     newLimit: number
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        if (newLimit < 1 || newLimit > 9999) {
-            return { success: false, error: 'Limit must be between 1 and 9999' }
+        if (newLimit < 0 || newLimit > 9999) {
+            return { success: false, error: 'Limit must be between 0 and 9999' }
         }
 
         const { error } = await supabaseAdmin
@@ -363,5 +364,91 @@ export async function updateUserDailyLimit(
     } catch (error) {
         console.error('Error updating daily limit:', error)
         return { success: false, error: String(error) }
+    }
+}
+
+
+/**
+ * ユーザーのone_time_creditを取得
+ */
+export async function getUserOneTimeCredit(email: string): Promise<number> {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('allowed_users')
+            .select('one_time_credit')
+            .eq('email', email)
+            .single()
+
+        if (error || !data) {
+            return 0
+        }
+
+        return data.one_time_credit || 0
+    } catch (error) {
+        console.error('Error getting one time credit:', error)
+        return 0
+    }
+}
+
+/**
+ * ユーザーのone_time_creditを更新（管理者用：絶対値指定）
+ */
+export async function updateUserOneTimeCredit(
+    id: string,
+    amount: number
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        if (amount < 0) {
+            return { success: false, error: 'Credit cannot be negative' }
+        }
+
+        const { error } = await supabaseAdmin
+            .from('allowed_users')
+            .update({ one_time_credit: amount })
+            .eq('id', id)
+
+        if (error) {
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (error) {
+        return { success: false, error: String(error) }
+    }
+}
+
+/**
+ * ユーザーのone_time_creditを消費（API用：-1する）
+ */
+export async function decrementUserOneTimeCredit(email: string): Promise<boolean> {
+    try {
+        // 現在のクレジットを取得
+        const { data, error } = await supabaseAdmin
+            .from('allowed_users')
+            .select('one_time_credit')
+            .eq('email', email)
+            .single()
+
+        if (error || !data || (data.one_time_credit || 0) <= 0) {
+            return false
+        }
+
+        const newCredit = data.one_time_credit - 1
+
+        // 更新
+        const { error: updateError } = await supabaseAdmin
+            .from('allowed_users')
+            .update({ one_time_credit: newCredit })
+            .eq('email', email)
+
+        if (updateError) {
+            console.error('Error decrementing credit:', updateError)
+            return false
+        }
+
+        return true
+    } catch (error) {
+        console.error('Error decrementing credit:', error)
+        return false
     }
 }

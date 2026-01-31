@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
-import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin, updateUserDailyLimit } from '@/lib/supabase'
+import { getAllowedUsers, addAllowedUser, removeAllowedUser, toggleUserActive, toggleUserAdmin, checkUserAdmin, updateUserDailyLimit, updateUserOneTimeCredit } from '@/lib/supabase'
 import { rateLimiter } from '@/lib/rate-limiter'
 import { logAuditEvent, extractRequestInfo } from '@/lib/audit-log'
 
@@ -221,6 +221,15 @@ export async function PATCH(request: Request) {
         // daily_limitの更新
         if (body.id && body.daily_limit !== undefined) {
             const result = await updateUserDailyLimit(body.id, body.daily_limit)
+            if (!result.success) {
+                return NextResponse.json({ error: result.error }, { status: 400 })
+            }
+            return NextResponse.json({ success: true })
+        }
+
+        // one_time_creditの更新
+        if (body.id && body.one_time_credit !== undefined) {
+            const result = await updateUserOneTimeCredit(body.id, body.one_time_credit)
             if (!result.success) {
                 return NextResponse.json({ error: result.error }, { status: 400 })
             }
