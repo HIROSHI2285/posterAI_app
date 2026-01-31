@@ -150,9 +150,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Floating Glass Cubes (Decorative) */}
-        <div className="absolute top-[20%] -right-[5%] w-72 h-72 rounded-3xl bg-gradient-to-br from-white/10 to-transparent backdrop-blur-2xl border border-white/10 shadow-2xl hidden lg:block animate-float mix-blend-overlay opacity-50 rotate-12 pointer-events-none" />
-        <div className="absolute bottom-[20%] -left-[5%] w-48 h-48 rounded-full bg-gradient-to-tr from-brand-acid/5 to-transparent backdrop-blur-xl border border-white/5 hidden lg:block animate-float animation-delay-2000 pointer-events-none blur-sm" />
       </section>
 
       {/* Gallery (Static & Color) - Fluid Layout */}
