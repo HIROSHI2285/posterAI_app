@@ -1,13 +1,17 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 本番環境（Vercel）でのバックグラウンド処理を有効化
+  experimental: {
+    after: true,
+  } as any,
+
   // 本番環境でconsole.logを削除（errorは残す）
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production'
       ? { exclude: ['error'] }
       : false,
   },
-
 
   images: {
     localPatterns: [
@@ -90,5 +94,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-
