@@ -21,7 +21,7 @@ export default function AdminUsersPage() {
     const [searchTerm, setSearchTerm] = useState("")
     const [updating, setUpdating] = useState<string | null>(null)
     const [pendingCredits, setPendingCredits] = useState<Record<string, number>>({})
-    const [pendingDailyLimits, setPendingDailyLimits] = useState<Record<string, number>>({})
+    const [pendingDailyLimits, setPendingDailyLimits] = useState<Record<string, number | undefined>>({})
 
     // Authentication Check
     useEffect(() => {
