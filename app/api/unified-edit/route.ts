@@ -29,6 +29,7 @@ interface UnifiedEditRequest {
     maskData?: string
     maskPrompt?: string
     generalPrompt?: string
+    modelMode?: 'production' | 'development'
 }
 
 export async function POST(request: NextRequest) {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt } = body
+        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production' } = body
 
         if (!imageData) {
             return NextResponse.json(
@@ -54,7 +55,13 @@ export async function POST(request: NextRequest) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey)
-        const modelName = process.env.IMAGE_GEN_MODEL || 'gemini-1.5-flash'
+
+        // 新規生成と同様のモデル選択ロジック
+        const modelName = modelMode === 'development'
+            ? "gemini-2.5-flash-image"
+            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview");
+
+        console.log(`🎨 Unified Edit using model: ${modelName} (Mode: ${modelMode})`)
         const model = genAI.getGenerativeModel({ model: modelName })
 
         const promptParts: any[] = []
