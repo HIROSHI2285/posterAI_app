@@ -72,10 +72,14 @@ export async function POST(request: NextRequest) {
         if (textEdits && textEdits.length > 0) {
             promptParts.push('【Text Edits】')
             textEdits.forEach((edit, i) => {
-                let instruction = `${i + 1}. Replace "${edit.original}" with "${edit.newContent}"`
-                if (edit.color) instruction += `, change color to ${edit.color}`
-                if (edit.fontSize) instruction += `, change size to ${edit.fontSize}`
-                if (edit.isDelete) instruction += ` (DELETE THIS TEXT)`
+                let instruction = ''
+                if (edit.isDelete) {
+                    instruction = `${i + 1}. REMOVE the text "${edit.original}" entirely from the image. Fill the area where the text was located with a natural, seamless background that matches the surrounding colors and textures perfectly.`
+                } else {
+                    instruction = `${i + 1}. Replace "${edit.original}" with "${edit.newContent}"`
+                    if (edit.color) instruction += `, change color to ${edit.color}`
+                    if (edit.fontSize) instruction += `, change size to ${edit.fontSize}`
+                }
                 promptParts.push(instruction)
             })
             promptParts.push('')
@@ -109,6 +113,7 @@ export async function POST(request: NextRequest) {
         promptParts.push('- ASPECT RATIO: Maintain the exact same aspect ratio as the input image. DO NOT crop or resize.')
         promptParts.push('- PIXEL PRESERVATION: Do NOT modify any pixels outside of the requested edit areas. Keep the background and other elements identical.')
         promptParts.push('- TEXT LAYOUT: Ensure that the existing text layout remains valid. NO shifting of elements that were not requested to be changed.')
+        promptParts.push('- STRICT REMOVAL: When asked to delete text, ensure no traces or shadows of the original characters remain. The background must be perfectly and naturally restored.')
         promptParts.push('- QUALITY: Maintain high resolution and professional quality.')
 
         const fullPrompt = promptParts.join('\n')
