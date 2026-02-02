@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+        const apiKey = process.env.GEMINI_API_KEY
         if (!apiKey) {
             throw new Error('API key is not configured')
         }
