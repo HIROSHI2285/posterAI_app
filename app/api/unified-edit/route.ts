@@ -113,6 +113,9 @@ export async function POST(request: NextRequest) {
         promptParts.push('- ASPECT RATIO: Maintain the exact same aspect ratio as the input image. DO NOT crop or resize.')
         promptParts.push('- PIXEL PRESERVATION: Do NOT modify any pixels outside of the requested edit areas. Keep the background and other elements identical.')
         promptParts.push('- TEXT LAYOUT: Ensure that the existing text layout remains valid. NO shifting of elements that were not requested to be changed.')
+        promptParts.push('- TEXT BOUNDARIES: ALL text elements MUST remain fully visible within the image canvas. Do NOT allow any text to be cropped, clipped, or extend beyond the image borders.')
+        promptParts.push('- TEXT POSITIONING: Keep the EXACT same position and size of text elements that are not being edited. Do NOT shift or resize any unedited text.')
+        promptParts.push('- MARGIN SAFETY: Ensure at least 2% margin from all image edges for any text element. Text must not touch or overflow the image boundaries.')
         promptParts.push('- STRICT REMOVAL: When asked to delete text, ensure no traces or shadows of the original characters remain. The background must be perfectly and naturally restored.')
         promptParts.push('- QUALITY: Maintain high resolution and professional quality.')
 
