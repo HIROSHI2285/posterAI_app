@@ -1,10 +1,10 @@
 ﻿import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 本番環境（Vercel）でのバックグラウンド処理を有効化
-  experimental: {
-    after: true,
-  } as any,
+  // 本番環境（Render等）での起動時間を短縮するため、実験的なバックグラウンド機能を無効化
+  // experimental: {
+  //   after: true,
+  // } as any,
 
   // 本番環境でconsole.logを削除（errorは残す）
   compiler: {

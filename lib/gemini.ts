@@ -1,37 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Gemini APIクライアントの初期化
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+// GoogleGenerativeAI の初期化は各関数内でオンデマンドに行う（起動負荷軽減のため）
+let genAIInstance: GoogleGenerativeAI | null = null;
 
-/**
- * Imagen 4.0を使用して画像を生成
- */
-export async function generateImage(prompt: string): Promise<string> {
-    try {
-        const model = genAI.getGenerativeModel({
-            model: "imagen-4.0-generate-001"
-        });
-
-        const result = await model.generateContent([prompt]);
-        const response = result.response;
-
-        // 画像データを取得
-        if (response.candidates && response.candidates[0]?.content?.parts) {
-            const imagePart = response.candidates[0].content.parts.find(
-                (part: any) => part.inlineData
-            );
-
-            if (imagePart?.inlineData) {
-                // Base64エンコードされた画像データを返す
-                return `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-            }
+function getGenAI() {
+    if (!genAIInstance) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.error('GEMINI_API_KEY is not set');
+            // ここでスローするとインポート時に落ちる可能性があるが、
+            // 呼び出し時（オンデマンド）に実行されるため安全
+            throw new Error('GEMINI_API_KEY is not set');
         }
-
-        throw new Error("画像の生成に失敗しました");
-    } catch (error) {
-        console.error("画像生成エラー:", error);
-        throw error;
+        genAIInstance = new GoogleGenerativeAI(apiKey);
     }
+    return genAIInstance;
 }
 
 /**
