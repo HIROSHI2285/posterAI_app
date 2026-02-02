@@ -30,6 +30,7 @@ interface UnifiedEditRequest {
     maskPrompt?: string
     generalPrompt?: string
     modelMode?: 'production' | 'development'
+    originalDimensions?: { width: number, height: number }
 }
 
 export async function POST(request: NextRequest) {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production' } = body
+        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production', originalDimensions } = body
 
         if (!imageData) {
             return NextResponse.json(
@@ -102,9 +103,13 @@ export async function POST(request: NextRequest) {
         }
 
         promptParts.push('【Quality Requirements】')
-        promptParts.push('- Maintain high resolution and professional quality.')
-        promptParts.push('- Keep the original design aesthetic unless instructed otherwise.')
-        promptParts.push('- Ensure natural blending of all added or modified elements.')
+        if (originalDimensions) {
+            promptParts.push(`- OUTPUT RESOLUTION: The output image MUST be exactly ${originalDimensions.width}x${originalDimensions.height} pixels.`)
+        }
+        promptParts.push('- ASPECT RATIO: Maintain the exact same aspect ratio as the input image. DO NOT crop or resize.')
+        promptParts.push('- PIXEL PRESERVATION: Do NOT modify any pixels outside of the requested edit areas. Keep the background and other elements identical.')
+        promptParts.push('- TEXT LAYOUT: Ensure that the existing text layout remains valid. NO shifting of elements that were not requested to be changed.')
+        promptParts.push('- QUALITY: Maintain high resolution and professional quality.')
 
         const fullPrompt = promptParts.join('\n')
         console.log('Unified edit prompt (No mojibake mitigation):', fullPrompt.substring(0, 500))

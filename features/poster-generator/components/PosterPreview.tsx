@@ -534,11 +534,24 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                 prompt: edit.prompt
             })) : undefined
 
+            // 画像の本来のサイズを取得
+            const getOriginalDimensions = (): Promise<{ width: number, height: number }> => {
+                return new Promise((resolve) => {
+                    const img = new Image()
+                    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+                    img.onerror = () => resolve({ width: 0, height: 0 }) // フォールバック
+                    img.src = displayImageUrl
+                })
+            }
+
+            const dims = await getOriginalDimensions()
+
             console.log('🚀 Unified Edit Request:', {
                 hasRegionEdits: !!regionEditsData,
                 hasInsertImages: pendingInsertImages.length,
                 hasTextEdits: pendingTextEdits.length,
-                hasGeneralPrompt: !!pendingGeneralPrompt
+                hasGeneralPrompt: !!pendingGeneralPrompt,
+                originalDimensions: dims
             })
 
             const response = await fetch('/api/unified-edit', {
@@ -551,7 +564,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                         newContent: e.newContent,
                         color: e.color,
                         fontSize: e.fontSize,
-                        isDelete: e.isDelete  // 削除フラグを追加
+                        isDelete: e.isDelete
                     })) : undefined,
                     insertImages: pendingInsertImages.length > 0 ? pendingInsertImages.map(e => ({
                         data: e.data,
@@ -559,7 +572,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                     })) : undefined,
                     regionEdits: regionEditsData,
                     generalPrompt: pendingGeneralPrompt || undefined,
-                    modelMode
+                    modelMode,
+                    originalDimensions: dims.width > 0 ? dims : undefined
                 })
             })
 
