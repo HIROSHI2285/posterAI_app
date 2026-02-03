@@ -13,8 +13,42 @@ Nano Banana Pro (Powered by Google Gemini) を活用した、プロ品質のポ�
 ### TOPページ / ダッシュボード
 ![TOPページ](./public/samples/real_dashboard.png)
 
-### 使い方ガイド (NEW)
-![使い方](./public/samples/real_standard_usage_jp.png)
+### 使い方ガイド
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./public/samples/real_standard_usage_jp.png" width="400" alt="テキスト生成" /><br />
+      <b>📝 テキストから生成</b>
+    </td>
+    <td align="center">
+      <img src="./public/samples/real_ref_usage_jp.png" width="400" alt="画像参照" /><br />
+      <b>🖼️ 画像参照 & 素材挿入</b>
+    </td>
+  </tr>
+</table>
+
+### AI編集スイート
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./public/samples/real_edit_prompt_jp.png" width="280" alt="プロンプト編集" /><br />
+      <b>✏️ プロンプト再編集</b>
+    </td>
+    <td align="center">
+      <img src="./public/samples/real_edit_rect_jp.png" width="280" alt="矩形編集" /><br />
+      <b>🔲 矩形（領域）編集</b>
+    </td>
+    <td align="center">
+      <img src="./public/samples/real_edit_text_jp.png" width="280" alt="テキスト編集" /><br />
+      <b>📄 テキスト編集</b>
+    </td>
+  </tr>
+</table>
+
+### プロジェクト保存 & 出力
+![プロジェクト保存](./public/samples/real_save_project_jp_v2.png)
 
 ---
 
