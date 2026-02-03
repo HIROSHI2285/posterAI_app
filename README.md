@@ -14,7 +14,7 @@ Nano Banana Pro (Powered by Google Gemini) を活用した、プロ品質のポ�
 ![TOPページ](./public/samples/real_dashboard.png)
 
 ### 使い方ガイド (NEW)
-![使い方](./public/samples/real_standard_usage.png)
+![使い方](./public/samples/real_standard_usage_jp.png)
 
 ---
 
