@@ -8,6 +8,23 @@ Nano Banana Pro (Powered by Google Gemini) を活用した、プロ品質のポ�
 
 ---
 
+## 作成サンプル
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./public/samples/christmas_lottery.jpg" width="300" alt="クリスマス抽選会" /><br />
+      <b>クリスマス抽選会</b>
+    </td>
+    <td align="center">
+      <img src="./public/samples/grand_opening.jpg" width="300" alt="グランドオープン" /><br />
+      <b>グランドオープン</b>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## スクリーンショット
 
 ### TOPページ / ダッシュボード
