@@ -337,15 +337,28 @@ export default function HowToUsePage() {
                             <span className="leading-snug pt-1">生成された画像の著作権と免責事項は？</span>
                         </h3>
                         <div className="pl-12 space-y-4 text-green-100/80 leading-relaxed font-light">
-                            <p>
-                                生成されたポスターの権利はユーザーに帰属し、商用利用も可能です。
-                            </p>
-                            <p>
-                                ただし、当サービスの利用により生成された画像によって生じたいかなる損害やトラブル（著作権侵害等を含む）についても、運営者は一切の責任を負いません。
-                            </p>
-                            <p className="border-t border-white/10 pt-4 text-sm text-green-100/50">
-                                ※AI生成物の性質上、既存の著作物と類似する可能性が完全には否定できないため、公開・商用利用の際はご自身の責任と判断においてご利用ください。
-                            </p>
+                            <div>
+                                <p className="font-bold text-white mb-2">【著作権】</p>
+                                <p>生成された画像の著作権はユーザー様に帰属し、商用利用も可能です。</p>
+                            </div>
+                            <div>
+                                <p className="font-bold text-white mb-2">【AI生成の特性についてのご理解】</p>
+                                <p className="mb-3">AI技術の特性上、生成画像が既存の著作物と偶然類似する可能性を完全には排除できません。そのため、以下にご留意ください：</p>
+                                <ul className="space-y-2">
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-brand-acid">✓</span>
+                                        <span>公開・商用利用の際は、お客様ご自身での最終確認を推奨します</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-brand-acid">✓</span>
+                                        <span>著名なブランドやキャラクターを模倣する指示はお控えください</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-brand-acid">✓</span>
+                                        <span>重要な用途では、複数のバリエーションを生成してご選択ください</span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
