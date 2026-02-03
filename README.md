@@ -169,13 +169,3 @@ npm run dev
 ### デプロイ
 
 Render Web Servicesへのデプロイを推奨します。`main` ブランチへのプッシュで自動デプロイがトリガーされます。
-
----
-
-## ライセンス
-
-MIT License
-
----
-
-**Crafted with ❤️ by Antigravity AI**
