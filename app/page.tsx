@@ -110,7 +110,7 @@ export default function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-acid opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-acid shadow-[0_0_10px_#ccff00]"></span>
             </span>
-            <span className="text-sm font-medium text-green-50 tracking-wide group-hover:text-brand-acid transition-colors">New: Nano Banana Pro 搭載</span>
+            <span className="text-sm font-medium text-green-50 tracking-wide group-hover:text-brand-acid transition-colors">Nano Banana Pro — Google Gemini 搭載の画像生成AI</span>
           </div>
 
           <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.95] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
