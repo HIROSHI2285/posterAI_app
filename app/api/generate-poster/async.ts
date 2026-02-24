@@ -4,6 +4,36 @@ import type { PosterFormData } from "@/types/poster"
 import { OUTPUT_SIZES } from "@/types/poster"
 
 /**
+ * 指定された幅・高さから最も近い Gemini API サポートのアスペクト比文字列を返す
+ * サポート ratio: 1:1, 3:4, 4:3, 9:16, 16:9, 21:9, 3:2, 2:3, 5:4, 4:5
+ */
+function getClosestAspectRatio(width: number, height: number): string {
+    const ratio = width / height
+    const supported = [
+        { str: '9:16', val: 9 / 16 },   // 0.5625 - 最も縦長
+        { str: '2:3', val: 2 / 3 },    // 0.6667
+        { str: '3:4', val: 3 / 4 },    // 0.75
+        { str: '4:5', val: 4 / 5 },    // 0.8
+        { str: '1:1', val: 1 / 1 },    // 1.0
+        { str: '5:4', val: 5 / 4 },    // 1.25
+        { str: '4:3', val: 4 / 3 },    // 1.3333
+        { str: '3:2', val: 3 / 2 },    // 1.5
+        { str: '16:9', val: 16 / 9 },   // 1.7778
+        { str: '21:9', val: 21 / 9 },   // 2.3333 - 最も横長
+    ]
+    let closest = supported[0]
+    let minDiff = Math.abs(ratio - closest.val)
+    for (const candidate of supported) {
+        const diff = Math.abs(ratio - candidate.val)
+        if (diff < minDiff) {
+            minDiff = diff
+            closest = candidate
+        }
+    }
+    return closest.str
+}
+
+/**
  * バックグラウンドでポスターを生成（非同期）
  */
 export async function generatePosterAsync(
@@ -134,6 +164,11 @@ ${imagePrompt}`
             ? "gemini-2.5-flash-image"
             : (process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview")
         console.log(`[Job ${jobId}] 使用モデル: ${modelName} (モード: ${modelMode})`)
+
+        // 選択サイズ・向きから最適なアスペクト比を決定
+        const aspectRatioStr = getClosestAspectRatio(dimensions.width, dimensions.height)
+        console.log(`[Job ${jobId}] 指定サイズ: ${dimensions.width}×${dimensions.height}px → APIアスペクト比: ${aspectRatioStr}`)
+
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName
@@ -193,7 +228,28 @@ ${imagePrompt}`
         }
         console.log(`[Job ${jobId}] ========================`)
 
-        const result = await model.generateContent(generationInput)
+        // imageConfig.aspectRatio でアスペクト比を厳守させる
+        // プロンプトテキストだけでは無視されるため、API パラメータで指定することが必須
+        const imageConfig: Record<string, string> = { aspectRatio: aspectRatioStr }
+        // gemini-3-pro-image-preview は imageSize で解像度指定が可能
+        if (modelName.includes('gemini-3-pro')) {
+            imageConfig.imageSize = '2K'
+        }
+
+        const result = await model.generateContent({
+            contents: Array.isArray(generationInput)
+                ? [{
+                    role: 'user', parts: generationInput.map((item: any) =>
+                        typeof item === 'string' ? { text: item } : item
+                    )
+                }]
+                : [{ role: 'user', parts: [{ text: generationInput }] }],
+            generationConfig: {
+                responseModalities: ['Image', 'Text'],
+                // @ts-ignore - imageConfig は @google/generative-ai の型定義に未反映だが API は対応済み
+                imageConfig,
+            } as any,
+        })
         await jobStore.update(jobId, { progress: 70 })
 
         const response = result.response
@@ -324,9 +380,17 @@ function buildImagePrompt(params: {
         }
         const ratio = ratios[imageReferenceStrength]
 
-        let prompt = `この画像のデザインを${imageReferenceStrength === 'strong' ? '主な' : ''}参考として、以下の内容でポスターを生成してください。
+        let prompt = `【⚠️ 絶対厳守：ポスターの出力サイズ・向き指定】
+出力サイズ: ${dimensions.width}×${dimensions.height}px
+向き: ${orientation === 'landscape' ? '横向き（横幅 > 縦幅）' : '縦向き（縦幅 > 横幅）'}
+アスペクト比: ${(dimensions.width / dimensions.height).toFixed(3)}
 
-サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
+上記のサイズ・向きは、参照画像のアスペクト比よりも【最優先】で適用してください。
+参照画像が${orientation === 'landscape' ? '縦長' : '横長'}であっても、必ず${orientation === 'landscape' ? '横長' : '縦長'}のキャンバスでデザインを構成してください。
+
+この画像のデザインを${imageReferenceStrength === 'strong' ? '主な' : ''}参考として、以下の内容でポスターを生成してください。
+
+出力サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
 タイトル: 「${mainTitle}」`
 
         if (subTitle) {
@@ -396,9 +460,16 @@ ${detailedPrompt}
 
 
     // テキストのみモード: 超詳細プロンプト
-    let prompt = `プロフェッショナルなポスターデザインを作成してください。
+    let prompt = `【⚠️ 絶対厳守：ポスターの出力サイズ・向き指定】
+出力サイズ: ${dimensions.width}×${dimensions.height}px
+向き: ${orientation === 'landscape' ? '横向き（横幅 > 縦幅）' : '縦向き（縦幅 > 横幅）'}
+アスペクト比: ${(dimensions.width / dimensions.height).toFixed(3)}
 
-サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
+必ず上記の向き・アスペクト比でキャンバス全体を使いデザインを構成してください。
+
+プロフェッショナルなポスターデザインを作成してください。
+
+出力サイズ: ${dimensions.width}×${dimensions.height}px（${orientation}）
 タイトル: 「${mainTitle}」`
 
     if (subTitle) {

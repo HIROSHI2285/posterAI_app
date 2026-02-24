@@ -5,6 +5,36 @@ import { authOptions } from "@/lib/auth";
 import { rateLimiter } from "@/lib/rate-limiter";
 import { OUTPUT_SIZES } from "@/types/poster";
 
+/**
+ * 指定された幅・高さから最も近い Gemini API サポートのアスペクト比文字列を返す
+ * サポート ratio: 1:1, 3:4, 4:3, 9:16, 16:9, 21:9, 3:2, 2:3, 5:4, 4:5
+ */
+function getClosestAspectRatio(width: number, height: number): string {
+  const ratio = width / height;
+  const supported = [
+    { str: '9:16', val: 9 / 16 },
+    { str: '2:3', val: 2 / 3 },
+    { str: '3:4', val: 3 / 4 },
+    { str: '4:5', val: 4 / 5 },
+    { str: '1:1', val: 1 / 1 },
+    { str: '5:4', val: 5 / 4 },
+    { str: '4:3', val: 4 / 3 },
+    { str: '3:2', val: 3 / 2 },
+    { str: '16:9', val: 16 / 9 },
+    { str: '21:9', val: 21 / 9 },
+  ];
+  let closest = supported[0];
+  let minDiff = Math.abs(ratio - closest.val);
+  for (const candidate of supported) {
+    const diff = Math.abs(ratio - candidate.val);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = candidate;
+    }
+  }
+  return closest.str;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // 認証チェック
@@ -122,17 +152,6 @@ export async function POST(request: NextRequest) {
     console.log("画像生成プロンプト:", imagePrompt);
 
     try {
-      // Gemini 3 Pro Image Preview を使用
-      // 
-      // 理由: Imagen 4.0はDynamic Shared Quotaにより不安定
-      // - テストで50%の失敗率
-      // - 予測不可能なRESOURCE_EXHAUSTEDエラー
-      // - 本番運用には不適切と判断
-      // 
-      // Preview版:
-      // - 安定性: 100%
-      // - コスト: ¥20/枚（A4、2K解像度）
-      // - 信頼性が最優先
       // モデル名をmodelModeに基づいて選択
       // production: gemini-3-pro-image-preview（安定、高品質）
       // development: gemini-2.5-flash-image（高速、テスト用）
@@ -144,8 +163,26 @@ export async function POST(request: NextRequest) {
         model: modelName
       });
 
+      // 選択サイズ・向きから最適なアスペクト比を決定
+      const aspectRatioStr = getClosestAspectRatio(dimensions.width, dimensions.height);
+      console.log(`指定サイズ: ${dimensions.width}×${dimensions.height}px → APIアスペクト比: ${aspectRatioStr}`);
+
+      // imageConfig.aspectRatio でアスペクト比を厳守させる
+      // プロンプトテキストだけでは無視されるため、API パラメータで指定することが必須
+      const imageConfig: Record<string, string> = { aspectRatio: aspectRatioStr };
+      if (modelName.includes('gemini-3-pro')) {
+        imageConfig.imageSize = '2K';
+      }
+
       // 画像を生成
-      const result = await model.generateContent(imagePrompt);
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: imagePrompt }] }],
+        generationConfig: {
+          responseModalities: ['Image', 'Text'],
+          // @ts-ignore - imageConfig は @google/generative-ai の型定義に未反映だが API は対応済み
+          imageConfig,
+        } as any,
+      });
       const response = result.response;
 
       console.log("API Response:", response);
