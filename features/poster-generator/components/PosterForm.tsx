@@ -137,8 +137,8 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                         </Select>
                         <p className="text-xs text-gray-500">
                             {modelMode === 'production'
-                                ? 'gemini-3-pro-image-preview: サイズ指示を正確に守る高精度モデル'
-                                : 'gemini-2.5-flash-image: 低コストだがサイズ精度が低い開発用モデル'}
+                                ? 'gemini-3.1-flash-image-preview: 4K出力対応の高品質な本番用モデル'
+                                : 'gemini-2.5-flash-image: テスト用の低コスト開発モデル'}
                         </p>
                     </div>
 

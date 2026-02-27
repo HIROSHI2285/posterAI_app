@@ -110,7 +110,7 @@ export default function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-acid opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-acid shadow-[0_0_10px_#ccff00]"></span>
             </span>
-            <span className="text-sm font-medium text-green-50 tracking-wide group-hover:text-brand-acid transition-colors">Nano Banana Pro — Google Gemini 搭載の画像生成AI</span>
+            <span className="text-sm font-medium text-green-50 tracking-wide group-hover:text-brand-acid transition-colors">Nano Banana Pro 3.1 — Google Gemini 搭載の画像生成AI</span>
           </div>
 
           <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.95] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
@@ -122,7 +122,7 @@ export default function HomePage() {
 
           <p className="text-xl md:text-2xl text-green-100/90 max-w-2xl mx-auto leading-relaxed font-light tracking-wide text-shadow-sm">
             美しさと知性を兼ね備えた、次世代のデザインパートナー。<br />
-            <span className="font-semibold text-white">Nano Banana Pro</span> が、あなたのアイデアを<br className="hidden md:block" />
+            <span className="font-semibold text-white">Nano Banana Pro 3.1</span> が、あなたのアイデアを<br className="hidden md:block" />
             かつてないクオリティのポスターへと昇華させます。<br />
             数時間かかっていた作業を、<span className="text-brand-acid font-medium">数秒で完了</span>します。
           </p>
@@ -213,7 +213,7 @@ export default function HomePage() {
               </div>
               <h3 className="font-display text-3xl font-bold mb-4 text-white">AIによる自動生成</h3>
               <p className="text-green-100/90 leading-relaxed max-w-lg text-lg">
-                Nano Banana Proモデルを活用し、あなたの文脈を理解して、明確でインパクトのあるデザインを生成します。ニュアンス、感情、ブランドボイスを理解します。
+                Nano Banana Pro 3.1モデルを活用し、あなたの文脈を理解して、明確でインパクトのあるデザインを生成します。ニュアンス、感情、ブランドボイスを理解します。
               </p>
             </div>
           </div>

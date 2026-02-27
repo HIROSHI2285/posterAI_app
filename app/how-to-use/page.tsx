@@ -117,7 +117,7 @@ export default function HowToUsePage() {
 
                         <p className="text-xl text-green-100/80 leading-relaxed font-light border-l-2 border-brand-acid/30 pl-6">
                             生成から編集、そして保存まで。<br />
-                            <span className="text-white font-medium">Nano Banana Pro</span> のポテンシャルを最大限に引き出す、<br />
+                            <span className="text-white font-medium">Nano Banana Pro 3.1</span> のポテンシャルを最大限に引き出す、<br />
                             プロフェッショナルなワークフローを解説します。
                         </p>
 
@@ -177,7 +177,7 @@ export default function HowToUsePage() {
                             <h3 className="text-2xl font-bold text-white">テキストから無限のアイデアを</h3>
                             <p className="text-green-100/70 leading-relaxed">
                                 「夏の音楽フェスのポスター」「高級感のあるカフェのメニュー」など、<br />作りたいもののイメージを言葉で入力するだけ。<br />
-                                Nano Banana Proの高度な文脈理解により、意図を汲み取った<br />高品質なデザインを提案します。
+                                Nano Banana Pro 3.1の高度な文脈理解により、意図を汲み取った<br />高品質なデザインを提案します。
                             </p>
                         </div>
                     </div>
@@ -423,7 +423,7 @@ export default function HowToUsePage() {
                             <div className="bg-brand-acid/10 border border-brand-acid/20 rounded-lg p-4 mt-2">
                                 <p className="text-sm text-green-100/90">
                                     <Sparkles className="w-3 h-3 inline mr-1 text-brand-acid" />
-                                    AI（Nano Banana Pro）が全体の変更意図を一度に理解できるため、**より正確で理想に近い結果**が出やすくなります。クレジットの節約にもなります。
+                                    AI（Nano Banana Pro 3.1）が全体の変更意図を一度に理解できるため、**より正確で理想に近い結果**が出やすくなります。クレジットの節約にもなります。
                                 </p>
                             </div>
                         </div>

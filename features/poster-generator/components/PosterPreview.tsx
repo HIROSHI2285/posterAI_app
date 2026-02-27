@@ -1222,7 +1222,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                         onChange={(e) => setEditModelMode(e.target.value as 'production' | 'development' | 'inherit')}
                                         className="flex-1 text-xs border rounded px-2 py-1 bg-white"
                                     >
-                                        <option value="inherit">生成時と同じ（{modelMode === 'production' ? 'Pro' : 'Flash'}）</option>
+                                        <option value="inherit">生成時と同じ（{modelMode === 'production' ? 'Pro 3.1' : 'Flash 3.1'}）</option>
                                         <option value="production">Pro（高精度編集）</option>
                                         <option value="development">Flash（テキスト編集のみ）</option>
                                     </select>
