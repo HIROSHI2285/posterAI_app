@@ -243,7 +243,6 @@ ${imagePrompt}`
         if (characterDescription) {
             generatedSeed = Math.floor(Math.random() * 1000000)
             imageConfig.seed = generatedSeed
-            imageConfig.personGeneration = "allow_all" // 人物生成を許可
             console.log(`[Job ${jobId}] キャラクター一貫性(Consistency)を有効化: Seed=${generatedSeed}`)
         }
 

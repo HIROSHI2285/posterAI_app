@@ -117,7 +117,6 @@ export async function POST(request: NextRequest) {
 
             if (metadata.character_features.seed) {
                 imageConfig.seed = metadata.character_features.seed
-                imageConfig.personGeneration = "allow_all"
                 console.log(`🎨 Injecting character consistency features: Seed=${imageConfig.seed}`)
             }
         }
