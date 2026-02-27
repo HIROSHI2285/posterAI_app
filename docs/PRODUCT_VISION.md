@@ -283,5 +283,5 @@ PosterAIは「**AIによる高品質な下書き生成ツール**」として位
 
 ---
 
-*Last Updated: 2026-01-18*
-*Version: 1.4.1*
+*Last Updated: 2026-02-27*
+*Version: 1.6.0*

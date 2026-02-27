@@ -11,13 +11,13 @@
 
 | 用途 | 現在のモデル | 状態 | 理由 |
 |------|------------|------|------|
-| **画像解析** | gemini-3-pro-image-preview | ⚠️ Preview版 | 高精度、ポスター生成と統一 |
-| **ポスター生成** | gemini-3-pro-image-preview | ⚠️ Preview版 | 最高品質 |
+| **画像解析・推論** | gemini-3.1-pro-preview | ⚠️ Preview版 | テキストのスマート編集、キャッシング最適化のため |
+| **ポスター生成** | gemini-3.1-flash-image-preview | ⚠️ Preview版 | 4K高解像度の安価な出力、キャラクター一貫性維持のため |
 
-**統一のメリット**:
-- ✅ 同じモデルファミリーで一貫性
-- ✅ GA版リリース時に一括移行可能
-- ✅ コスト最適化
+**導入（2026-02-27）の実績**:
+- ✅ 連続編集のキャッシュ対応
+- ✅ 過去モデル群から90%以上のコスト減
+- ✅ 旧Pro版(2K)以上の解像度(4K)でのポスター生成
 
 ---
 
@@ -52,7 +52,7 @@
 4. **新機能**: GA版に有用な新機能追加
 
 ### 優先度：低 ⭐
-5. **コスト変更**: Preview版の料金が大幅に上がる
+5. **コスト変更**: Preview版の料金が大幅に上がる（3.1は安価な設定）
 
 ---
 
@@ -63,19 +63,28 @@
 #### ファイル1: `app/api/generate-poster/async.ts`
 ```typescript
 // Before
-model: "gemini-3-pro-image-preview"
+model: "gemini-3.1-flash-image-preview"
 
 // After
-model: "gemini-3-pro-image"  // またはリリースされた正式名
+model: "gemini-3.1-flash-image"  // またはリリースされた正式名
 ```
 
 #### ファイル2: `app/api/generate-poster/route.ts`
 ```typescript
 // Before
-model: "gemini-3-pro-image-preview"
+model: "gemini-3.1-flash-image-preview"
 
 // After
-model: "gemini-3-pro-image"  // またはリリースされた正式名
+model: "gemini-3.1-flash-image"  // またはリリースされた正式名
+```
+
+#### ファイル3: `app/api/analyze-image/route.ts` 他推論・編集系
+```typescript
+// Before
+model: "gemini-3.1-pro-preview"
+
+// After
+model: "gemini-3.1-pro" // 正式版リリース時
 ```
 
 ### Step 2: テスト（10分）
@@ -184,6 +193,11 @@ GA版がリリースされない場合の代替案：
 - **理由**: 最高品質のポスター生成のため
 - **次回確認**: 2026-01-29
 
+### 2026-02-27
+- **状態**: `gemini-3.1-flash-image-preview` / `gemini-3.1-pro-preview` へ完全移行
+- **理由**: 2026-03の旧3.0 Preview群廃止に向けた対応、ならびにコスト減・UIUX改善（スマート編集化、キャッシュ）
+- **次回確認**: 2026-04-01
+
 ### （今後の移行はここに記録）
 
 ---
@@ -245,5 +259,5 @@ gcloud ai models list --region=us-central1
 
 ---
 
-**最終更新**: 2025-12-29  
-**次回確認予定**: 2026-01-29
+**最終更新**: 2026-02-27  
+**次回確認予定**: 2026-04-01
