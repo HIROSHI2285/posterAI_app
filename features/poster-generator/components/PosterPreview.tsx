@@ -16,6 +16,7 @@ interface PosterPreviewProps {
     isGenerating: boolean
     onRegenerate?: () => void
     modelMode?: 'production' | 'development'
+    metadata?: any
 }
 
 interface RegionEditItem {
@@ -50,7 +51,7 @@ interface TextEditItem {
     isDelete?: boolean  // 削除フラグ
 }
 
-export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode = 'production' }: PosterPreviewProps) {
+export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode = 'production', metadata }: PosterPreviewProps) {
     const { data: session } = useSession()
     const [editedImageUrl, setEditedImageUrl] = useState<string | null>(null)
     const displayImageUrl = editedImageUrl || imageUrl
@@ -170,6 +171,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                     createdAt: Date.now(),
                     updatedAt: Date.now()
                 },
+                ...(metadata?.gemini_model_version && { gemini_model_version: metadata.gemini_model_version }),
+                ...(metadata?.character_features && { character_features: metadata.character_features }),
                 canvas: {
                     width: width,
                     height: height,
@@ -524,6 +527,51 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
         setIsApplyingAll(true)
 
         try {
+            const hasRegionEdits = pendingRegionEdits.length > 0;
+            const hasInsertImages = pendingInsertImages.length > 0;
+            const hasGeneralPrompt = !!pendingGeneralPrompt;
+            const hasTextEdits = pendingTextEdits.length > 0;
+
+            // Scenario 1: Only manual text edits (no API needed!)
+            if (!hasRegionEdits && !hasInsertImages && !hasGeneralPrompt && hasTextEdits) {
+                // UI is already updated via TextEditCanvas state
+                handleClearPendingEdits()
+                setCurrentMode('none')
+                setIsApplyingAll(false)
+                toast.success("テキストの編集を反映しました")
+                return
+            }
+
+            // Scenario 2: General prompt exists, try Smart Edit (NLP text update)
+            if (!hasRegionEdits && !hasInsertImages && hasGeneralPrompt) {
+                try {
+                    const smartEditRes = await fetch('/api/smart-edit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            layers: textLayers,
+                            prompt: pendingGeneralPrompt,
+                            modelMode: editModelMode === 'inherit' ? modelMode : editModelMode,
+                        })
+                    })
+
+                    if (smartEditRes.ok) {
+                        const smartData = await smartEditRes.json()
+                        if (smartData.isTextEditOnly) {
+                            setTextLayers(smartData.layers)
+                            handleClearPendingEdits()
+                            setCurrentMode('none')
+                            setIsApplyingAll(false)
+                            toast.success("スマートエディットを適用しました（画像再生成なし）")
+                            return
+                        }
+                        console.log("Smart edit classification: requires image regeneration, falling back to unified-edit")
+                    }
+                } catch (e) {
+                    console.error("Smart edit failed, falling back to unified edit", e)
+                }
+            }
+
             // 矩形領域編集のデータを構築
             const regionEditsData = pendingRegionEdits.length > 0 ? pendingRegionEdits.map(edit => ({
                 position: {
@@ -575,7 +623,8 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                     regionEdits: regionEditsData,
                     generalPrompt: pendingGeneralPrompt || undefined,
                     modelMode: editModelMode === 'inherit' ? modelMode : editModelMode,
-                    originalDimensions: dims.width > 0 ? dims : undefined
+                    originalDimensions: dims.width > 0 ? dims : undefined,
+                    metadata: metadata
                 })
             })
 

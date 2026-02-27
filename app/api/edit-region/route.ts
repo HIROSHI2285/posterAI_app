@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview'
+        const modelName = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image-preview'
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
             model: modelName,

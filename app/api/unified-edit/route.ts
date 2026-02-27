@@ -31,6 +31,7 @@ interface UnifiedEditRequest {
     generalPrompt?: string
     modelMode?: 'production' | 'development'
     originalDimensions?: { width: number, height: number }
+    metadata?: any
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production', originalDimensions } = body
+        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production', originalDimensions, metadata } = body
 
         if (!imageData) {
             return NextResponse.json(
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
         // 新規生成と同様のモデル選択ロジック
         const modelName = modelMode === 'development'
             ? "gemini-2.5-flash-image"
-            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview");
+            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview");
 
         console.log(`🎨 Unified Edit using model: ${modelName} (Mode: ${modelMode})`)
         const model = genAI.getGenerativeModel({ model: modelName })
@@ -104,6 +105,21 @@ export async function POST(request: NextRequest) {
                 promptParts.push(`Integrated attached image #${i + 1} as requested: ${img.usage}`)
             })
             promptParts.push('')
+        }
+
+        const imageConfig: Record<string, any> = {}
+
+        if (metadata?.character_features) {
+            promptParts.push('【Character Consistency】')
+            promptParts.push('You MUST strictly maintain the appearance of the following character throughout the edits:')
+            promptParts.push(metadata.character_features.description)
+            promptParts.push('')
+
+            if (metadata.character_features.seed) {
+                imageConfig.seed = metadata.character_features.seed
+                imageConfig.personGeneration = "allow_all"
+                console.log(`🎨 Injecting character consistency features: Seed=${imageConfig.seed}`)
+            }
         }
 
         promptParts.push('【Quality Requirements】')
@@ -152,7 +168,13 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        const result = await model.generateContent(parts)
+        const result = await model.generateContent({
+            contents: [{ role: 'user', parts: parts }],
+            generationConfig: {
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig }),
+                responseModalities: ["IMAGE", "TEXT"]
+            } as any
+        })
         const response = result.response
 
         let imageBlob = null

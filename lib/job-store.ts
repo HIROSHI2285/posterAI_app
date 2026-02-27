@@ -12,6 +12,7 @@ export interface PosterJob {
     error?: string
     createdAt: number
     updatedAt: number
+    metadata?: any
 }
 
 class JobStore {

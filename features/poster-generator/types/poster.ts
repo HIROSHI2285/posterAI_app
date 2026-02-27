@@ -15,6 +15,14 @@ export interface PosterProject {
         };
     };
     layers: ProjectLayer[];
+
+    // Gemini 3.1 移行用メタデータ
+    gemini_model_version?: string; // e.g., "3.1"
+    character_features?: {
+        seed?: number;
+        referenceTokens?: string[];
+        [key: string]: any;
+    };
 }
 
 export interface ProjectLayer {

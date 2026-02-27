@@ -14,6 +14,7 @@ export interface PosterJob {
     error?: string
     createdAt: number
     updatedAt: number
+    metadata?: any
 }
 
 // Supabaseのカラム名（snake_case）からTypeScriptのプロパティ名（camelCase）へ変換
@@ -26,6 +27,7 @@ interface SupabaseJobRow {
     error: string | null
     created_at: string
     updated_at: string
+    metadata: any | null
 }
 
 function rowToJob(row: SupabaseJobRow): PosterJob {
@@ -37,7 +39,8 @@ function rowToJob(row: SupabaseJobRow): PosterJob {
         imageUrl: row.image_url || undefined,
         error: row.error || undefined,
         createdAt: new Date(row.created_at).getTime(),
-        updatedAt: new Date(row.updated_at).getTime()
+        updatedAt: new Date(row.updated_at).getTime(),
+        metadata: row.metadata || undefined
     }
 }
 
@@ -102,6 +105,7 @@ class SupabaseJobStore {
         if (updates.progress !== undefined) supabaseUpdates.progress = updates.progress
         if (updates.imageUrl !== undefined) supabaseUpdates.image_url = updates.imageUrl
         if (updates.error !== undefined) supabaseUpdates.error = updates.error
+        if (updates.metadata !== undefined) supabaseUpdates.metadata = updates.metadata
 
         const { error } = await supabaseAdmin
             .from('jobs')

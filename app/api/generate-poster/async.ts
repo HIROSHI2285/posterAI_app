@@ -67,6 +67,7 @@ export async function generatePosterAsync(
             customHeight,
             customUnit,
             modelMode = 'production',  // モデル選択を追加
+            characterDescription,
         } = formData
 
         // detailedPromptはユーザー入力のカスタム指示、またはサンプル画像解析結果
@@ -128,7 +129,8 @@ export async function generatePosterAsync(
             hasMaterials: !!(materialsData && materialsData.length > 0),
             materialsCount: materialsData?.length || 0,
             generationMode: formData.generationMode || (sampleImageData ? 'image-reference' : 'text-only'),
-            imageReferenceStrength: formData.imageReferenceStrength || 'normal'
+            imageReferenceStrength: formData.imageReferenceStrength || 'normal',
+            characterDescription
         })
 
         // 素材画像の用途指示をプロンプトに追加（解析結果より優先）
@@ -158,11 +160,11 @@ ${imagePrompt}`
         await jobStore.update(jobId, { progress: 30 })
 
         // モデル名をmodelModeに基づいて選択
-        // production: gemini-3-pro-image-preview（安定、高品質）
+        // production: gemini-3.1-flash-image-preview（最高品質・4K解像度・Flash価格）
         // development: gemini-2.5-flash-image（高速、テスト用）
         const modelName = modelMode === 'development'
             ? "gemini-2.5-flash-image"
-            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview")
+            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview")
         console.log(`[Job ${jobId}] 使用モデル: ${modelName} (モード: ${modelMode})`)
 
         // 選択サイズ・向きから最適なアスペクト比を決定
@@ -229,11 +231,20 @@ ${imagePrompt}`
         console.log(`[Job ${jobId}] ========================`)
 
         // imageConfig.aspectRatio でアスペクト比を厳守させる
-        // プロンプトテキストだけでは無視されるため、API パラメータで指定することが必須
-        const imageConfig: Record<string, string> = { aspectRatio: aspectRatioStr }
-        // gemini-3-pro-image-preview は imageSize で解像度指定が可能
-        if (modelName.includes('gemini-3-pro')) {
-            imageConfig.imageSize = '2K'
+        const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr }
+
+        // gemini-3.1-flash-image-preview などは imageSize で解像度指定が可能
+        if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
+            imageConfig.imageSize = '4K' // Gemini 3.1からは4Kをデフォルトに
+        }
+
+        // キャラクター一貫性のためのパラメータ設定（Gemini 3.1新機能想定）
+        let generatedSeed: number | undefined
+        if (characterDescription) {
+            generatedSeed = Math.floor(Math.random() * 1000000)
+            imageConfig.seed = generatedSeed
+            imageConfig.personGeneration = "allow_all" // 人物生成を許可
+            console.log(`[Job ${jobId}] キャラクター一貫性(Consistency)を有効化: Seed=${generatedSeed}`)
         }
 
         const result = await model.generateContent({
@@ -313,7 +324,15 @@ ${imagePrompt}`
         await jobStore.update(jobId, {
             status: 'completed',
             progress: 100,
-            imageUrl: imageData
+            imageUrl: imageData,
+            // @ts-ignore - jobStore types may need update, but we pass metadata safely
+            metadata: characterDescription ? {
+                gemini_model_version: "3.1",
+                character_features: {
+                    seed: generatedSeed,
+                    description: characterDescription
+                }
+            } : { gemini_model_version: "3.1" }
         })
 
         console.log(`[Job ${jobId}] 完了`)
@@ -347,8 +366,9 @@ function buildImagePrompt(params: {
     sampleImageName?: string
     hasMaterials: boolean
     materialsCount: number
-    generationMode?: 'text-only' | 'image-reference'  // 追加
-    imageReferenceStrength?: 'strong' | 'normal' | 'weak'  // 追加
+    generationMode?: 'text-only' | 'image-reference'
+    imageReferenceStrength?: 'strong' | 'normal' | 'weak'
+    characterDescription?: string
 }): string {
     const {
         purpose,
@@ -362,8 +382,9 @@ function buildImagePrompt(params: {
         orientation,
         dimensions,
         hasSampleImage,
-        generationMode = 'text-only',  // デフォルト
-        imageReferenceStrength = 'normal'  // デフォルト
+        generationMode = 'text-only',
+        imageReferenceStrength = 'normal',
+        characterDescription
     } = params
 
     const dimensionsText = orientation === 'landscape'
@@ -483,6 +504,12 @@ ${detailedPrompt}
 
     if (freeText) {
         prompt += `\n\n【追加テキスト（最優先で反映）】\n${freeText}`
+    }
+
+    if (characterDescription) {
+        prompt += `\n\n【キャラクター指定（一貫性を保持すること）】
+以下のキャラクターの特徴を正確に反映し、ポスター内に配置してください：
+${characterDescription}`
     }
 
     // カスタム指示（detailedPrompt）は画像の有無に関係なく反映

@@ -153,11 +153,12 @@ export async function POST(request: NextRequest) {
 
     try {
       // モデル名をmodelModeに基づいて選択
-      // production: gemini-3-pro-image-preview（安定、高品質）
+      // 選択方針
+      // production: gemini-3.1-flash-image-preview（最高品質・4K解像度・Flash価格）
       // development: gemini-2.5-flash-image（高速、テスト用）
       const modelName = modelMode === 'development'
         ? "gemini-2.5-flash-image"
-        : (process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview");
+        : (process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview");
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: modelName
@@ -170,8 +171,9 @@ export async function POST(request: NextRequest) {
       // imageConfig.aspectRatio でアスペクト比を厳守させる
       // プロンプトテキストだけでは無視されるため、API パラメータで指定することが必須
       const imageConfig: Record<string, string> = { aspectRatio: aspectRatioStr };
-      if (modelName.includes('gemini-3-pro')) {
-        imageConfig.imageSize = '2K';
+      // gemini-3.1-flash-image-preview などは imageSize で解像度指定が可能
+      if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
+        imageConfig.imageSize = '4K'; // Gemini 3.1からは4Kをデフォルトに
       }
 
       // 画像を生成
@@ -247,7 +249,7 @@ export async function POST(request: NextRequest) {
         success: true,
         imageData: imageData,
         formData: body,
-        message: "Gemini 3 Pro Image Preview で画像を生成しました",
+        message: "Gemini 3.1 API Suite で画像を生成しました",
       }, {
         headers: {
           'X-RateLimit-Limit': '30',

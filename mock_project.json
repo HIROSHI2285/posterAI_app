@@ -34,8 +34,11 @@
                 "width": 0.2,
                 "height": 0.1
             },
-            "opacity": 1,
-            "visible": true
+            "opacity": 1
         }
-    ]
+    ],
+    "gemini_model_version": "3.1",
+    "character_features": {
+        "seed": 123456789
+    }
 }

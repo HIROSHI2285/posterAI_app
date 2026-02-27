@@ -3,6 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { rateLimiter } from "@/lib/rate-limiter";
+import { LRUCache } from 'lru-cache';
+
+// LRUキャッシュの初期化
+// 最大100件の解析結果をメモリに保持。1時間（3600000ms）で有効期限切れ。
+const analysisCache = new LRUCache<string, any>({
+    max: 100,
+    ttl: 1000 * 60 * 60, // 1 hour
+});
+
 
 // ファイルサイズとMIMEタイプの定数
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -85,9 +94,9 @@ export async function POST(request: NextRequest) {
             const genAI = new GoogleGenerativeAI(apiKey);
 
             // モデル名を環境変数から取得（正式版リリース時に変更可能）
-            // デフォルト: gemini-3-pro-image-preview (プレビュー版)
-            // 正式版リリース後: 環境変数 GEMINI_IMAGE_MODEL を変更するだけで移行可能
-            const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
+            // デフォルト: gemini-3.1-pro-preview (推論・解析用)
+            // 正式版リリース後: 環境変数 GEMINI_ANALYSIS_MODEL を変更するだけで移行可能
+            const modelName = process.env.GEMINI_ANALYSIS_MODEL || "gemini-3.1-pro-preview";
             const model = genAI.getGenerativeModel({
                 model: modelName
             });
@@ -116,6 +125,30 @@ export async function POST(request: NextRequest) {
                 }
             ];
 
+            // --- Cache Check ---
+            // Create a small hash or just use the first 500 + last 500 chars to avoid massive memory keys,
+            // or we could use the entire base64Data since max is 100 items (at 1-5MB each, max 100-500MB RAM, acceptable for Edge/Serverless short-lived but better to be safe)
+            // Let's use a substring-based pseudo-hash to save memory
+            const cacheKey = base64Data.length > 2000
+                ? `${base64Data.substring(0, 1000)}_${base64Data.substring(base64Data.length - 1000)}`
+                : base64Data;
+
+            const cachedResult = analysisCache.get(cacheKey);
+            if (cachedResult) {
+                console.log("⚡ キャッシュヒット: 既存の解析結果を返します");
+                return NextResponse.json({
+                    success: true,
+                    analysis: cachedResult,
+                    message: "画像を解析しました（キャッシュ）"
+                }, {
+                    headers: {
+                        'X-RateLimit-Limit': '30',
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetAt.toString()
+                    }
+                });
+            }
+            console.log("🔄 キャッシュミス: 新規解析を実行します");
 
             const prompt = `この画像はポスターまたはデザイン作品です。
 AI画像生成ツール（Imagen）で高精度に再現できるように、デザインの構成要素を極めて詳細かつ具体的に言語化して抽出してください。
@@ -213,6 +246,9 @@ AI画像生成ツール（Imagen）で高精度に再現できるように、デ
             }
 
             console.log("解析データ:", analysisData);
+
+            // --- キャッシュに保存 ---
+            analysisCache.set(cacheKey, analysisData);
 
             return NextResponse.json({
                 success: true,

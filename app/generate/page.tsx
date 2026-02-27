@@ -13,6 +13,7 @@ import { notifyPosterComplete, requestNotificationPermission } from "@/lib/notif
 export default function GeneratePage() {
     const { data: session } = useSession()
     const [generatedImage, setGeneratedImage] = useState<string>()
+    const [jobMetadata, setJobMetadata] = useState<any>()
     const [isGenerating, setIsGenerating] = useState(false)
     const [currentFormData, setCurrentFormData] = useState<Partial<PosterFormData>>()
     const [progress, setProgress] = useState(0)
@@ -135,7 +136,7 @@ export default function GeneratePage() {
     /**
      * ジョブのステータスをポーリング
      */
-    const pollJobStatus = async (jobId: string): Promise<string> => {
+    const pollJobStatus = async (jobId: string): Promise<{ imageUrl: string, metadata?: any }> => {
         while (true) {
             const res = await fetch(`/api/jobs/${jobId}`)
 
@@ -153,7 +154,7 @@ export default function GeneratePage() {
             if (job.status === 'completed') {
                 // ポスター生成完了通知
                 notifyPosterComplete()
-                return job.imageUrl
+                return { imageUrl: job.imageUrl, metadata: job.metadata }
             }
 
             if (job.status === 'failed') {
@@ -235,12 +236,20 @@ export default function GeneratePage() {
             }
 
             // 2. ポーリングで完了を待つ
-            const imageUrl = await pollJobStatus(jobId)
+            const { imageUrl, metadata } = await pollJobStatus(jobId)
 
-            // 3. 画像を表示（リサイズ無効化 - AIが生成したサイズをそのまま使用）
-            // 正確なサイズが必要な場合は gemini-3-pro-image-preview を使用してください
-            setGeneratedImage(imageUrl)
-            console.log("生成完了")
+            // 3. 生成画像をプリセットサイズに強制リサイズ（サイズ・向きを厳守）
+            const resizedUrl = await resizeImageToPreset(
+                imageUrl,
+                formData.outputSize || 'a4',
+                formData.orientation || 'portrait',
+                formData.customWidth,
+                formData.customHeight,
+                formData.customUnit
+            )
+            setGeneratedImage(resizedUrl)
+            setJobMetadata(metadata)
+            console.log("生成完了", metadata)
 
         } catch (error) {
             console.error("生成エラー:", error)
@@ -368,6 +377,7 @@ export default function GeneratePage() {
                             isGenerating={isGenerating}
                             onRegenerate={handleRegenerate}
                             modelMode={currentFormData?.modelMode}
+                            metadata={jobMetadata}
                         />
                     </div>
                 </div>
