@@ -165,7 +165,11 @@ export async function POST(request: NextRequest) {
 
       // imageConfig.aspectRatio でアスペクト比を厳守させる
       // プロンプトテキストだけでは無視されるため、API パラメータで指定することが必須
-      const imageConfig: Record<string, string> = { aspectRatio: aspectRatioStr };
+      const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr };
+
+      if (modelName.includes('gemini-3.1-flash-image')) {
+        imageConfig.imageSize = '4K';
+      }
 
       // 画像を生成
       const result = await model.generateContent({
@@ -355,10 +359,10 @@ function buildImagePrompt(params: {
 
   prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。
 
-【Layout & Framing - MANDATORY】
-- SAFETY MARGIN: Ensure all text and important visual elements have at least a 5% margin from ALL edges, especially the BOTTOM.
-- NO CUT-OFF: Do not place subjects or text near the canvas boundaries.
-- COMPOSITION: Keep the main design balanced and centered to prevent any part from being cropped out during output.`;
+【MANDATORY COMPOSITION RULE】
+- Place all text and subjects at least 10% away from the BOTTOM edge.
+- Ensure the entire design is contained within the frame with a safety margin.
+- Do not crop the main subject or title.`;
 
   return prompt;
 }

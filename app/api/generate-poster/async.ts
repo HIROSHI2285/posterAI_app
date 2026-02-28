@@ -228,6 +228,11 @@ ${imagePrompt}`
         // imageConfig.aspectRatio でアスペクト比を厳守させる
         const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr }
 
+        // 4K指定を残しつつ、エラー時に備えて安全な構成にする
+        if (modelName.includes('gemini-3.1-flash-image')) {
+            imageConfig.imageSize = '4K';
+        }
+
         // キャラクター一貫性のためのパラメータ設定（Gemini 3.1新機能想定）
         let generatedSeed: number | undefined
         if (characterDescription) {
@@ -464,10 +469,10 @@ ${detailedPrompt}
 
 上記のタイトルとテキストを組み込みながら、バランスの取れた高品質なポスターを作成してください。
 
-【Layout & Framing - MANDATORY】
-- SAFETY MARGIN: Ensure all text and important visual elements have at least a 5% margin from ALL edges, especially the BOTTOM.
-- NO CUT-OFF: Do not place subjects or text near the canvas boundaries.
-- COMPOSITION: Keep the main design balanced and centered to prevent any part from being cropped out during output.`
+【MANDATORY COMPOSITION RULE】
+- Place all text and subjects at least 10% away from the BOTTOM edge.
+- Ensure the entire design is contained within the frame with a safety margin.
+- Do not crop the main subject or title.`
 
         return prompt
     }
@@ -557,10 +562,10 @@ ${detailedPrompt}
 
 キャンバス全体を埋める完成度の高いポスターを作成してください。
 
-【Layout & Framing - MANDATORY】
-- SAFETY MARGIN: Ensure all text and important visual elements have at least a 5% margin from ALL edges, especially the BOTTOM.
-- NO CUT-OFF: Do not place subjects or text near the canvas boundaries.
-- COMPOSITION: Keep the main design balanced and centered to prevent any part from being cropped out during output.`
+【MANDATORY COMPOSITION RULE】
+- Place all text and subjects at least 10% away from the BOTTOM edge.
+- Ensure the entire design is contained within the frame with a safety margin.
+- Do not crop the main subject or title.`
 
     return prompt
 }

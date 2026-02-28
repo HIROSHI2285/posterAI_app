@@ -128,10 +128,14 @@ export async function POST(request: NextRequest) {
             promptParts.push(`- Resolution: ${originalDimensions.width}x${originalDimensions.height}`)
             imageConfig.aspectRatio = getClosestAspectRatio(originalDimensions.width, originalDimensions.height)
         }
-        promptParts.push('\n【Layout & Composition - MANDATORY】')
-        promptParts.push('- SAFETY MARGIN: Ensure all text and important elements have a 5% margin from all edges, ESPECIALLY THE BOTTOM.')
-        promptParts.push('- NO CROPPING: Do not place subjects or text near the canvas boundaries to avoid being cut off.')
-        promptParts.push('- BALANCE: Center the main content to maintain professional framing.')
+        promptParts.push('\n【MANDATORY COMPOSITION RULE】')
+        promptParts.push('- Place all text and subjects at least 10% away from the BOTTOM edge.')
+        promptParts.push('- Ensure the entire design is contained within the frame with a safety margin.')
+        promptParts.push('- Do not crop the main subject or title.')
+
+        if (modelName.includes('gemini-3.1-flash-image')) {
+            imageConfig.imageSize = '4K';
+        }
 
         // 修正ポイント1: parts 配列の要素をすべてオブジェクト形式にする
         const parts: any[] = [
