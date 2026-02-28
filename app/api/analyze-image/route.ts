@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
             const model = genAI.getGenerativeModel({
                 model: modelName,
                 generationConfig: {
+                    responseMimeType: "application/json",
                     maxOutputTokens: 4096,
                     temperature: 0.4,
                 }
@@ -233,12 +234,13 @@ export async function POST(request: NextRequest) {
             // JSONを抽出
             let analysisData;
             try {
-                // コードブロックを削除してJSONをパース
-                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                // Geminiが(markdown付きで)出力した場合の対処と、純粋なJSON文字列の場合の対処
+                const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     analysisData = JSON.parse(jsonMatch[0]);
                 } else {
-                    throw new Error("JSON形式のデータが見つかりません");
+                    analysisData = JSON.parse(cleanText);
                 }
             } catch (parseError) {
                 console.error("JSON解析エラー:", parseError);
