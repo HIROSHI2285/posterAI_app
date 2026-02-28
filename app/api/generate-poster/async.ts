@@ -473,7 +473,9 @@ ${detailedPrompt}
 - 背景色とのコントラストを十分に確保し、読みやすくしてください
 
 上記のタイトルとテキストを組み込みながら、バランスの取れた高品質なポスターを作成してください。
-キャンバス全体を埋める完成度の高いデザインにしてください。`
+
+【Composition & Framing Instructions】
+Ensure the entire composition is fully contained within the frame. Leave a safe, clean margin (padding) around all edges of the poster, especially at the bottom, to prevent anything from being cut off or appearing cropped. Do not place critical elements, text, or main subjects near the edges. Focus on a centered, contained layout.`
 
         return prompt
     }
@@ -561,7 +563,10 @@ ${detailedPrompt}
 - 十分な行間・文字間を確保し、詰まりすぎないようにしてください
 - 背景色とのコントラストを十分に確保し、読みやすくしてください
 
-キャンバス全体を埋める完成度の高いポスターを作成してください。余白なしでエッジまでデザインを広げてください。`
+キャンバス全体を埋める完成度の高いポスターを作成してください。
+
+【Composition & Framing Instructions】
+Ensure the entire composition is fully contained within the frame. Leave a safe, clean margin (padding) around all edges of the poster, especially at the bottom, to prevent anything from being cut off or appearing cropped. Do not place critical elements, text, or main subjects near the edges. Focus on a centered, contained layout.`
 
     return prompt
 }

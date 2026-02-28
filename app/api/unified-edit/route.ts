@@ -123,11 +123,12 @@ export async function POST(request: NextRequest) {
         }
 
         // 品質・サイズ要件
-        promptParts.push('\n【Requirements】')
+        promptParts.push('【Quality Requirements】')
         if (originalDimensions) {
             promptParts.push(`- Resolution: ${originalDimensions.width}x${originalDimensions.height}`)
             imageConfig.aspectRatio = getClosestAspectRatio(originalDimensions.width, originalDimensions.height)
         }
+        promptParts.push('- COMPOSITION & FRAMING: Ensure the entire composition is fully contained within the frame. Leave a safe, clean margin (padding) around all edges of the poster, especially at the bottom, to prevent anything from being cut off or appearing cropped. Do not place critical elements, text, or main subjects near the edges. Focus on a centered, contained layout.')
         if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
             imageConfig.imageSize = '4K'
         }

@@ -362,7 +362,10 @@ function buildImagePrompt(params: {
 これらのデザイン特性を忠実に再現しながら、指定されたタイトルとテキストを組み込んでください。`;
   }
 
-  prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。余白なしでエッジまでデザインを広げてください。`;
+  prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。
+
+【Composition & Framing Instructions】
+Ensure the entire composition is fully contained within the frame. Leave a safe, clean margin (padding) around all edges of the poster, especially at the bottom, to prevent anything from being cut off or appearing cropped. Do not place critical elements, text, or main subjects near the edges. Focus on a centered, contained layout.`;
 
   return prompt;
 }
