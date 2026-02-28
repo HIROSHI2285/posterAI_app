@@ -172,10 +172,10 @@ export async function POST(request: NextRequest) {
         const result = await model.generateContent({
             contents: [{ role: 'user', parts: parts }],
             generationConfig: {
-                responseModalities: ['IMAGE', 'TEXT']
-            } as any,
-            // @ts-ignore
-            imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined
+                responseModalities: ['IMAGE', 'TEXT'],
+                // @ts-ignore
+                imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined
+            } as any
         })
 
         const response = result.response
