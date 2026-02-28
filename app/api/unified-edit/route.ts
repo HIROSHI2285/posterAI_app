@@ -85,31 +85,35 @@ export async function POST(request: NextRequest) {
 
         // プロンプト構築
         const promptParts: string[] = []
-        promptParts.push('You are an expert graphic designer. Please edit the attached image according to the following instructions.')
+        promptParts.push('【CRITICAL INSTRUCTION】')
+        promptParts.push('You are an expert graphic designer. Your task is to EDIT the attached reference image.')
+        promptParts.push('You MUST strictly apply the exact changes requested below.')
+        promptParts.push('Preserve the original art style, layout, background, and characters exactly as they are, EXCEPT where a specific edit is requested.')
 
         if (textEdits && textEdits.length > 0) {
-            promptParts.push('\n【Text Edits】')
+            promptParts.push('\n【TEXT REPLACEMENT REQUESTS - HIGH PRIORITY】')
             textEdits.forEach((edit, i) => {
                 if (edit.isDelete) {
-                    promptParts.push(`${i + 1}. REMOVE the text "${edit.original}" and fill naturally.`)
+                    promptParts.push(`- REMOVE the text "${edit.original}" completely and naturally fill the background.`)
                 } else {
-                    promptParts.push(`${i + 1}. Replace "${edit.original}" with "${edit.newContent}" ${edit.color ? `, color: ${edit.color}` : ''}`)
+                    promptParts.push(`- REPLACE the EXACT text "${edit.original}" with NEW TEXT: "${edit.newContent}" ${edit.color ? `(Color: ${edit.color})` : ''}`)
                 }
             })
         }
 
         if (maskData && maskPrompt) {
-            promptParts.push('\n【Region Specific Edit】')
-            promptParts.push(`Edit ONLY the masked area: ${maskPrompt}`)
+            promptParts.push('\n【REGION SPECIFIC EDIT (MASKED AREA) - STRICT】')
+            promptParts.push(`- Edit ONLY the masked area according to this instruction: ${maskPrompt}`)
         }
 
         if (generalPrompt) {
-            promptParts.push('\n【General Edit】\n' + generalPrompt)
+            promptParts.push('\n【GENERAL EDIT REQUEST - STRICT】')
+            promptParts.push('- ' + generalPrompt)
         }
 
         if (insertImages && insertImages.length > 0) {
-            promptParts.push('\n【Image Insertion】')
-            insertImages.forEach((img, i) => promptParts.push(`Integrate image #${i + 1}: ${img.usage}`))
+            promptParts.push('\n【IMAGE INSERTION - STRICT】')
+            insertImages.forEach((img, i) => promptParts.push(`- Integrate image #${i + 1} logically into the scene: ${img.usage}`))
         }
 
         // キャラクター一貫性の維持
