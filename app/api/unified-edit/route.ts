@@ -3,6 +3,28 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+// アスペクト比計算用のヘルパー関数（他のAPIルートと統一）
+function getClosestAspectRatio(width: number, height: number): string {
+    const ratio = width / height;
+    const supported = [
+        { str: '9:16', val: 9 / 16 }, { str: '2:3', val: 2 / 3 },
+        { str: '3:4', val: 3 / 4 }, { str: '4:5', val: 4 / 5 },
+        { str: '1:1', val: 1 / 1 }, { str: '5:4', val: 5 / 4 },
+        { str: '4:3', val: 4 / 3 }, { str: '3:2', val: 3 / 2 },
+        { str: '16:9', val: 16 / 9 }, { str: '21:9', val: 21 / 9 },
+    ];
+    let closest = supported[0];
+    let minDiff = Math.abs(ratio - closest.val);
+    for (const candidate of supported) {
+        const diff = Math.abs(ratio - candidate.val);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = candidate;
+        }
+    }
+    return closest.str;
+}
+
 interface TextEdit {
     original: string
     newContent: string
@@ -11,6 +33,7 @@ interface TextEdit {
     isDelete?: boolean
 }
 
+// RegionEdit を使っている箇所はないようですが、元のコードに型自体は存在していたため念のため残すか削除します
 interface RegionEdit {
     position: {
         top: number
@@ -45,10 +68,7 @@ export async function POST(request: NextRequest) {
         const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production', originalDimensions, metadata } = body
 
         if (!imageData) {
-            return NextResponse.json(
-                { error: '画像データが必要です' },
-                { status: 400 }
-            )
+            return NextResponse.json({ error: '画像データが必要です' }, { status: 400 })
         }
 
         const apiKey = process.env.GEMINI_API_KEY
@@ -57,88 +77,64 @@ export async function POST(request: NextRequest) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey)
-
-        // 新規生成と同様のモデル選択ロジック
         const modelName = modelMode === 'development'
             ? "gemini-2.5-flash-image"
             : (process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview");
 
-        console.log(`🎨 Unified Edit using model: ${modelName} (Mode: ${modelMode})`)
         const model = genAI.getGenerativeModel({ model: modelName })
 
-        const promptParts: any[] = []
+        // プロンプト構築
+        const promptParts: string[] = []
         promptParts.push('You are an expert graphic designer. Please edit the attached image according to the following instructions.')
-        promptParts.push('')
 
         if (textEdits && textEdits.length > 0) {
-            promptParts.push('【Text Edits】')
+            promptParts.push('\n【Text Edits】')
             textEdits.forEach((edit, i) => {
-                let instruction = ''
                 if (edit.isDelete) {
-                    instruction = `${i + 1}. REMOVE the text "${edit.original}" entirely from the image. Fill the area where the text was located with a natural, seamless background that matches the surrounding colors and textures perfectly.`
+                    promptParts.push(`${i + 1}. REMOVE the text "${edit.original}" and fill naturally.`)
                 } else {
-                    instruction = `${i + 1}. Replace "${edit.original}" with "${edit.newContent}"`
-                    if (edit.color) instruction += `, change color to ${edit.color}`
-                    if (edit.fontSize) instruction += `, change size to ${edit.fontSize}`
+                    promptParts.push(`${i + 1}. Replace "${edit.original}" with "${edit.newContent}" ${edit.color ? `, color: ${edit.color}` : ''}`)
                 }
-                promptParts.push(instruction)
             })
-            promptParts.push('')
         }
 
         if (maskData && maskPrompt) {
-            promptParts.push('【Region Specific Edit】')
-            promptParts.push(`Edit ONLY the area indicated by the mask. Instruction: ${maskPrompt}`)
-            promptParts.push('Maintain the overall style and composition of the image, only modifying the specified region.')
-            promptParts.push('')
+            promptParts.push('\n【Region Specific Edit】')
+            promptParts.push(`Edit ONLY the masked area: ${maskPrompt}`)
         }
 
         if (generalPrompt) {
-            promptParts.push('【General Edit】')
-            promptParts.push(generalPrompt)
-            promptParts.push('')
+            promptParts.push('\n【General Edit】\n' + generalPrompt)
         }
 
         if (insertImages && insertImages.length > 0) {
-            promptParts.push('【Image Insertion】')
-            insertImages.forEach((img, i) => {
-                promptParts.push(`Integrated attached image #${i + 1} as requested: ${img.usage}`)
-            })
-            promptParts.push('')
+            promptParts.push('\n【Image Insertion】')
+            insertImages.forEach((img, i) => promptParts.push(`Integrate image #${i + 1}: ${img.usage}`))
         }
 
+        // キャラクター一貫性の維持
         const imageConfig: Record<string, any> = {}
-
         if (metadata?.character_features) {
-            promptParts.push('【Character Consistency】')
-            promptParts.push('You MUST strictly maintain the appearance of the following character throughout the edits:')
-            promptParts.push(metadata.character_features.description)
-            promptParts.push('')
-
+            promptParts.push('\n【Character Consistency】')
+            promptParts.push('Maintain appearance of: ' + metadata.character_features.description)
             if (metadata.character_features.seed) {
                 imageConfig.seed = metadata.character_features.seed
-                console.log(`🎨 Injecting character consistency features: Seed=${imageConfig.seed}`)
             }
         }
 
-        promptParts.push('【Quality Requirements】')
+        // 品質・サイズ要件
+        promptParts.push('\n【Requirements】')
         if (originalDimensions) {
-            promptParts.push(`- OUTPUT RESOLUTION: The output image MUST be exactly ${originalDimensions.width}x${originalDimensions.height} pixels.`)
+            promptParts.push(`- Resolution: ${originalDimensions.width}x${originalDimensions.height}`)
+            imageConfig.aspectRatio = getClosestAspectRatio(originalDimensions.width, originalDimensions.height)
         }
-        promptParts.push('- ASPECT RATIO: Maintain the exact same aspect ratio as the input image. DO NOT crop or resize.')
-        promptParts.push('- PIXEL PRESERVATION: Do NOT modify any pixels outside of the requested edit areas. Keep the background and other elements identical.')
-        promptParts.push('- TEXT LAYOUT: Ensure that the existing text layout remains valid. NO shifting of elements that were not requested to be changed.')
-        promptParts.push('- TEXT BOUNDARIES: ALL text elements MUST remain fully visible within the image canvas. Do NOT allow any text to be cropped, clipped, or extend beyond the image borders.')
-        promptParts.push('- TEXT POSITIONING: Keep the EXACT same position and size of text elements that are not being edited. Do NOT shift or resize any unedited text.')
-        promptParts.push('- MARGIN SAFETY: Ensure at least 2% margin from all image edges for any text element. Text must not touch or overflow the image boundaries.')
-        promptParts.push('- STRICT REMOVAL: When asked to delete text, ensure no traces or shadows of the original characters remain. The background must be perfectly and naturally restored.')
-        promptParts.push('- QUALITY: Maintain high resolution and professional quality.')
+        if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
+            imageConfig.imageSize = '4K'
+        }
 
-        const fullPrompt = promptParts.join('\n')
-        console.log('Unified edit prompt (No mojibake mitigation):', fullPrompt.substring(0, 500))
-
+        // 修正ポイント1: parts 配列の要素をすべてオブジェクト形式にする
         const parts: any[] = [
-            fullPrompt,
+            { text: promptParts.join('\n') },
             {
                 inlineData: {
                     data: imageData.split(',')[1],
@@ -161,47 +157,38 @@ export async function POST(request: NextRequest) {
                 parts.push({
                     inlineData: {
                         data: img.data.split(',')[1],
-                        mimeType: img.data.match(/data:([^;]+);/)?.[1] || 'image/png'
+                        mimeType: img.data.match(/data:([^;]+);/)?.[1] || 'image/jpeg'
                     }
                 })
             })
         }
 
+        // 修正ポイント2: responseModalities の大文字小文字と構造の修正
         const result = await model.generateContent({
             contents: [{ role: 'user', parts: parts }],
             generationConfig: {
-                ...(Object.keys(imageConfig).length > 0 && { imageConfig }),
-                responseModalities: ["IMAGE", "TEXT"]
+                // @ts-ignore
+                imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined,
+                responseModalities: ['Image', 'Text']
             } as any
         })
+
         const response = result.response
+        let imagePart = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)
 
-        let imageBlob = null
-        if (response.candidates && response.candidates.length > 0) {
-            const candidate = response.candidates[0]
-            if (candidate.content && candidate.content.parts) {
-                imageBlob = candidate.content.parts.find((part: any) => part.inlineData)
-            }
+        if (!imagePart || !imagePart.inlineData) {
+            throw new Error('AIが画像を生成しませんでした。プロンプトを見直してください。')
         }
-
-        if (!imageBlob || !imageBlob.inlineData) {
-            const textResponse = response.text()
-            console.error('No image in response. Text:', textResponse?.substring(0, 500))
-            throw new Error('AI did not return an image. It might have returned text instead.')
-        }
-
-        const editedImageUrl = `data:${imageBlob.inlineData.mimeType};base64,${imageBlob.inlineData.data}`
 
         return NextResponse.json({
             success: true,
-            imageUrl: editedImageUrl
+            imageUrl: `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`
         })
 
     } catch (error: any) {
         console.error('Unified edit error:', error)
-        const errorMessage = error.message || 'Unknown error'
         return NextResponse.json(
-            { error: `統合編集中にエラーが発生しました: ${errorMessage}` },
+            { error: `統合編集中にエラーが発生しました: ${error.message}` },
             { status: 500 }
         )
     }
