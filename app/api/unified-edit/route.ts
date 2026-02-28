@@ -128,7 +128,10 @@ export async function POST(request: NextRequest) {
             promptParts.push(`- Resolution: ${originalDimensions.width}x${originalDimensions.height}`)
             imageConfig.aspectRatio = getClosestAspectRatio(originalDimensions.width, originalDimensions.height)
         }
-        promptParts.push('- COMPOSITION & FRAMING: Ensure the entire composition is fully contained within the frame. Leave a safe, clean margin (padding) around all edges of the poster, especially at the bottom, to prevent anything from being cut off or appearing cropped. Do not place critical elements, text, or main subjects near the edges. Focus on a centered, contained layout.')
+        promptParts.push('\n【Layout & Composition - MANDATORY】')
+        promptParts.push('- SAFETY MARGIN: Ensure all text and important elements have a 5% margin from all edges, ESPECIALLY THE BOTTOM.')
+        promptParts.push('- NO CROPPING: Do not place subjects or text near the canvas boundaries to avoid being cut off.')
+        promptParts.push('- BALANCE: Center the main content to maintain professional framing.')
         if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
             imageConfig.imageSize = '4K'
         }
@@ -168,10 +171,10 @@ export async function POST(request: NextRequest) {
         const result = await model.generateContent({
             contents: [{ role: 'user', parts: parts }],
             generationConfig: {
-                // @ts-ignore
-                imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined,
                 responseModalities: ['Image', 'Text']
-            } as any
+            } as any,
+            // @ts-ignore
+            imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined
         })
 
         const response = result.response

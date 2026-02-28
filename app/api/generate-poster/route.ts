@@ -364,8 +364,11 @@ function buildImagePrompt(params: {
 
   prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。
 
-【Composition & Framing Instructions】
-Ensure the entire composition is fully contained within the frame. Leave a safe, clean margin (padding) around all edges of the poster, especially at the bottom, to prevent anything from being cut off or appearing cropped. Do not place critical elements, text, or main subjects near the edges. Focus on a centered, contained layout.`;
+【構図の安全性（重要）】
+⚠️ ポスターの端、特に「下部」に十分な余白を設けてください。
+- すべてのテキストと重要な被写体は、キャンバスの端から少なくとも5%内側に配置してください。
+- 下部の文字やグラフィックが見切れないよう、中央寄りの構図にしてください。
+- 塗り足しを考慮したプロフェッショナルなレイアウトを厳守してください。`;
 
   return prompt;
 }
