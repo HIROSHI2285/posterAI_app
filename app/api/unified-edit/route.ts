@@ -79,41 +79,37 @@ export async function POST(request: NextRequest) {
         const genAI = new GoogleGenerativeAI(apiKey)
         const modelName = modelMode === 'development'
             ? "gemini-2.5-flash-image"
-            : (process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview");
+            : (process.env.GEMINI_EDIT_MODEL || "gemini-3-pro-image-preview");
 
         const model = genAI.getGenerativeModel({ model: modelName })
 
         // プロンプト構築
         const promptParts: string[] = []
-        promptParts.push('【CRITICAL INSTRUCTION】')
-        promptParts.push('You are an expert graphic designer. Your task is to EDIT the attached reference image.')
-        promptParts.push('You MUST strictly apply the exact changes requested below.')
-        promptParts.push('Preserve the original art style, layout, background, and characters exactly as they are, EXCEPT where a specific edit is requested.')
+        promptParts.push('You are an expert graphic designer. Please edit the attached image according to the following instructions.')
 
         if (textEdits && textEdits.length > 0) {
-            promptParts.push('\n【TEXT REPLACEMENT REQUESTS - HIGH PRIORITY】')
+            promptParts.push('\n【Text Edits】')
             textEdits.forEach((edit, i) => {
                 if (edit.isDelete) {
-                    promptParts.push(`- REMOVE the text "${edit.original}" completely and naturally fill the background.`)
+                    promptParts.push(`${i + 1}. REMOVE the text "${edit.original}" and fill naturally.`)
                 } else {
-                    promptParts.push(`- REPLACE the EXACT text "${edit.original}" with NEW TEXT: "${edit.newContent}" ${edit.color ? `(Color: ${edit.color})` : ''}`)
+                    promptParts.push(`${i + 1}. Replace "${edit.original}" with "${edit.newContent}" ${edit.color ? `, color: ${edit.color}` : ''}`)
                 }
             })
         }
 
         if (maskData && maskPrompt) {
-            promptParts.push('\n【REGION SPECIFIC EDIT (MASKED AREA) - STRICT】')
-            promptParts.push(`- Edit ONLY the masked area according to this instruction: ${maskPrompt}`)
+            promptParts.push('\n【Region Specific Edit】')
+            promptParts.push(`Edit ONLY the masked area: ${maskPrompt}`)
         }
 
         if (generalPrompt) {
-            promptParts.push('\n【GENERAL EDIT REQUEST - STRICT】')
-            promptParts.push('- ' + generalPrompt)
+            promptParts.push('\n【General Edit】\n' + generalPrompt)
         }
 
         if (insertImages && insertImages.length > 0) {
-            promptParts.push('\n【IMAGE INSERTION - STRICT】')
-            insertImages.forEach((img, i) => promptParts.push(`- Integrate image #${i + 1} logically into the scene: ${img.usage}`))
+            promptParts.push('\n【Image Insertion】')
+            insertImages.forEach((img, i) => promptParts.push(`Integrate image #${i + 1}: ${img.usage}`))
         }
 
         // キャラクター一貫性の維持
@@ -136,10 +132,6 @@ export async function POST(request: NextRequest) {
         promptParts.push('- Place all text and subjects at least 10% away from the BOTTOM edge.')
         promptParts.push('- Ensure the entire design is contained within the frame with a safety margin.')
         promptParts.push('- Do not crop the main subject or title.')
-
-        if (modelName.includes('gemini-3.1-flash-image')) {
-            imageConfig.imageSize = '2K';
-        }
 
         // 修正ポイント1: parts 配列の要素をすべてオブジェクト形式にする
         const parts: any[] = [
@@ -172,14 +164,15 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        // 修正ポイント2: responseModalities の大文字小文字と構造の修正
+        // Gemini 3.0 Pro Image Previewのアノテーション仕様に戻す
         const result = await model.generateContent({
             contents: [{ role: 'user', parts: parts }],
             generationConfig: {
-                responseModalities: ['IMAGE', 'TEXT'],
                 // @ts-ignore
-                imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined
-            } as any
+                responseModalities: ['IMAGE', 'TEXT']
+            },
+            // @ts-ignore
+            ...(Object.keys(imageConfig).length > 0 && { imageConfig })
         })
 
         const response = result.response
