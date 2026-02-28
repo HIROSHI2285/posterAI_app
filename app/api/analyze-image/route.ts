@@ -98,7 +98,11 @@ export async function POST(request: NextRequest) {
             // 正式版リリース後: 環境変数 GEMINI_ANALYSIS_MODEL を変更するだけで移行可能
             const modelName = process.env.GEMINI_ANALYSIS_MODEL || "gemini-3.1-pro-preview";
             const model = genAI.getGenerativeModel({
-                model: modelName
+                model: modelName,
+                generationConfig: {
+                    maxOutputTokens: 8192,
+                    temperature: 0.4,
+                }
             });
 
             // Base64データをパーツに変換
@@ -150,11 +154,14 @@ export async function POST(request: NextRequest) {
             }
             console.log("🔄 キャッシュミス: 新規解析を実行します");
 
-            const prompt = `この画像はポスターまたはデザイン作品です。
-AI画像生成ツール（Imagen）で高精度に再現できるように、デザインの構成要素を極めて詳細かつ具体的に言語化して抽出してください。
-特に「レイアウトの比率」「フォントの雰囲気」「配色の正確性」はピクセルパーフェクトな再現を目指すために最重要です。
+            const prompt = `あなたはプロのデザイン分析官です。この画像を解析し、Imagen 3 が細部まで完璧に再現できるように、極めて詳細なデザイン仕様書を作成してください。
+特に "detailedDescription" フィールドには、各項目について小説のような具体性を持って記述してください。
 
-以下のJSON形式で回答してください（JSONのみ、他のテキストは含めないでください）：
+【出力制限】
+- 必ず JSON 形式で出力してください。
+- 以下のJSON形式で回答してください（JSONのみ、他のテキストは含めないでください）。
+- 各項目の記述量は、合計で 5000 文字程度を目指してください。
+- 曖昧な単語（「きれいな」「おしゃれな」など）は禁止し、具体的な形状、質感、色の名前（HEX）を使用してください。
 
 {
   "basicInfo": {

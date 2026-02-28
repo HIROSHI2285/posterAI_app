@@ -197,24 +197,24 @@ ${imagePrompt}`
         if (generationMode === 'image-reference' && sampleImageData) {
             // 画像参照モード: サンプル画像 + 素材画像 + テキストプロンプト
             generationInput = [
+                finalPrompt, // テキストを先に配置
                 {
                     inlineData: {
                         data: sampleImageData.split(',')[1], // base64部分のみ
                         mimeType: sampleImageData.match(/data:([^;]+);/)?.[1] || 'image/jpeg'
                     }
                 },
-                ...materialInlineImages,
-                finalPrompt
+                ...materialInlineImages
             ]
             const imageDataSize = sampleImageData.split(',')[1].length
             console.log(`[Job ${jobId}] ✅ 画像参照モード: サンプル画像 + 素材${materialInlineImages.length}枚を含めて生成`)
             console.log(`[Job ${jobId}] 画像データサイズ: ${Math.round(imageDataSize / 1024)}KB`)
-            console.log(`[Job ${jobId}] 入力: [サンプル画像, 素材画像${materialInlineImages.length}枚, テキストプロンプト]`)
+            console.log(`[Job ${jobId}] 入力: [テキストプロンプト, サンプル画像, 素材画像${materialInlineImages.length}枚]`)
         } else if (materialInlineImages.length > 0) {
             // テキスト + 素材画像モード: 素材画像 + テキストプロンプト
             generationInput = [
-                ...materialInlineImages,
-                finalPrompt
+                finalPrompt,
+                ...materialInlineImages
             ]
             console.log(`[Job ${jobId}] ✅ テキスト+素材モード: 素材${materialInlineImages.length}枚を含めて生成`)
         } else {
