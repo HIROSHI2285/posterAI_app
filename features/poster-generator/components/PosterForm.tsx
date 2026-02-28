@@ -325,6 +325,33 @@ export function PosterForm({ onGenerate, isGenerating = false, onReset }: Poster
                 </CardContent>
             </Card>
 
+            {/* キャラクター設定（一貫性） */}
+            <Card className="border border-gray-300 bg-white">
+                <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
+                    <CardTitle className="text-base font-semibold">キャラクター設定（一貫性維持）</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4 pb-4">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="characterDescription" className="text-sm font-medium">
+                            キャラクターの特徴
+                        </Label>
+                        <p className="text-xs text-muted-foreground mb-2">
+                            ここに詳細に書くほど、生成したキャラクターの顔や服装が以降の生成・編集でも一貫して維持されやすくなります。AIに記憶させたい人物像を入力してください。
+                        </p>
+                        <Textarea
+                            id="characterDescription"
+                            rows={3}
+                            value={formData.characterDescription || ""}
+                            onChange={(e) =>
+                                setFormData({ ...formData, characterDescription: e.target.value })
+                            }
+                            placeholder="例：青いパーカーを着た短い金髪の少年、緑色の瞳、そばかすがある"
+                            className="resize-none"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* 出力サイズ */}
             < Card className="border border-gray-300 bg-white" >
                 <CardHeader className="py-3 px-4 rounded-t-lg" style={{ backgroundColor: '#48a772', color: 'white' }}>
