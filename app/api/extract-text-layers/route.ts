@@ -85,8 +85,8 @@ export async function POST(request: NextRequest) {
 
         // Gemini Vision APIを使用してテキストを抽出
         // 開発モードの場合はFlashモデルを使用（コスト削減）
-        // コスト最適化のため、テキスト抽出は常にFlashモデルを使用
-        const modelName = 'gemini-2.5-flash-image'
+        // コスト最適化のため、テキスト抽出は常にFlashモデルを使用と言っていましたが、全推論を3.1に統合するため 3.1-pro-previewに
+        const modelName = process.env.GEMINI_ANALYSIS_MODEL || 'gemini-3.1-pro-preview'
 
         console.log(`🔍 Extracting text using model: ${modelName} (Mode: ${modelMode})`)
 

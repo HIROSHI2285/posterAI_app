@@ -75,9 +75,10 @@ export async function POST(req: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use Gemini 2.5 Pro for high reasoning capabilities and accuracy (Replaces deprecated 1.5 Pro)
+    // Use Gemini 3.1 Pro Preview for high reasoning capabilities and accuracy
+    const modelName = process.env.GEMINI_ANALYSIS_MODEL || 'gemini-3.1-pro-preview'
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-pro',
+      model: modelName,
       generationConfig: {
         responseMimeType: "application/json",
       }
