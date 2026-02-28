@@ -230,7 +230,7 @@ ${imagePrompt}`
 
         // 4K指定を残しつつ、エラー時に備えて安全な構成にする
         if (modelName.includes('gemini-3.1-flash-image')) {
-            imageConfig.imageSize = '4K';
+            imageConfig.imageSize = '2K';
         }
 
         // キャラクター一貫性のためのパラメータ設定（Gemini 3.1新機能想定）

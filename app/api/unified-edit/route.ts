@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
         promptParts.push('- Do not crop the main subject or title.')
 
         if (modelName.includes('gemini-3.1-flash-image')) {
-            imageConfig.imageSize = '4K';
+            imageConfig.imageSize = '2K';
         }
 
         // 修正ポイント1: parts 配列の要素をすべてオブジェクト形式にする

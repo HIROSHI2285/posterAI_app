@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
       const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr };
 
       if (modelName.includes('gemini-3.1-flash-image')) {
-        imageConfig.imageSize = '4K';
+        imageConfig.imageSize = '2K';
       }
 
       // 画像を生成
