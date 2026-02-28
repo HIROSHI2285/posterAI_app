@@ -13,15 +13,10 @@ function getClosestAspectRatio(width: number, height: number): string {
   const ratio = width / height;
   const supported = [
     { str: '9:16', val: 9 / 16 },
-    { str: '2:3', val: 2 / 3 },
     { str: '3:4', val: 3 / 4 },
-    { str: '4:5', val: 4 / 5 },
     { str: '1:1', val: 1 / 1 },
-    { str: '5:4', val: 5 / 4 },
     { str: '4:3', val: 4 / 3 },
-    { str: '3:2', val: 3 / 2 },
     { str: '16:9', val: 16 / 9 },
-    { str: '21:9', val: 21 / 9 },
   ];
   let closest = supported[0];
   let minDiff = Math.abs(ratio - closest.val);
@@ -171,16 +166,12 @@ export async function POST(request: NextRequest) {
       // imageConfig.aspectRatio でアスペクト比を厳守させる
       // プロンプトテキストだけでは無視されるため、API パラメータで指定することが必須
       const imageConfig: Record<string, string> = { aspectRatio: aspectRatioStr };
-      // gemini-3.1-flash-image-preview などは imageSize で解像度指定が可能
-      if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
-        imageConfig.imageSize = '4K'; // Gemini 3.1からは4Kをデフォルトに
-      }
 
       // 画像を生成
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: imagePrompt }] }],
         generationConfig: {
-          responseModalities: ['Image', 'Text'],
+          responseModalities: ['IMAGE', 'TEXT'],
           // @ts-ignore - imageConfig は @google/generative-ai の型定義に未反映だが API は対応済み
           imageConfig,
         } as any,
@@ -364,11 +355,10 @@ function buildImagePrompt(params: {
 
   prompt += `\n\nキャンバス全体を埋める完成度の高いポスターを作成してください。
 
-【構図の安全性（重要）】
-⚠️ ポスターの端、特に「下部」に十分な余白を設けてください。
-- すべてのテキストと重要な被写体は、キャンバスの端から少なくとも5%内側に配置してください。
-- 下部の文字やグラフィックが見切れないよう、中央寄りの構図にしてください。
-- 塗り足しを考慮したプロフェッショナルなレイアウトを厳守してください。`;
+【Layout & Framing - MANDATORY】
+- SAFETY MARGIN: Ensure all text and important visual elements have at least a 5% margin from ALL edges, especially the BOTTOM.
+- NO CUT-OFF: Do not place subjects or text near the canvas boundaries.
+- COMPOSITION: Keep the main design balanced and centered to prevent any part from being cropped out during output.`;
 
   return prompt;
 }

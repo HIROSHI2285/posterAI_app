@@ -7,11 +7,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 function getClosestAspectRatio(width: number, height: number): string {
     const ratio = width / height;
     const supported = [
-        { str: '9:16', val: 9 / 16 }, { str: '2:3', val: 2 / 3 },
-        { str: '3:4', val: 3 / 4 }, { str: '4:5', val: 4 / 5 },
-        { str: '1:1', val: 1 / 1 }, { str: '5:4', val: 5 / 4 },
-        { str: '4:3', val: 4 / 3 }, { str: '3:2', val: 3 / 2 },
-        { str: '16:9', val: 16 / 9 }, { str: '21:9', val: 21 / 9 },
+        { str: '9:16', val: 9 / 16 },
+        { str: '3:4', val: 3 / 4 },
+        { str: '1:1', val: 1 / 1 },
+        { str: '4:3', val: 4 / 3 },
+        { str: '16:9', val: 16 / 9 },
     ];
     let closest = supported[0];
     let minDiff = Math.abs(ratio - closest.val);
@@ -132,9 +132,6 @@ export async function POST(request: NextRequest) {
         promptParts.push('- SAFETY MARGIN: Ensure all text and important elements have a 5% margin from all edges, ESPECIALLY THE BOTTOM.')
         promptParts.push('- NO CROPPING: Do not place subjects or text near the canvas boundaries to avoid being cut off.')
         promptParts.push('- BALANCE: Center the main content to maintain professional framing.')
-        if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
-            imageConfig.imageSize = '4K'
-        }
 
         // 修正ポイント1: parts 配列の要素をすべてオブジェクト形式にする
         const parts: any[] = [
@@ -171,7 +168,7 @@ export async function POST(request: NextRequest) {
         const result = await model.generateContent({
             contents: [{ role: 'user', parts: parts }],
             generationConfig: {
-                responseModalities: ['Image', 'Text']
+                responseModalities: ['IMAGE', 'TEXT']
             } as any,
             // @ts-ignore
             imageConfig: Object.keys(imageConfig).length > 0 ? imageConfig : undefined

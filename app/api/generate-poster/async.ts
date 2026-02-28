@@ -10,16 +10,11 @@ import { OUTPUT_SIZES } from "@/types/poster"
 function getClosestAspectRatio(width: number, height: number): string {
     const ratio = width / height
     const supported = [
-        { str: '9:16', val: 9 / 16 },   // 0.5625 - 最も縦長
-        { str: '2:3', val: 2 / 3 },    // 0.6667
-        { str: '3:4', val: 3 / 4 },    // 0.75
-        { str: '4:5', val: 4 / 5 },    // 0.8
-        { str: '1:1', val: 1 / 1 },    // 1.0
-        { str: '5:4', val: 5 / 4 },    // 1.25
-        { str: '4:3', val: 4 / 3 },    // 1.3333
-        { str: '3:2', val: 3 / 2 },    // 1.5
-        { str: '16:9', val: 16 / 9 },   // 1.7778
-        { str: '21:9', val: 21 / 9 },   // 2.3333 - 最も横長
+        { str: '9:16', val: 9 / 16 },
+        { str: '3:4', val: 3 / 4 },
+        { str: '1:1', val: 1 / 1 },
+        { str: '4:3', val: 4 / 3 },
+        { str: '16:9', val: 16 / 9 },
     ]
     let closest = supported[0]
     let minDiff = Math.abs(ratio - closest.val)
@@ -233,11 +228,6 @@ ${imagePrompt}`
         // imageConfig.aspectRatio でアスペクト比を厳守させる
         const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr }
 
-        // gemini-3.1-flash-image-preview などは imageSize で解像度指定が可能
-        if (modelName.includes('gemini-3.1-flash-image') || modelName.includes('gemini-3-pro')) {
-            imageConfig.imageSize = '4K' // Gemini 3.1からは4Kをデフォルトに
-        }
-
         // キャラクター一貫性のためのパラメータ設定（Gemini 3.1新機能想定）
         let generatedSeed: number | undefined
         if (characterDescription) {
@@ -255,7 +245,7 @@ ${imagePrompt}`
                 }]
                 : [{ role: 'user', parts: [{ text: generationInput }] }],
             generationConfig: {
-                responseModalities: ['Image', 'Text'],
+                responseModalities: ['IMAGE', 'TEXT'],
                 // @ts-ignore - imageConfig は @google/generative-ai の型定義に未反映だが API は対応済み
                 imageConfig,
             } as any,
@@ -474,11 +464,10 @@ ${detailedPrompt}
 
 上記のタイトルとテキストを組み込みながら、バランスの取れた高品質なポスターを作成してください。
 
-【構図の安全性（重要）】
-⚠️ ポスターの端、特に「下部」に十分な余白を設けてください。
-- すべてのテキストと重要な被写体は、キャンバスの端から少なくとも5%内側に配置してください。
-- 下部の文字やグラフィックが見切れないよう、中央寄りの構図にしてください。
-- 塗り足しを考慮したプロフェッショナルなレイアウトを厳守してください。`
+【Layout & Framing - MANDATORY】
+- SAFETY MARGIN: Ensure all text and important visual elements have at least a 5% margin from ALL edges, especially the BOTTOM.
+- NO CUT-OFF: Do not place subjects or text near the canvas boundaries.
+- COMPOSITION: Keep the main design balanced and centered to prevent any part from being cropped out during output.`
 
         return prompt
     }
@@ -568,11 +557,10 @@ ${detailedPrompt}
 
 キャンバス全体を埋める完成度の高いポスターを作成してください。
 
-【構図の安全性（重要）】
-⚠️ ポスターの端、特に「下部」に十分な余白を設けてください。
-- すべてのテキストと重要な被写体は、キャンバスの端から少なくとも5%内側に配置してください。
-- 下部の文字やグラフィックが見切れないよう、中央寄りの構図にしてください。
-- 塗り足しを考慮したプロフェッショナルなレイアウトを厳守してください。`
+【Layout & Framing - MANDATORY】
+- SAFETY MARGIN: Ensure all text and important visual elements have at least a 5% margin from ALL edges, especially the BOTTOM.
+- NO CUT-OFF: Do not place subjects or text near the canvas boundaries.
+- COMPOSITION: Keep the main design balanced and centered to prevent any part from being cropped out during output.`
 
     return prompt
 }
