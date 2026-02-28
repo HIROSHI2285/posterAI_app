@@ -104,7 +104,7 @@ POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-im
 
 ### 推奨モデル
 - **画像生成・Inpainting**: Gemini 3.1 Flash Image Preview (Nano Banana)
-  - 4K解像度出力
+  - 2K高解像度出力
   - 安価かつ極めて高品質
   - キャラクター一貫性（Character Consistency）対応
 
