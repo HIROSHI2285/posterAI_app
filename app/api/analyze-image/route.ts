@@ -100,8 +100,6 @@ export async function POST(request: NextRequest) {
             const model = genAI.getGenerativeModel({
                 model: modelName,
                 generationConfig: {
-                    responseMimeType: "application/json",
-                    maxOutputTokens: 4096,
                     temperature: 0.4,
                 }
             });
