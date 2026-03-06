@@ -53,8 +53,9 @@ export async function POST(request: Request) {
         console.log(`[Edit] 挿入画像数: ${insertImages.length}`)
         console.log(`[Edit] 挿入画像用途: ${insertUsages.join(', ')}`)
 
-        // Gemini APIクライアントを初期化
-        const modelName = process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview"
+        // Gemini APIクライアントを初期化（3.1 Flash Image で会話型編集）
+        const modelName = process.env.GEMINI_EDIT_MODEL || "gemini-3.1-flash-image-preview"
+        console.log(`[Edit] 使用モデル: ${modelName}`)
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
 
@@ -133,8 +134,14 @@ ${editPrompt}
         // プロンプトを追加
         contentParts.push(fullPrompt)
 
-        // 画像編集リクエストを送信
-        const result = await model.generateContent(contentParts)
+        // 画像編集リクエストを送信（3.1: generationConfig で IMAGE 出力を指定）
+        const result = await model.generateContent({
+            contents: [{ role: 'user', parts: contentParts.map((p: any) => typeof p === 'string' ? { text: p } : p) }],
+            generationConfig: {
+                // @ts-ignore
+                responseModalities: ['IMAGE', 'TEXT'],
+            } as any,
+        })
 
         const response = result.response
         const candidate = response.candidates?.[0]

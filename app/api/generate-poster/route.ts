@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       customWidth,
       customHeight,
       customUnit,
+      characterDescription,
       modelMode = 'production',  // モデル選択を追加
     } = body;
 
@@ -171,6 +172,14 @@ export async function POST(request: NextRequest) {
         imageConfig.imageSize = '2K';
       }
 
+      // キャラクター一貫性のためのSeed設定
+      let generatedSeed: number | undefined
+      if (characterDescription) {
+        generatedSeed = Math.floor(Math.random() * 1000000)
+        imageConfig.seed = generatedSeed
+        console.log(`キャラクター一貫性(Consistency)を有効化: Seed=${generatedSeed}`)
+      }
+
       // 画像を生成
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: imagePrompt }] }],
@@ -245,6 +254,13 @@ export async function POST(request: NextRequest) {
         imageData: imageData,
         formData: body,
         message: "Gemini 3.1 API Suite で画像を生成しました",
+        // キャラクター一貫性のためのFeatures情報
+        ...(generatedSeed && characterDescription && {
+          character_features: {
+            seed: generatedSeed,
+            description: characterDescription,
+          }
+        }),
       }, {
         headers: {
           'X-RateLimit-Limit': '30',

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getCachedAnalysis, setCachedAnalysis } from '@/lib/gemini';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth'; // Adjust path if necessary
 
@@ -110,16 +111,21 @@ export async function POST(req: NextRequest) {
       ${BLUEPRINT_SCHEMA}
     `;
 
-    // 5. Call API
-    // Remove header if present in base64 string
+    // 5. キャッシュチェック（同じ画像の連続解析を回避）
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const cached = getCachedAnalysis(base64Data);
+    if (cached) {
+      console.log('📦 Blueprint: Cache HIT - API呼び出しをスキップ');
+      return NextResponse.json(cached);
+    }
 
+    // 6. Call API
     const result = await model.generateContent([
       prompt,
       {
         inlineData: {
           data: base64Data,
-          mimeType: "image/png", // Assuming PNG
+          mimeType: "image/png",
         },
       },
     ]);
@@ -130,6 +136,8 @@ export async function POST(req: NextRequest) {
     // Parse it first to ensure valid JSON before returning
     try {
       const jsonResponse = JSON.parse(responseText);
+      // キャッシュに保存
+      setCachedAnalysis(base64Data, jsonResponse);
       return NextResponse.json(jsonResponse);
     } catch (parseError) {
       console.error("JSON Parse Error:", parseError);

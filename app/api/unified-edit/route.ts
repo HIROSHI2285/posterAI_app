@@ -79,13 +79,17 @@ export async function POST(request: NextRequest) {
         const genAI = new GoogleGenerativeAI(apiKey)
         const modelName = modelMode === 'development'
             ? "gemini-2.5-flash-image"
-            : (process.env.GEMINI_EDIT_MODEL || "gemini-3-pro-image-preview");
+            : (process.env.GEMINI_EDIT_MODEL || "gemini-3.1-flash-image-preview");
 
+        console.log(`🎨 Unified Edit using model: ${modelName}`)
         const model = genAI.getGenerativeModel({ model: modelName })
 
-        // プロンプト構築
+        // プロンプト構築（背景ブレ防止のため、保持指示を最大限強化）
         const promptParts: string[] = []
-        promptParts.push('You are an expert graphic designer. Please edit the attached image according to the following instructions.')
+        promptParts.push('You are an expert graphic designer performing a SURGICAL edit on the attached image.')
+        promptParts.push('CRITICAL: You MUST preserve the EXACT original image as much as possible.')
+        promptParts.push('Only modify the specific elements described below. Every pixel not mentioned in the instructions must remain IDENTICAL to the original.')
+        promptParts.push('Do NOT regenerate or reimagine the image. Treat this as a precise, minimal edit operation.')
 
         if (textEdits && textEdits.length > 0) {
             promptParts.push('\n【Text Edits】')
@@ -164,15 +168,14 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        // Gemini 3.0 Pro Image Previewのアノテーション仕様に戻す
+        // Gemini 3.1 Flash Image Preview: imageConfig は generationConfig 内に配置
         const result = await model.generateContent({
             contents: [{ role: 'user', parts: parts }],
             generationConfig: {
                 // @ts-ignore
-                responseModalities: ['IMAGE', 'TEXT']
-            },
-            // @ts-ignore
-            ...(Object.keys(imageConfig).length > 0 && { imageConfig })
+                responseModalities: ['IMAGE', 'TEXT'],
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig }),
+            } as any,
         })
 
         const response = result.response

@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
 
         const genAI = new GoogleGenerativeAI(apiKey)
 
-        // Text parsing / logic updates should use the Pro preview model
-        const modelName = process.env.GEMINI_ANALYSIS_MODEL || "gemini-3.1-pro-preview"
+        // テキスト判定・JSON更新は軽量モデルで十分（コスト約90%削減）
+        const modelName = process.env.GEMINI_SMART_EDIT_MODEL || "gemini-3.1-flash-lite-preview"
 
         console.log(`🧠 Smart Edit using model: ${modelName}`)
         const model = genAI.getGenerativeModel({ model: modelName })
