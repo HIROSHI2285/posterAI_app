@@ -37,11 +37,17 @@ export async function POST(request: NextRequest) {
 The user wants to edit a poster. You have the current text layers (JSON) and the user's prompt.
 Your task is to determine if the user's request is strictly about modifying TEXT (content, font size, color, font family, text position) OR if it requires modifying the actual image background/graphics.
 
-If the request is strictly about text (e.g. "change title to XXX", "make text red", "delete the subtitle"):
+IMPORTANT CLASSIFICATION RULES:
+- Requests to REMOVE, DELETE, or ERASE any visual element (QRコード, ロゴ, 画像, 人物, 背景の一部 etc.) are ALWAYS image edits (isTextEditOnly: false).
+- Words like "消して", "消す", "削除", "なくして", "除去", "remove", "delete", "erase" applied to ANY non-text element → isTextEditOnly: false.
+- Requests about text content changes only (e.g. "タイトルを変えて", "change title to XXX", "テキストを赤にして") → isTextEditOnly: true.
+- Requests about background, colors of the image, adding/removing objects → isTextEditOnly: false.
+
+If the request is strictly about text (e.g. "change title to XXX", "make text red", "delete the subtitle text"):
 1. Set "isTextEditOnly" to true.
 2. Provide the "updatedLayers" array reflecting the changes.
 
-If the request requires changing the image itself (e.g. "make the background darker", "add a cat", "remove the person"):
+If the request requires changing the image itself (e.g. "make the background darker", "add a cat", "remove the QR code", "QRコードを消して"):
 1. Set "isTextEditOnly" to false.
 2. "updatedLayers" can be omitted or null.
 
@@ -51,6 +57,7 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
   "updatedLayers": [ ... ]
 }`
 
+        console.log(`🧠 Smart Edit prompt: "${body.prompt}"`)
         const userPrompt = `Layers:\n${JSON.stringify(layers, null, 2)}\n\nPrompt:\n${prompt}`
 
         const result = await model.generateContent({
@@ -72,6 +79,7 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
 
         try {
             const parsed = JSON.parse(textResponse)
+            console.log(`🧠 Smart Edit result: isTextEditOnly=${parsed.isTextEditOnly} (prompt: "${prompt.substring(0, 50)}")`)
             return NextResponse.json({
                 success: true,
                 isTextEditOnly: parsed.isTextEditOnly,

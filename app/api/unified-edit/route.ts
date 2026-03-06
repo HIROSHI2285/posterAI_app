@@ -79,17 +79,17 @@ export async function POST(request: NextRequest) {
         const genAI = new GoogleGenerativeAI(apiKey)
         const modelName = modelMode === 'development'
             ? "gemini-2.5-flash-image"
-            : (process.env.GEMINI_EDIT_MODEL || "gemini-3.1-flash-image-preview");
+            : (process.env.GEMINI_EDIT_MODEL || "gemini-3-pro-image-preview"); // Inpainting対応: 3.1は未対応のため3.0を維持
 
         console.log(`🎨 Unified Edit using model: ${modelName}`)
         const model = genAI.getGenerativeModel({ model: modelName })
 
-        // プロンプト構築（背景ブレ防止のため、保持指示を最大限強化）
+        // プロンプト構築（編集の正確な実行 + 非指示領域の保持のバランス）
         const promptParts: string[] = []
-        promptParts.push('You are an expert graphic designer performing a SURGICAL edit on the attached image.')
-        promptParts.push('CRITICAL: You MUST preserve the EXACT original image as much as possible.')
-        promptParts.push('Only modify the specific elements described below. Every pixel not mentioned in the instructions must remain IDENTICAL to the original.')
-        promptParts.push('Do NOT regenerate or reimagine the image. Treat this as a precise, minimal edit operation.')
+        promptParts.push('You are an expert graphic designer editing the attached image.')
+        promptParts.push('RULE 1 (HIGHEST PRIORITY): You MUST FULLY execute every edit instruction below. If asked to remove, delete, or erase something, you MUST completely remove it and fill the area naturally with the surrounding background.')
+        promptParts.push('RULE 2: Areas NOT mentioned in the instructions below must remain unchanged. Preserve the overall composition, colors, and style of the original image for unaffected areas.')
+        promptParts.push('RULE 3: Do NOT regenerate or reimagine the entire image. Only change what is explicitly requested.')
 
         if (textEdits && textEdits.length > 0) {
             promptParts.push('\n【Text Edits】')

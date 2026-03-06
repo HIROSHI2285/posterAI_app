@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         console.log(`[Edit] 挿入画像用途: ${insertUsages.join(', ')}`)
 
         // Gemini APIクライアントを初期化（3.1 Flash Image で会話型編集）
-        const modelName = process.env.GEMINI_EDIT_MODEL || "gemini-3.1-flash-image-preview"
+        const modelName = process.env.GEMINI_EDIT_MODEL || "gemini-3-pro-image-preview" // Inpainting対応: 3.1は未対応のため3.0を維持
         console.log(`[Edit] 使用モデル: ${modelName}`)
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
