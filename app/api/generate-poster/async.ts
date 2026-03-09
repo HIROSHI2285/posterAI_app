@@ -228,17 +228,20 @@ ${imagePrompt}`
         // imageConfig.aspectRatio でアスペクト比を厳守させる
         const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr }
 
-        // 4K指定を残しつつ、エラー時に備えて安全な構成にする
+        // 4K高解像度（Nano Banana 2 対応）
         if (modelName.includes('gemini-3.1-flash-image')) {
-            imageConfig.imageSize = '2K';
+            imageConfig.imageSize = '4K';
         }
 
-        // キャラクター一貫性のためのパラメータ設定（Gemini 3.1新機能想定）
+        // キャラクター一貫性のためのSeed設定
+        // 前回のseedが渡されていれば再利用し、なければ新規生成
         let generatedSeed: number | undefined
         if (characterDescription) {
-            generatedSeed = Math.floor(Math.random() * 1000000)
+            const previousSeed = (formData as any)?.character_features?.seed
+            generatedSeed = previousSeed ?? Math.floor(Math.random() * 1000000)
             imageConfig.seed = generatedSeed
-            console.log(`[Job ${jobId}] キャラクター一貫性(Consistency)を有効化: Seed=${generatedSeed}`)
+            const isReused = !!previousSeed
+            console.log(`[Job ${jobId}] キャラクター一貫性を有効化: Seed=${generatedSeed} (${isReused ? '再利用' : '新規生成'})`)
         }
 
         const result = await model.generateContent({

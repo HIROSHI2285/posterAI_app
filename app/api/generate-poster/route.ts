@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       customHeight,
       customUnit,
       characterDescription,
+      character_features,        // 再生成時のSeed再利用
       modelMode = 'production',  // モデル選択を追加
     } = body;
 
@@ -169,15 +170,17 @@ export async function POST(request: NextRequest) {
       const imageConfig: Record<string, any> = { aspectRatio: aspectRatioStr };
 
       if (modelName.includes('gemini-3.1-flash-image')) {
-        imageConfig.imageSize = '2K';
+        imageConfig.imageSize = '4K'; // 4K高解像度（Nano Banana 2 対応）
       }
 
       // キャラクター一貫性のためのSeed設定
+      // 前回のseedが渡されていれば再利用し、なければ新規生成
       let generatedSeed: number | undefined
       if (characterDescription) {
-        generatedSeed = Math.floor(Math.random() * 1000000)
+        generatedSeed = character_features?.seed ?? Math.floor(Math.random() * 1000000)
         imageConfig.seed = generatedSeed
-        console.log(`キャラクター一貫性(Consistency)を有効化: Seed=${generatedSeed}`)
+        const isReused = !!character_features?.seed
+        console.log(`キャラクター一貫性を有効化: Seed=${generatedSeed} (${isReused ? '再利用' : '新規生成'})`)
       }
 
       // 画像を生成

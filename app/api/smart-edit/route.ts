@@ -67,6 +67,9 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
             generationConfig: {
                 // Ensure the response is pure JSON
                 responseMimeType: "application/json",
+                // thinkingConfig: Flash-Liteの思考深度を"medium"相当に設定（分類精度向上）
+                // @ts-ignore
+                thinkingConfig: { thinkingBudget: 1024 },
             }
         })
 
