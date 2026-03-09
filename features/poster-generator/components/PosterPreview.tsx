@@ -572,37 +572,78 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                 }
             }
 
-            // 矩形領域編集のデータを構築
-            const regionEditsData = pendingRegionEdits.length > 0 ? pendingRegionEdits.map(edit => ({
-                position: {
-                    top: edit.region.top,
-                    left: edit.region.left,
-                    width: edit.region.widthPercent,
-                    height: edit.region.heightPercent,
-                    description: edit.region.description
-                },
-                prompt: edit.prompt
-            })) : undefined
-
             // 画像の本来のサイズを取得
             const getOriginalDimensions = (): Promise<{ width: number, height: number }> => {
                 return new Promise((resolve) => {
                     const img = new Image()
                     img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
-                    img.onerror = () => resolve({ width: 0, height: 0 }) // フォールバック
+                    img.onerror = () => resolve({ width: 0, height: 0 })
                     img.src = displayImageUrl
                 })
             }
-
             const dims = await getOriginalDimensions()
 
-            console.log('🚀 Unified Edit Request:', {
-                hasRegionEdits: !!regionEditsData,
-                hasInsertImages: pendingInsertImages.length,
-                hasTextEdits: pendingTextEdits.length,
-                hasGeneralPrompt: !!pendingGeneralPrompt,
-                originalDimensions: dims
-            })
+            // ======== 矩形編集: マスク画像の生成（フェザリング付き） ========
+            let maskDataUrl: string | undefined
+            let maskPromptText: string | undefined
+            let boundingBoxData: { yMin: number; xMin: number; yMax: number; xMax: number } | undefined
+            let isRemoval = false
+
+
+            if (pendingRegionEdits.length > 0 && regionCanvasRef.current) {
+                const firstEdit = pendingRegionEdits[0]
+                const canvas = regionCanvasRef.current
+
+                // マスクキャンバスを生成（元画像と同じサイズ）
+                const maskCanvas = document.createElement('canvas')
+                maskCanvas.width = canvas.width
+                maskCanvas.height = canvas.height
+                const ctx = maskCanvas.getContext('2d')!
+
+                // 背景: 黒（編集しない領域）
+                ctx.fillStyle = 'black'
+                ctx.fillRect(0, 0, maskCanvas.width, maskCanvas.height)
+
+                // フェザリング: マスクの境界をディスタンスに基づきディザーで穰れさせる（5pxグラデーション）
+                const featherR = 5
+                const x = firstEdit.region.x
+                const y = firstEdit.region.y
+                const w = firstEdit.region.width
+                const h = firstEdit.region.height
+
+                // 中心部は純白
+                ctx.fillStyle = 'white'
+                ctx.fillRect(x + featherR, y + featherR, w - featherR * 2, h - featherR * 2)
+
+                // 境界のグラデーション (エッジ強化)
+                const grad = ctx.createRadialGradient(
+                    x + w / 2, y + h / 2, Math.min(w, h) / 2 - featherR,
+                    x + w / 2, y + h / 2, Math.min(w, h) / 2
+                )
+                grad.addColorStop(0, 'rgba(255,255,255,1)')
+                grad.addColorStop(1, 'rgba(255,255,255,0)')
+                ctx.globalCompositeOperation = 'source-atop'
+                ctx.fillStyle = grad
+                ctx.fillRect(x, y, w, h)
+                ctx.globalCompositeOperation = 'source-over'
+
+                maskDataUrl = maskCanvas.toDataURL('image/png')
+                maskPromptText = firstEdit.prompt
+
+                // バウンディングボックスの計算 (0-1000 正規化値)
+                boundingBoxData = {
+                    yMin: Math.round((y / canvas.height) * 1000),
+                    xMin: Math.round((x / canvas.width) * 1000),
+                    yMax: Math.round(((y + h) / canvas.height) * 1000),
+                    xMax: Math.round(((x + w) / canvas.width) * 1000),
+                }
+
+                // 消去キーワード検出
+                const removalKeywords = ['\u6d88\u3057\u3066', '\u6d88\u3059', '\u6d88\u53bb', '\u306a\u304f\u3057\u3066', '\u9664\u53bb', '\u524a\u9664', 'remove', 'delete', 'erase', 'eliminate']
+                isRemoval = removalKeywords.some(kw => firstEdit.prompt.toLowerCase().includes(kw))
+
+                console.log(`🖼️🖹️ Mask generated: ${maskCanvas.width}x${maskCanvas.height} | bbox: ${JSON.stringify(boundingBoxData)} | isRemoval: ${isRemoval}`)
+            }
 
             const response = await fetch('/api/unified-edit', {
                 method: 'POST',
@@ -620,7 +661,10 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                         data: e.data,
                         usage: e.usage
                     })) : undefined,
-                    regionEdits: regionEditsData,
+                    maskData: maskDataUrl,
+                    maskPrompt: maskPromptText,
+                    boundingBox: boundingBoxData,
+                    isRemovalTask: isRemoval,
                     generalPrompt: pendingGeneralPrompt || undefined,
                     modelMode: editModelMode === 'inherit' ? modelMode : editModelMode,
                     originalDimensions: dims.width > 0 ? dims : undefined,

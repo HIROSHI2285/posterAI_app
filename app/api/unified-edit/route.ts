@@ -45,12 +45,21 @@ interface RegionEdit {
     color: string
 }
 
+interface BoundingBox {
+    yMin: number  // 0-1000 正規化値
+    xMin: number
+    yMax: number
+    xMax: number
+}
+
 interface UnifiedEditRequest {
     imageData: string
     textEdits?: TextEdit[]
     insertImages?: { data: string, usage: string }[]
     maskData?: string
     maskPrompt?: string
+    boundingBox?: BoundingBox   // 消去範囲の座標（オプション）
+    isRemovalTask?: boolean     // オブジェクト消去が目的かどうか
     generalPrompt?: string
     modelMode?: 'production' | 'development'
     originalDimensions?: { width: number, height: number }
@@ -65,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body: UnifiedEditRequest = await request.json()
-        const { imageData, textEdits, insertImages, maskData, maskPrompt, generalPrompt, modelMode = 'production', originalDimensions, metadata } = body
+        const { imageData, textEdits, insertImages, maskData, maskPrompt, boundingBox, isRemovalTask, generalPrompt, modelMode = 'production', originalDimensions, metadata } = body
 
         if (!imageData) {
             return NextResponse.json({ error: '画像データが必要です' }, { status: 400 })
@@ -103,8 +112,29 @@ export async function POST(request: NextRequest) {
         }
 
         if (maskData && maskPrompt) {
-            promptParts.push('\n【Region Specific Edit】')
-            promptParts.push(`Edit ONLY the masked area: ${maskPrompt}`)
+            const bboxText = boundingBox
+                ? `Target coordinates (0-1000 scale): y_min=${boundingBox.yMin}, x_min=${boundingBox.xMin}, y_max=${boundingBox.yMax}, x_max=${boundingBox.xMax}`
+                : ''
+
+            if (isRemovalTask) {
+                // 消去タスク専用: 明示的な削除指示
+                promptParts.push('\n【OBJECT REMOVAL TASK】')
+                promptParts.push('TASK: Complete object removal and seamless background reconstruction.')
+                if (bboxText) promptParts.push(bboxText)
+                promptParts.push(`The highlighted/masked region contains: ${maskPrompt}`)
+                promptParts.push('REMOVE IT ENTIRELY from the image.')
+                promptParts.push('Reconstruct the background as if this object NEVER EXISTED.')
+                promptParts.push('Match surrounding textures, colors, gradients, and lighting EXACTLY.')
+                promptParts.push('Do NOT blur, fade, darken, or partially remove. COMPLETE ERASURE AND RECONSTRUCTION required.')
+                promptParts.push('The final result must look like a photo taken without the object ever being there.')
+                console.log(`🗑️ Object REMOVAL mode: "${maskPrompt}" bbox=${bboxText}`)
+            } else {
+                // 通常の領域編集
+                promptParts.push('\n【Region Specific Edit】')
+                if (bboxText) promptParts.push(bboxText)
+                promptParts.push(`Edit ONLY the masked/highlighted area: ${maskPrompt}`)
+                promptParts.push('Apply the edit naturally, blending with the surrounding style and colors.')
+            }
         }
 
         if (generalPrompt) {
