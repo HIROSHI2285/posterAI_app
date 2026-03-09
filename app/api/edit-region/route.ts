@@ -57,7 +57,11 @@ export async function POST(request: NextRequest) {
         const insertImages = hasInsertImages ? insertImagesData : []
         const insertUsages = hasInsertImages ? (insertImagesUsages || []) : []
 
-        // プロンプト構築（Geminiアドバイスに従う）
+        // 消去キーワード検出
+        const removalKeywords = ['\u6d88\u3057\u3066', '\u6d88\u3059', '\u6d88\u53bb', '\u306a\u304f\u3057\u3066', '\u9664\u53bb', '\u524a\u9664', 'remove', 'delete', 'erase', 'eliminate']
+        const isRemovalTask = removalKeywords.some(kw => regionPromptsText.toLowerCase().includes(kw))
+
+        // プロンプト構築
         let fullPrompt: string
 
         const commonInstructions = `
@@ -65,23 +69,17 @@ export async function POST(request: NextRequest) {
 2枚目の画像（マスク画像）で色が塗られた領域のみを編集してください。
 色が塗られていない部分は、1ピクセルも変更してはいけません。
 元の画像のスタイル、背景、品質を完全に維持してください。
-編集箇所が周囲と自然に馴染むように、高品質に生成してください。
 `
 
-        if (hasInsertImages) {
-            const imageUsageDescriptions = insertImages.map((_: string, i: number) => {
-                const usage = insertUsages[i] || '適切な位置に配置'
-                return `【画像${i + 1}】${usage}`
-            }).join('\n')
-
-            fullPrompt = `以下の2枚の画像（元画像とマスク画像）を使って、領域限定の編集を行ってください。
-
-【編集対象の定義】
-2枚目のマスク画像で色が塗られた部分を、以下の指示に従って書き換えてください。
-${regionPromptsText}
-
-【追加画像の使用方法】
-${imageUsageDescriptions}
+        if (isRemovalTask) {
+            fullPrompt = `【OBJECT REMOVAL TASK】
+TASK: Complete object removal and seamless background reconstruction.
+The highlighted/masked region contains: ${regionPromptsText}
+REMOVE IT ENTIRELY from the image.
+Reconstruct the background as if this object NEVER EXISTED.
+Match surrounding textures, colors, gradients, and lighting EXACTLY.
+Do NOT blur, fade, darken, or partially remove. COMPLETE ERASURE AND RECONSTRUCTION required.
+The final result must look like a photo taken without the object ever being there.
 
 ${commonInstructions}`
         } else {
@@ -91,8 +89,19 @@ ${commonInstructions}`
 2枚目のマスク画像で色が塗られた部分を、以下の指示に従って書き換えてください。
 ${regionPromptsText}
 
+Apply the edit naturally, blending with the surrounding style and colors.
+
 ${commonInstructions}`
         }
+
+        if (hasInsertImages) {
+            const imageUsageDescriptions = insertImages.map((_: string, i: number) => {
+                const usage = insertUsages[i] || '適切な位置に配置'
+                return `【画像${i + 1}】${usage}`
+            }).join('\n')
+            fullPrompt += `\n【追加画像の使用方法】\n${imageUsageDescriptions}`
+        }
+
 
         // 画像データを準備（元画像とオーバーレイ画像の2枚）
         const baseImageBase64 = imageData.split(',')[1]

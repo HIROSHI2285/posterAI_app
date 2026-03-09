@@ -57,8 +57,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
     const displayImageUrl = editedImageUrl || imageUrl
 
     const [isUpscaling, setIsUpscaling] = useState(false)
-    // 編集時モデル選択（'inherit' = 生成時のmodelModeを継承）
-    const [editModelMode, setEditModelMode] = useState<'production' | 'development' | 'inherit'>('inherit')
     const { isExtracting, isExportingPptx, isExportingSlides, handleExtractBlueprint, handleExportPptx, handleExportSlides } = useExport()
 
     // 現在の編集モード
@@ -666,7 +664,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                     boundingBox: boundingBoxData,
                     isRemovalTask: isRemoval,
                     generalPrompt: pendingGeneralPrompt || undefined,
-                    modelMode: editModelMode === 'inherit' ? modelMode : editModelMode,
+                    modelMode: modelMode,
                     originalDimensions: dims.width > 0 ? dims : undefined,
                     metadata: metadata
                 })
@@ -1258,19 +1256,6 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                                     ))}
                                 </div>
 
-                                {/* 編集モデル選択 */}
-                                <div className="flex items-center gap-2 mt-3 p-2 bg-white rounded border">
-                                    <label className="text-xs text-gray-600 whitespace-nowrap">編集モデル:</label>
-                                    <select
-                                        value={editModelMode}
-                                        onChange={(e) => setEditModelMode(e.target.value as 'production' | 'development' | 'inherit')}
-                                        className="flex-1 text-xs border rounded px-2 py-1 bg-white"
-                                    >
-                                        <option value="inherit">生成時と同じ（{modelMode === 'production' ? 'Pro 3.1' : 'Flash 3.1'}）</option>
-                                        <option value="production">Pro（高精度編集）</option>
-                                        <option value="development">Flash（テキスト編集のみ）</option>
-                                    </select>
-                                </div>
 
                                 <Button
                                     onClick={handleApplyAllEdits}
