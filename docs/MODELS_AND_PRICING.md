@@ -18,6 +18,7 @@
 > [!NOTE]
 > 画像編集（edit系）は `gemini-3-pro-image-preview` のInpainting機能に依存しています。
 > Gemini 3.1に編集機能が追加され次第、`GEMINI_EDIT_MODEL` 環境変数を更新するだけで移行可能です。
+> **Update**: オブジェクト消去（remove/消して等）時は、専用の強力なプロンプトとフェザリング付きマスク画像を動的に生成し、高精度な背景再構築を実行します。
 
 ---
 
