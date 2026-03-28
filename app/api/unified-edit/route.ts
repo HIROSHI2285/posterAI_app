@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { GoogleGenerativeAI } from '@google/generative-ai'
@@ -64,6 +64,78 @@ interface UnifiedEditRequest {
     modelMode?: 'production' | 'development'
     originalDimensions?: { width: number, height: number }
     metadata?: any
+}
+
+/**
+ * Step 1: Gemini Pro を使ってオブジェクトの精密セグメンテーションマスクを取得する
+ * 矩形の粗いマスクの代わりに、オブジェクト輪郭に沿った精密マスクPNGを返す
+ */
+async function getSegmentationMask(
+    genAI: GoogleGenerativeAI,
+    imageData: string,
+    boundingBox: BoundingBox,
+    objectDescription: string
+): Promise<string | null> {
+    try {
+        console.log('🔬 Step 1: Segmentation analysis starting...')
+        const analysisModel = genAI.getGenerativeModel({
+            model: process.env.GEMINI_ANALYSIS_MODEL || 'gemini-3.1-pro-preview'
+        })
+
+        // バウンディングボックスを0-1000スケールで記述
+        const bboxDesc = `[ymin=${boundingBox.yMin}, xmin=${boundingBox.xMin}, ymax=${boundingBox.yMax}, xmax=${boundingBox.xMax}] (0-1000 scale)`
+
+        const segPrompt = `Identify and segment the object described below from the provided image.
+
+Target region (bounding box): ${bboxDesc}
+Object to segment: "${objectDescription}"
+
+Return a JSON object with:
+- "label": what the object is
+- "box_2d": [ymin, xmin, ymax, xmax] in 0-1000 scale, as precise as possible
+- "mask": a base64-encoded PNG (grayscale, 64x64) where pixels belonging to the object are WHITE (255) and background is BLACK (0)
+- "confidence": 0.0-1.0
+
+Return ONLY valid JSON, no markdown, no explanation.`
+
+        const segResult = await analysisModel.generateContent({
+            contents: [{
+                role: 'user',
+                parts: [
+                    { text: segPrompt },
+                    {
+                        inlineData: {
+                            data: imageData.split(',')[1],
+                            mimeType: imageData.match(/data:([^;]+);/)?.[1] || 'image/png'
+                        }
+                    }
+                ]
+            }]
+        })
+
+        const rawText = segResult.response.text().trim()
+        // JSONブロックの抽出（```json ... ``` でラップされている場合も対応）
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) {
+            console.warn('⚠️ Segmentation: No JSON found in response')
+            return null
+        }
+
+        const segData = JSON.parse(jsonMatch[0])
+        console.log(`✅ Segmentation done: label="${segData.label}", confidence=${segData.confidence}, box=${JSON.stringify(segData.box_2d)}`)
+
+        if (!segData.mask || segData.confidence < 0.4) {
+            console.warn(`⚠️ Segmentation: Low confidence (${segData.confidence}) or no mask. Falling back.`)
+            return null
+        }
+
+        // base64マスクをdataURLとして返す
+        return `data:image/png;base64,${segData.mask}`
+
+    } catch (err) {
+        console.error('❌ Segmentation step failed:', err)
+        return null
+    }
 }
 
 export async function POST(request: NextRequest) {
@@ -167,6 +239,18 @@ export async function POST(request: NextRequest) {
         promptParts.push('- Ensure the entire design is contained within the frame with a safety margin.')
         promptParts.push('- Do not crop the main subject or title.')
 
+        // ----- Step 1 (消去時のみ): Gemini Pro でオブジェクトを精密セグメント認識 -----
+        let finalMaskData = maskData  // デフォルトは矩形マスク
+        if (isRemovalTask && maskData && maskPrompt && boundingBox) {
+            const preciseMask = await getSegmentationMask(genAI, imageData, boundingBox, maskPrompt)
+            if (preciseMask) {
+                finalMaskData = preciseMask
+                console.log('🎯 Using precise segmentation mask for inpainting')
+            } else {
+                console.log('↩️ Falling back to rectangular mask')
+            }
+        }
+
         // 修正ポイント1: parts 配列の要素をすべてオブジェクト形式にする
         const parts: any[] = [
             { text: promptParts.join('\n') },
@@ -178,11 +262,11 @@ export async function POST(request: NextRequest) {
             }
         ]
 
-        if (maskData) {
+        if (finalMaskData) {
             parts.push({
                 inlineData: {
-                    data: maskData.split(',')[1],
-                    mimeType: maskData.match(/data:([^;]+);/)?.[1] || 'image/png'
+                    data: finalMaskData.split(',')[1],
+                    mimeType: finalMaskData.match(/data:([^;]+);/)?.[1] || 'image/png'
                 }
             })
         }
