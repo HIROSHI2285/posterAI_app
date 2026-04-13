@@ -549,7 +549,7 @@ export function PosterPreview({ imageUrl, isGenerating, onRegenerate, modelMode 
                         body: JSON.stringify({
                             layers: textLayers,
                             prompt: pendingGeneralPrompt,
-                            modelMode: editModelMode === 'inherit' ? modelMode : editModelMode,
+                            modelMode: modelMode,
                         })
                     })
 
