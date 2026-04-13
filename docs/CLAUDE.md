@@ -38,12 +38,12 @@ posterAI_app/
 | 環境変数 | 現在値 | 用途 |
 |----------|--------|------|
 | `GEMINI_IMAGE_MODEL` | `gemini-3.1-flash-image-preview` | ポスター新規生成（4K） |
-| `GEMINI_EDIT_MODEL` | `gemini-3-pro-image-preview` | 画像編集・Inpainting |
+| `GEMINI_EDIT_MODEL` | `gemini-2.5-flash-image` ✅ | 画像編集・Inpainting（2026-04-14 移行済み） |
 | `GEMINI_ANALYSIS_MODEL` | `gemini-3.1-pro-preview` | 画像解析・テキスト抽出 |
 | `GEMINI_SMART_EDIT_MODEL` | `gemini-3.1-flash-lite-preview` | テキスト/画像変更の判定 |
 
-> **編集モデルの移行**: `GEMINI_EDIT_MODEL` を変更するだけで即時切り替え可能。
-> この設計は MODELS_AND_PRICING.md に記録済み。
+> **編集モデル移行済み**: 2026-04-14 に `gemini-3-pro-image-preview` → `gemini-2.5-flash-image` へ移行。
+> コスト71%削減（¥20/回 → ¥6/回）。ロールバックは `GEMINI_EDIT_MODEL=gemini-3-pro-image-preview` に戻すだけ。
 
 ---
 
@@ -77,7 +77,7 @@ posterAI_app/
 
 ## 📰 最新 Gemini Image API 情報（2026年4月時点）
 
-### Gemini 2.5 Flash Image ⭐ 編集移行候補
+### Gemini 2.5 Flash Image ✅ 編集モデルとして採用済み（2026-04-14）
 **リリース**: 2026年2月19日
 
 | 機能 | 内容 |
@@ -91,9 +91,9 @@ posterAI_app/
 | SynthID透かし | AI生成画像の自動証明 |
 
 **価格**: $0.039/画像（約¥6）
-**コスト削減**: 現在の `gemini-3-pro-image-preview`（$0.134）から **71%削減**
+**コスト削減**: 旧モデル `gemini-3-pro-image-preview`（$0.134）から **71%削減**
 
-> **移行方法**: `.env` の `GEMINI_EDIT_MODEL=gemini-2.5-flash-image` に変更するだけ
+> **移行済み**: `.env` と Render 環境変数に `GEMINI_EDIT_MODEL=gemini-2.5-flash-image` を設定済み
 
 ### Gemini 3.1 Flash Image Preview（Nano Banana 2）✅ 使用中
 **リリース**: 2026年2月26日
@@ -114,11 +114,11 @@ posterAI_app/
 
 ## 🎯 改善計画と優先順位
 
-### 即時実施（環境変数変更のみ）
-- [ ] **`GEMINI_EDIT_MODEL=gemini-2.5-flash-image` に変更してテスト**
-  - 編集精度の向上確認
-  - コスト71%削減の検証
-  - インペインティング機能の評価
+### 完了済み ✅
+- [x] **`GEMINI_EDIT_MODEL=gemini-2.5-flash-image` に移行**（2026-04-14）
+  - `.env` と Render 環境変数に設定済み
+  - コスト71%削減（¥20/回 → ¥6/回）
+  - `PosterPreview.tsx` の `editModelMode` ビルドエラーも同時修正
 
 ### 短期（1-2日）
 - [ ] **Fabric.js 統合**（最優先・最大効果）
@@ -165,7 +165,8 @@ posterAI_app/
 ## ⚠️ 作業時の注意事項
 
 1. **編集APIの変更は `GEMINI_EDIT_MODEL` 環境変数で行う**
-   - コード変更不要、`.env` の値を更新するだけ
+   - コード変更不要、`.env` と Render 環境変数の値を更新するだけ
+   - 現在: `gemini-2.5-flash-image`（2026-04-14 移行済み）
 
 2. **Fabric.js はインストール済み（未使用）**
    - `features/poster-generator/components/TextEditCanvas.tsx` に統合予定
@@ -185,5 +186,5 @@ posterAI_app/
 
 ---
 
-*作成日: 2026-04-14*
+*作成日: 2026-04-14 / 最終更新: 2026-04-14*
 *更新者: Claude Code (HIROSHI2285)*

@@ -15,24 +15,23 @@
 ### 最重要課題（2026年4月）
 **画像編集機能の不足** — 8割AI生成・2割手動調整が必要だが思った修正ができない
 
-### 即時対応可能な改善
-```env
-# 編集モデルをGemini 2.5 Flash Imageに変更（コスト71%削減・編集精度向上）
-GEMINI_EDIT_MODEL=gemini-2.5-flash-image
-```
+### 対応済み ✅（2026-04-14）
+- 編集モデルを `gemini-2.5-flash-image` に移行（コスト71%削減・編集精度向上）
+- `PosterPreview.tsx` の未定義変数 `editModelMode` によるビルドエラーを修正
 
-### モデル環境変数
+### モデル環境変数（現在の設定）
 ```env
-GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview   # 生成（使用中・最新）
-GEMINI_EDIT_MODEL=gemini-3-pro-image-preview         # 編集（→移行候補あり）
-GEMINI_ANALYSIS_MODEL=gemini-3.1-pro-preview         # 解析
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image-preview    # 生成（最新・使用中）
+GEMINI_EDIT_MODEL=gemini-2.5-flash-image             # 編集 ✅ 2026-04-14 移行済み
+GEMINI_ANALYSIS_MODEL=gemini-3.1-pro-preview          # 解析
 GEMINI_SMART_EDIT_MODEL=gemini-3.1-flash-lite-preview # 判定
 ```
 
 ### 重要な発見
-- **Fabric.js がインストール済みだが未使用**（`package.json` に `fabric: ^6.5.2`）
+- **Fabric.js がインストール済みだが未使用**（`package.json` に `fabric: ^6.5.2`）→ 次の改善候補
 - **`GEMINI_EDIT_MODEL` を変えるだけで編集モデルを切り替え可能**（再デプロイ不要）
 - **Imagen モデルが2026年6月24日に廃止予定**（対応不要、既にNano Banana使用中）
+- **ロールバック**: `GEMINI_EDIT_MODEL=gemini-3-pro-image-preview` で元に戻せる
 
 ---
 
@@ -46,4 +45,4 @@ GEMINI_SMART_EDIT_MODEL=gemini-3.1-flash-lite-preview # 判定
 
 ---
 
-*作成日: 2026-04-14*
+*作成日: 2026-04-14 / 最終更新: 2026-04-14*
